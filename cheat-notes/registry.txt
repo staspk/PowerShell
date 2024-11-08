@@ -1,0 +1,7 @@
+Registry
+	String Value 			==	REG_SZ			string				e.g: "C:\Program Files\App"		
+	Binary Value 			==	REG_BINARY		byte[]				e.g: 01 00 00 00				
+	DWORD (32-bit) Value	==	REG_DWORD		unsigned int		e.g: 0x00000001						usage: flags, toggles, counts, or small numerical settings
+	QWORD (64-bit) Value	==	REG_QWORD		unsigned int		e.g: 0x0000000000000001				usage: for larger numerical values.
+	Multi-String Value		==	REG_MULTI_SZ	string[]												usage: lists of items (multiple file paths/services/etc.)
+	Expandable String Value	==	REG_EXPAND_SZ	variabled-string	e.g: "%SystemRoot%\System32"		usage: text with env vars like %PATH%

@@ -1,0 +1,4 @@
+LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+	CALLBACK is a calling convention specifier
+	the preprocessor shows: #define CALLBACK __stdcall
+	__stdcall tells the compiler to arrange function arguments (usually from right to left) on the stack and that the callee cleans up the stack.
