@@ -1,0 +1,19 @@
+PM2 for Production Server Management
+
+npm i -g appium => Install globally
+
+
+For Typescript projects:
+	npm install typescript --save-dev		=>  compiler/transpiler, tsc
+	npm install @types/node --save-dev 		=> 	Helps auto-completion for fs, http, path, etc.
+	npm install tsx --save-dev
+
+	
+	ts-node is a TypeScript execution environment for Node.js
+
+	npx tsc example.ts						=>  npx uses local copy of typescript --save-dev to transpile example.ts
+
+
+standard process.argv: [C:\Program Files\nodejs\node.exe, C:\Users\stasp\Desktop\Bible-Vault\node\index.ts]
+
+pm2 ls => check if pm2 working right
