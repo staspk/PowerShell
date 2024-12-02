@@ -4,8 +4,8 @@ using module .\Kozubenko.Utils.psm1
 using module .\Kozubenko.Git.psm1
 function Restart { wt.exe; exit }
 function Open($path) {
-    if($path) {  ii  $([System.IO.Path]::GetDirectoryName($path))  }
-    else {  ii .  } 
+    if($path) {  Invoke-Item  $([System.IO.Path]::GetDirectoryName($path))  }
+    else {  Invoke-Item .  } 
 }
 function LoadInGlobals() {
     $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
@@ -40,7 +40,7 @@ function OnOpen() {
     Clear-Host
 	LoadInGlobals
     Write-Host
-	if ($openedTo -eq "$env:userprofile" -or $openedTo -eq "C:\WINDOWS\system32") { Set-Location $startLocation }   # Did Not start Powershell, with specific directory in mind.
+	if ($openedTo -eq "$env:userprofile" -or $openedTo -eq "C:\WINDOWS\system32") { Set-Location $startLocation }   # Implies Powershell was started with no specific directory in mind.
     
 }
 OnOpen
