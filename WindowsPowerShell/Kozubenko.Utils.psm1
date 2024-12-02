@@ -9,5 +9,5 @@ function TestPathSilently($dirPath, $returnPath = $false) {
 function WriteErrorExit([string]$errorMsg) {
     Write-Host $errorMsg -ForegroundColor DarkRed
     Write-Host "Exiting Script..." -ForegroundColor DarkRed
-    
+    exit
 }
