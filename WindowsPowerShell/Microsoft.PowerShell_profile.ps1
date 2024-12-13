@@ -2,58 +2,89 @@
 # Import-Module "$PsScriptRoot\Kozubenko.Utils.psm1" -Force
 using module .\Kozubenko.Utils.psm1
 using module .\Kozubenko.Git.psm1
+
+$GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
+
 function Restart { wt.exe; exit }
 function Open($path) {
-    if($path) {  ii  $([System.IO.Path]::GetDirectoryName($path))  }
-    else {  ii .  } 
+    if($path) {  Invoke-Item  $([System.IO.Path]::GetDirectoryName($path))  }
+    else {  Invoke-Item .  } 
 }
-function LoadInGlobals() {
-    $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
-    foreach($line in [System.IO.File]::ReadLines($GLOBALS)) {
-        $array = $line.Split("=")
-        if (-not([string]::IsNullOrEmpty($array[0])) -AND -not([string]::IsNullOrEmpty($array[1]))) {
-            New-Variable -Name $array[0] -Value $array[1] -Scope Global
-            Write-Host "$($array[0])" -ForegroundColor White -NoNewline; Write-Host "=$($array[1])" -ForegroundColor Gray
+function LoadInGlobals($writeHost = $true) {
+    $variables = @{}   # Dict{key==varName, value==varValue}
+    $lines = (Get-Content -Path $GLOBALS).Split([Environment]::NewLine)
+    $lines2 = New-Object System.Collections.Generic.List[System.String]
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $left = $lines[$i].Split("=")[0]; $right = $lines[$i].Split("=")[1]
+        if (-not([string]::IsNullOrEmpty($left)) -AND -not([string]::IsNullOrEmpty($right))) {
+            if (-not($variables.ContainsKey($left))) {
+                $variables.Add($left, $right)
+                $lines2.Add($lines[$i])
+                if (-not(Get-Variable -Name $left -Scope Global -ErrorAction SilentlyContinue)) {
+                    New-Variable -Name $left -Value $right -Scope Global  }
+                else {
+                    Set-Variable -Name $left -Value $right -Scope Global
+                }
+                if ($writeHost) { Write-Host "$left" -ForegroundColor White -NoNewline; Write-Host "=$right" -ForegroundColor Gray }
+            }
         }
     }
+    Set-Content -Path $GLOBALS -Value $lines2
 }
 function SaveToGlobals([string]$varName, $varValue) {
-    $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
-    $lines = Get-Content -Path $GLOBALS
+    $lines = (Get-Content -Path $GLOBALS).Split([Environment]::NewLine)
     for ($i = 0; $i -lt $lines.Count; $i++) {
-        $left = $($lines[$i].Split("="))[0]
+        $line = $lines[$i]
+        $left = $line.Split("=")[0]
         if ($left -eq $varName) {
-            $lines[$i] = "$($varName)=$($varValue)"
-            $lines | Set-Content -Path $GLOBALS;  return;
+            $lines[$i] = "$varName=$varValue"
+            Set-Content -Path $GLOBALS -Value $lines;  return;
         }
     }
-    Add-Content -Path $GLOBALS -Value "$varName=$varValue"; New-Variable -Name $varName -Value $varValue -Scope Global
+    Add-Content -Path $GLOBALS -Value "$varName=$varValue"; New-Variable -Name $left -Value $right -Scope Global
 }
-function SetLocation($path) {
-    if($path -eq $null) {  SaveToGlobals "startLocation" $PWD.Path; Restart; }
-    elseif (-not(TestPathSilently($path))) {
-		return;
+function NewVariable($name, $value) {
+    if ($value -eq $null) { $value = $PWD.Path }
+    SaveToGlobals $name $value
+    LoadInGlobals $false
+    Write-Host "$name" -ForegroundColor White -NoNewline; Write-Host "=$value" -ForegroundColor Gray; Write-Host
+}
+function CheckGlobalsFile() {
+    if (-not(TestPathSilently($GLOBALS))) {
+        WriteRed "Globals file not found. Set path to globals at top of `$Profile `$GLOBALS == $GLOBALS"; WriteRed "Disabling Functions: LoadInGlobals, SaveToGlobals, NewVariable"
+        Remove-Item Function:LoadInGlobals; Remove-Item Function:SaveToGlobals; Remove-Item Function:NewVariable; 
+        return $false
+    }
+    return $true
+}
+
+function SetLocation($path = $PWD.Path) {
+    if (-not(TestPathSilently($path))) {
+        WriteRed "Given `$path is not a real directory. `$path == $path"; WriteRed "Exiting SetLocation..."; return
 	}
 	SaveToGlobals "startLocation" $path
-	Restart
+	Clear-Host; LoadInGlobals; Write-Host
 }
 
 function OnOpen() {
-	$openedTo = $PWD.Path
-    Clear-Host
-	LoadInGlobals
-    Write-Host
-	if ($openedTo -eq "$env:userprofile" -or $openedTo -eq "C:\WINDOWS\system32") {  # Did Not start Powershell from a specific directory in mind; Set-Location to default.
-        if ($startLocation -eq $null) {
-            break
-        }
-        if (TestPathSilently $startLocation) {
-            Set-Location $startLocation  }
-        else {
-            Write-Host "`$startLocation path does not exist anymore. Defaulting to userdirectory..."  -ForegroundColor Red
-            Start-Sleep -Seconds 3
-            SetLocation $Env:USERPROFILE
+    if (CheckGlobalsFile) {
+        LoadInGlobals
+
+        $openedTo = $PWD.Path
+        Write-Host
+        if ($openedTo -eq "$env:userprofile" -or $openedTo -eq "C:\WINDOWS\system32") {  # Did Not start Powershell from a specific directory in mind; Set-Location to $startLocation.
+            if ($startLocation -eq $null) {
+                # Do Nothing
+            }
+            elseif (TestPathSilently $startLocation) {
+                Set-Location $startLocation  }
+            else {
+                WriteRed "`$startLocation path does not exist anymore. Defaulting to userdirectory..."
+                Start-Sleep -Seconds 3
+                SetLocation $Env:USERPROFILE
+            }
         }
     }
 }
+Clear-Host
 OnOpen
