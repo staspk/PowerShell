@@ -12,6 +12,10 @@ function TestPathSilently($dirPath, $returnPath = $false) {
     
     return $dirPath
 }
+function IsFile($path) {
+    if ([string]::IsNullOrEmpty($path) -OR -not(Test-Path $path -ErrorAction SilentlyContinue)) {  return $false  }
+    if (Test-Path -Path $path -PathType Leaf) {  return $true  }
+}
 function WriteErrorExit([string]$errorMsg) {
     WriteDarkRed $errorMsg
     WriteDarkRed "Exiting Script..."

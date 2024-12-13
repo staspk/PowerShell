@@ -5,10 +5,15 @@ using module .\Kozubenko.Git.psm1
 
 $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
 
-function Restart { wt.exe; exit }
+function Restart {
+    Start-Process pwsh.exe -ArgumentList "-noexit","-Command `$Host.UI.RawUI.WindowTitle = 'Powershell 7'"; exit
+}
 function Open($path) {
-    if($path) {  Invoke-Item  $([System.IO.Path]::GetDirectoryName($path))  }
-    else {  Invoke-Item .  } 
+    if ($path -eq $null) {  Invoke-Item .; return; }
+    if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
+
+    if (IsFile($path)) {  Invoke-Item  $([System.IO.Path]::GetDirectoryName($path))  }
+    else {  Invoke-Item $path  }
 }
 function LoadInGlobals() {
     $variables = @{}   # Dict{key==varName, value==varValue}
@@ -70,20 +75,20 @@ function OnOpen() {
     if (CheckGlobalsFile) {
         LoadInGlobals
 
-        $openedTo = $PWD.Path
-        Write-Host
-        if ($openedTo -eq "$env:userprofile" -or $openedTo -eq "C:\WINDOWS\system32") {  # Did Not start Powershell from a specific directory in mind; Set-Location to $startLocation.
-            if ($startLocation -eq $null) {
-                # Do Nothing
-            }
-            elseif (TestPathSilently $startLocation) {
-                Set-Location $startLocation  }
-            else {
-                WriteRed "`$startLocation path does not exist anymore. Defaulting to userdirectory..."
-                Start-Sleep -Seconds 3
-                SetLocation $Env:USERPROFILE
-            }
-        }
+        # $openedTo = $PWD.Path
+        # Write-Host
+        # if ($openedTo -eq "$env:userprofile" -or $openedTo -eq "C:\WINDOWS\system32") {  # Did Not start Powershell from a specific directory in mind; Set-Location to $startLocation.
+        #     if ($startLocation -eq $null) {
+        #         # Do Nothing
+        #     }
+        #     elseif (TestPathSilently $startLocation) {
+        #         Set-Location $startLocation  }
+        #     else {
+        #         WriteRed "`$startLocation path does not exist anymore. Defaulting to userdirectory..."
+        #         Start-Sleep -Seconds 3
+        #         SetLocation $Env:USERPROFILE
+        #     }
+        # }
     }
 }
 Clear-Host

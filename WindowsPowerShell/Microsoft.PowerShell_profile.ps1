@@ -7,8 +7,11 @@ $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
 
 function Restart { wt.exe; exit }
 function Open($path) {
-    if($path) {  Invoke-Item  $([System.IO.Path]::GetDirectoryName($path))  }
-    else {  Invoke-Item .  } 
+    if ($path -eq $null) {  Invoke-Item .; return; }
+    if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
+
+    if (IsFile($path)) {  Invoke-Item  $([System.IO.Path]::GetDirectoryName($path))  }
+    else {  Invoke-Item $path  }
 }
 function LoadInGlobals() {
     $variables = @{}   # Dict{key==varName, value==varValue}
