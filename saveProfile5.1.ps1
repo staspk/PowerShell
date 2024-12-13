@@ -14,8 +14,8 @@ Write-Host "`$Profile Contents COPY-PASTED to: $scriptDir" -ForegroundColor Gree
 Start-Sleep -Milliseconds 1200
 
 
-for ($i = 1; $i -le 6; $i++) {
-    Start-Sleep -Milliseconds 4
+for ($i = 1; $i -le 5; $i++) {
+    Start-Sleep -Milliseconds 5
     [console]::SetCursorPosition(0, [console]::CursorTop - 1)
     Write-Host (" " * [console]::WindowWidth)
     [console]::SetCursorPosition(0, [console]::CursorTop - 1)
