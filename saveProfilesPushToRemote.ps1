@@ -1,5 +1,6 @@
 #  1) Deletes contents and copy-pastes into: .\WindowsPowerShell, from: $Env:userprofile\Documents\WindowsPowerShell
 #  2) Deletes contents and copy-pastes into: .\Powershell,        from: $Env:userprofile\Documents\WindowsPowerShell
+#  3) Asks for Commit Message, pushes to Remote
 
 function DeleteContentsThenCopyPasteFromTo($profileDir, $scriptDir) {
     Get-ChildItem -Path $scriptDir -Recurse | ForEach-Object {
