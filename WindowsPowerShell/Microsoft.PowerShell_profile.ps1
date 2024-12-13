@@ -31,7 +31,9 @@ function LoadInGlobals() {
                 else {
                     Set-Variable -Name $left -Value $right -Scope Global
                 }
-                Write-Host "$left" -ForegroundColor White -NoNewline; Write-Host "=$right" -ForegroundColor Gray
+                if ($left -ne "startLocation") {    # startLocation visible on most startups anyways, no need to be redundant
+                    Write-Host "$left" -ForegroundColor White -NoNewline; Write-Host "=$right" -ForegroundColor Gray
+                }
             }
         }
     }
@@ -68,7 +70,7 @@ function SetLocation($path = $PWD.Path) {
         WriteRed "Given `$path is not a real directory. `$path == $path"; WriteRed "Exiting SetLocation..."; return
 	}
 	SaveToGlobals "startLocation" $path
-	Clear-Host; LoadInGlobals; Write-Host
+	Restart
 }
 
 function OnOpen() {
