@@ -13,11 +13,11 @@ function Open($path) {
     if (IsFile($path)) {  Invoke-Item  $([System.IO.Path]::GetDirectoryName($path))  }
     else {  Invoke-Item $path  }
 }
-function VsCode ($path) {
+function VsCode($path) {
     if ($path -eq $null) {  code .; return; }
     if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
     if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir; return; }
-    else { code . }
+    else { code $path }
 }
 function LoadInGlobals() {
     $variables = @{}   # Dict{key==varName, value==varValue}
@@ -52,15 +52,15 @@ function SaveToGlobals([string]$varName, $varValue) {
     }
     Add-Content -Path $GLOBALS -Value "$varName=$varValue"; New-Variable -Name $varName -Value $varValue -Scope Global
 }
-function NewVariable($name, $value) {
+function NewVar($name, $value) {
     if ($value -eq $null) { $value = $PWD.Path }
     SaveToGlobals $name $value
     Clear-Host; LoadInGlobals; Write-Host
 }
 function CheckGlobalsFile() {
     if (-not(TestPathSilently($GLOBALS))) {
-        WriteRed "Globals file not found. Set path to globals at top of `$Profile `$GLOBALS == $GLOBALS"; WriteRed "Disabling Functions: LoadInGlobals, SaveToGlobals, NewVariable"
-        Remove-Item Function:LoadInGlobals; Remove-Item Function:SaveToGlobals; Remove-Item Function:NewVariable; 
+        WriteRed "Globals file not found. Set path to globals at top of `$Profile `$GLOBALS == $GLOBALS"; WriteRed "Disabling Functions: LoadInGlobals, SaveToGlobals, NewVar"
+        Remove-Item Function:LoadInGlobals; Remove-Item Function:SaveToGlobals; Remove-Item Function:NewVar; 
         return $false
     }
     return $true

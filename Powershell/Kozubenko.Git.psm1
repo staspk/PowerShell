@@ -1,4 +1,4 @@
-using module ".\Kozubenko.Utils.psm1"
+# using module ".\Kozubenko.Utils.psm1"
 
 function GitConfig ($email, $name) {
     git config --global user.email $email
