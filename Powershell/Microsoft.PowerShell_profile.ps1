@@ -15,6 +15,12 @@ function Open($path) {
     if (IsFile($path)) {  Invoke-Item  $([System.IO.Path]::GetDirectoryName($path))  }
     else {  Invoke-Item $path  }
 }
+function OpenCode ($path) {
+    if ($path -eq $null) {  code .; return; }
+    if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
+    if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir; return; }
+    else { code . }
+}
 function LoadInGlobals() {
     $variables = @{}   # Dict{key==varName, value==varValue}
     $lines = (Get-Content -Path $GLOBALS).Split([Environment]::NewLine)
@@ -75,20 +81,20 @@ function OnOpen() {
     if (CheckGlobalsFile) {
         LoadInGlobals
 
-        # $openedTo = $PWD.Path
-        # Write-Host
-        # if ($openedTo -eq "$env:userprofile" -or $openedTo -eq "C:\WINDOWS\system32") {  # Did Not start Powershell from a specific directory in mind; Set-Location to $startLocation.
-        #     if ($startLocation -eq $null) {
-        #         # Do Nothing
-        #     }
-        #     elseif (TestPathSilently $startLocation) {
-        #         Set-Location $startLocation  }
-        #     else {
-        #         WriteRed "`$startLocation path does not exist anymore. Defaulting to userdirectory..."
-        #         Start-Sleep -Seconds 3
-        #         SetLocation $Env:USERPROFILE
-        #     }
-        # }
+        $openedTo = $PWD.Path
+        Write-Host
+        if ($openedTo -eq "$env:userprofile" -or $openedTo -eq "C:\WINDOWS\system32") {  # Did Not start Powershell from a specific directory in mind; Set-Location to $startLocation.
+            if ($startLocation -eq $null) {
+                # Do Nothing
+            }
+            elseif (TestPathSilently $startLocation) {
+                Set-Location $startLocation  }
+            else {
+                WriteRed "`$startLocation path does not exist anymore. Defaulting to userdirectory..."
+                Start-Sleep -Seconds 3
+                SetLocation $Env:USERPROFILE
+            }
+        }
     }
 }
 Clear-Host

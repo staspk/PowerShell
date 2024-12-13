@@ -9,9 +9,14 @@ function Restart { wt.exe; exit }
 function Open($path) {
     if ($path -eq $null) {  Invoke-Item .; return; }
     if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
-
     if (IsFile($path)) {  Invoke-Item  $([System.IO.Path]::GetDirectoryName($path))  }
     else {  Invoke-Item $path  }
+}
+function OpenCode ($path) {
+    if ($path -eq $null) {  code .; return; }
+    if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
+    if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir; return; }
+    else { code . }
 }
 function LoadInGlobals() {
     $variables = @{}   # Dict{key==varName, value==varValue}
