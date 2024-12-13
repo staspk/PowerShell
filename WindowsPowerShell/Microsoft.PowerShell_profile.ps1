@@ -1,5 +1,3 @@
-# Import-Module "$PsScriptRoot\Kozubenko.Git.psm1" -Force
-# Import-Module "$PsScriptRoot\Kozubenko.Utils.psm1" -Force
 using module .\Kozubenko.Utils.psm1
 using module .\Kozubenko.Git.psm1
 

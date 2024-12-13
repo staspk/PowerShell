@@ -12,10 +12,9 @@ function Push ($commitMsg = "No Commit Message") {
 }
 
 function Github ($path = $PWD.Path) {
-    if (-not(TestPathSilently "$path\.git")) {
-        Write-Host "No .git file in given `$path == '$path'"
-    }
-    $configFile = "$path\.git\"
-}
+    $configFile = "$path\.git\config"
+    if (-not(TestPathSilently $configFile)) {  Write-Host "No .git config file found under `$path: '$path'"; return; }
 
-Export-ModuleMember -Function GitConfig, Push, Github
+    $url = git config --get remote.origin.url
+    Start-Process $url
+}
