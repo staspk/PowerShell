@@ -15,7 +15,7 @@ function Open($path) {
     if (IsFile($path)) {  Invoke-Item  $([System.IO.Path]::GetDirectoryName($path))  }
     else {  Invoke-Item $path  }
 }
-function OpenCode ($path) {
+function VsCode ($path) {
     if ($path -eq $null) {  code .; return; }
     if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
     if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir; return; }
@@ -57,8 +57,7 @@ function SaveToGlobals([string]$varName, $varValue) {
 function NewVariable($name, $value) {
     if ($value -eq $null) { $value = $PWD.Path }
     SaveToGlobals $name $value
-    Clear-Host
-    LoadInGlobals
+    Clear-Host; LoadInGlobals; Write-Host
 }
 function CheckGlobalsFile() {
     if (-not(TestPathSilently($GLOBALS))) {
