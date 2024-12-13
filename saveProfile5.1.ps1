@@ -6,12 +6,12 @@ $scriptDir = ".\WindowsPowerShell"
 Get-ChildItem -Path $scriptDir -Recurse | ForEach-Object {
     $_.Delete()
     Write-Host "Deleted File: $_" -ForegroundColor Red
-    Start-Sleep -Milliseconds 25
+    Start-Sleep -Milliseconds 20
 }
 
 Copy-Item -Path "$profileDir\*" -Destination $scriptDir -Recurse
 Write-Host "`$Profile Contents COPY-PASTED to: $scriptDir" -ForegroundColor Green
-Start-Sleep -Milliseconds 1600
+Start-Sleep -Milliseconds 1500
 
 
 for ($i = 1; $i -le 6; $i++) {
