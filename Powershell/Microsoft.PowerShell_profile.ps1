@@ -82,7 +82,7 @@ function OnOpen() {
 
         $openedTo = $PWD.Path
         Write-Host
-        if ($openedTo -eq "$env:userprofile" -or $openedTo -eq "C:\WINDOWS\system32") {  # Did Not start Powershell from a specific directory in mind; Set-Location to $startLocation.
+        if ($openedTo -ieq "$env:userprofile" -or $openedTo -ieq "C:\WINDOWS\system32") {  # Did Not start Powershell from a specific directory in mind; Set-Location to $startLocation.
             if ($startLocation -eq $null) {
                 # Do Nothing
             }
