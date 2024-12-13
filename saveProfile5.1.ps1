@@ -11,7 +11,7 @@ Get-ChildItem -Path $scriptDir -Recurse | ForEach-Object {
 
 Copy-Item -Path "$profileDir\*" -Destination $scriptDir -Recurse
 Write-Host "`$Profile Contents COPY-PASTED to: $scriptDir" -ForegroundColor Green
-Start-Sleep -Milliseconds 1000
+Start-Sleep -Milliseconds 800
 
 
 for ($i = 1; $i -le 5; $i++) {
