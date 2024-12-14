@@ -7,11 +7,10 @@ function Restart {
     Start-Process pwsh.exe -ArgumentList "-noexit","-Command `$Host.UI.RawUI.WindowTitle = 'Powershell 7'"; exit
 }
 function Open($path) {
-    if ($path -eq $null) {  Invoke-Item .; return; }
+    if ($path -eq $null) {  explorer.exe "$PWD.Path"; return; }
     if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
-
-    if (IsFile($path)) {  Invoke-Item  $([System.IO.Path]::GetDirectoryName($path))  }
-    else {  Invoke-Item $path  }
+    if (IsFile($path)) {  explorer.exe "$([System.IO.Path]::GetDirectoryName($path))"  }
+    else {  explorer.exe $path  }
 }
 function VsCode($path) {
     if ($path -eq $null) {  code .; return; }

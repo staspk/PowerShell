@@ -5,10 +5,10 @@ $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
 
 function Restart { wt.exe; exit }
 function Open($path) {
-    if ($path -eq $null) {  Invoke-Item .; return; }
+    if ($path -eq $null) {  explorer.exe "$PWD.Path"; return; }
     if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
-    if (IsFile($path)) {  Invoke-Item  $([System.IO.Path]::GetDirectoryName($path))  }
-    else {  Invoke-Item $path  }
+    if (IsFile($path)) {  explorer.exe "$([System.IO.Path]::GetDirectoryName($path))"  }
+    else {  explorer.exe $path  }
 }
 function VsCode ($path) {
     if ($path -eq $null) {  code .; return; }
