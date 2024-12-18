@@ -2,6 +2,7 @@ using module .\Kozubenko.Utils.psm1
 using module .\Kozubenko.Git.psm1
 
 $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
+$METHODS = @("NewVar(`$name, `$value)", "SetLocation(`$path = `$PWD.Path)");  function List { foreach ($method in $METHODS) { Write-Host $method } }
 
 function Restart { wt.exe; exit }
 function Open($path) {
