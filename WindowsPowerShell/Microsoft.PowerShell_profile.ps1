@@ -2,9 +2,9 @@ using module .\Kozubenko.Utils.psm1
 using module .\Kozubenko.Git.psm1
 
 $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
-$METHODS = @("NewVar(`$name, `$value)", "SetLocation(`$path = `$PWD.Path)");  function List { foreach ($method in $METHODS) { Write-Host $method } }
+$METHODS = @("NewVar(`$name, `$value)", "SetLocation(`$path = `$PWD.Path)");  function List { foreach ($method in $METHODS) {  Write-Host $method }  }
 
-function Restart { wt.exe; exit }
+function Restart { wt.exe; exit }                   SetAliases Restart @("r", "re", "res")
 function Open($path) {
     if ($path -eq $null) {  explorer.exe "$PWD.Path"; return; }
     if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
@@ -53,19 +53,18 @@ function SaveToGlobals([string]$varName, $varValue) {
     Add-Content -Path $GLOBALS -Value "$varName=$varValue"; New-Variable -Name $varName -Value $varValue -Scope Global
 }
 function NewVar($name, $value) {
-    if ($value -eq $null) { $value = $PWD.Path }
+    if ([string]::IsNullOrEmpty($name)) { return }
+    if ([string]::IsNullOrEmpty($value)) { $value = $PWD.Path }
+    if ($name[0] -eq "$") { $name = $name.Substring(1, $name.Length - 1 ) }
     SaveToGlobals $name $value
     Clear-Host; LoadInGlobals; Write-Host
 }
-function CheckGlobalsFile() {
-    if (-not(TestPathSilently($GLOBALS))) {
-        WriteRed "Globals file not found. Set path to globals at top of `$Profile `$GLOBALS == $GLOBALS"; WriteRed "Disabling Functions: LoadInGlobals, SaveToGlobals, NewVar"
-        Remove-Item Function:LoadInGlobals; Remove-Item Function:SaveToGlobals; Remove-Item Function:NewVar; 
-        return $false
-    }
-    return $true
+function SetVar($name, $value) {
+    if ([string]::IsNullOrEmpty($name) -or [string]::IsNullOrEmpty($value)) { return }
+    if ($name[0] -eq "$") { $name = $name.Substring(1, $name.Length - 1 ) }
+    SaveToGlobals $name $value
+    Clear-Host; LoadInGlobals; Write-Host
 }
-
 function SetLocation($path = $PWD.Path) {
     if (-not(TestPathSilently($path))) {
         WriteRed "Given `$path is not a real directory. `$path == $path"; WriteRed "Exiting SetLocation..."; return
@@ -74,6 +73,14 @@ function SetLocation($path = $PWD.Path) {
 	Restart
 }
 
+function CheckGlobalsFile() {
+    if (-not(TestPathSilently($GLOBALS))) {
+        WriteRed "Globals file not found. Set path to globals at top of `$Profile `$GLOBALS == $GLOBALS"; WriteRed "Disabling Functions: LoadInGlobals, SaveToGlobals, NewVar, SetVar"
+        Remove-Item Function:LoadInGlobals; Remove-Item Function:SaveToGlobals; Remove-Item Function:NewVar; Remove-Item Function:SetVar
+        return $false
+    }
+    return $true
+}
 function OnOpen() {
     if (CheckGlobalsFile) {
         LoadInGlobals
@@ -92,6 +99,11 @@ function OnOpen() {
                 SetLocation $Env:USERPROFILE
             }
         }
+    }
+    Set-PSReadLineKeyHandler -Key Ctrl+z -Function ClearScreen
+    Set-PSReadLineKeyHandler -Key Alt+Backspace -Description "Delete Line" -ScriptBlock {
+        [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition(0)
+        [Microsoft.PowerShell.PSConsoleReadLine]::KillLine()
     }
 }
 Clear-Host

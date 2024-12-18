@@ -21,3 +21,22 @@ function WriteErrorExit([string]$errorMsg) {
     WriteDarkRed "Exiting Script..."
     exit
 }
+function SetAliases($function, [Array]$aliases) {
+    if ([string]::IsNullOrEmpty($function) -or [string]::IsNullOrEmpty($aliases)) {  return  }
+
+    foreach($alias in $aliases) {
+        try {
+            $ErrorActionPreference = "Stop"     # Needs to be set so the possible error throws
+            Set-Alias -Name $alias -Value $function -Scope Global
+        }
+        catch {
+            if ($_.FullyQualifiedErrorId -eq "AliasAllScopeOptionCannotBeRemoved,Microsoft.PowerShell.Commands.SetAliasCommand") {
+                $isAnAlias = Get-Alias $alias
+                if($isAnAlias) {
+                    Set-Alias $alias $function -Force -Scope Global -Option 'Constant','AllScope' }
+            }
+            else {  throw $_  }
+        }
+        finally {  $ErrorActionPreference = "Continue"  }
+    }
+}
