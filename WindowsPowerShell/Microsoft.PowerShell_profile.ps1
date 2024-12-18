@@ -2,7 +2,7 @@ using module .\Kozubenko.Utils.psm1
 using module .\Kozubenko.Git.psm1
 
 $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
-$METHODS = @("NewVar(`$name, `$value)", "SetLocation(`$path = `$PWD.Path)");  function List { foreach ($method in $METHODS) {  Write-Host $method }  }
+$METHODS = @("NewVar(`$name, `$value = $PWD.Path)", "SetVar($name, $value)", "SetLocation(`$path = `$PWD.Path)");  function List { foreach ($method in $METHODS) {  Write-Host $method }  }
 
 function Restart { wt.exe; exit }                   SetAliases Restart @("r", "re", "res")
 function Open($path) {
@@ -52,9 +52,8 @@ function SaveToGlobals([string]$varName, $varValue) {
     }
     Add-Content -Path $GLOBALS -Value "$varName=$varValue"; New-Variable -Name $varName -Value $varValue -Scope Global
 }
-function NewVar($name, $value) {
+function NewVar($name, $value = $PWD.Path) {
     if ([string]::IsNullOrEmpty($name)) { return }
-    if ([string]::IsNullOrEmpty($value)) { $value = $PWD.Path }
     if ($name[0] -eq "$") { $name = $name.Substring(1, $name.Length - 1 ) }
     SaveToGlobals $name $value
     Clear-Host; LoadInGlobals; Write-Host
