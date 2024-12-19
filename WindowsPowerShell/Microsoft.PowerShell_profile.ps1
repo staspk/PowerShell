@@ -47,10 +47,12 @@ function LoadInGlobals($deleteVarName = "") {   # deletes duplicates as well
     Write-Host
 }
 function SaveToGlobals([string]$varName, $varValue) {
+    WriteRed "In SaveToGlobals: `$varName: $varName. `$varValue: $varValue"
     $lines = (Get-Content -Path $GLOBALS).Split([Environment]::NewLine)
     for ($i = 0; $i -lt $lines.Count; $i++) {
         $left = $lines[$i].Split("=")[0]
         if ($left -eq $varName) {
+            WriteRed "In `$left == `$varname: `$left: $left. `$varValue: $varValue"
             $lines[$i] = "$varName=$varValue"
             Set-Content -Path $GLOBALS -Value $lines;   return;
         }
@@ -69,7 +71,7 @@ function SetVar($name, $value) {
     SaveToGlobals $name $value
     LoadInGlobals
 }
-function DeleteVar($varName) {  Clear-Host; Write-Host; LoadInGlobals($varName)  }
+function DeleteVar($varName) {  LoadInGlobals $varName  }
 function SetLocation($path = $PWD.Path) {
     if (-not(TestPathSilently($path))) {
         WriteRed "Given `$path is not a real directory. `$path == $path"; WriteRed "Exiting SetLocation..."; return
