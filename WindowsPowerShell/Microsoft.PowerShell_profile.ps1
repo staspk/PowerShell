@@ -4,14 +4,14 @@ using module .\Kozubenko.Git.psm1
 $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
 $METHODS = @("NewVar(`$name, `$value = $PWD.Path)", "SetVar($name, $value)", "SetLocation(`$path = `$PWD.Path)");  function List { foreach ($method in $METHODS) {  Write-Host $method }  }
 
-function Restart { wt.exe; exit }
+function Restart { Invoke-Item $pshome\powershell.exe; exit }
 function Open($path) {
     if ($path -eq $null) {  explorer.exe "$PWD.Path"; return; }
     if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
     if (IsFile($path)) {  explorer.exe "$([System.IO.Path]::GetDirectoryName($path))"  }
     else {  explorer.exe $path  }
 }
-function VsCode ($path) {
+function VsCode($path) {
     if ($path -eq $null) {  code .; return; }
     if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
     if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir; return; }

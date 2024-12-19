@@ -4,9 +4,7 @@ using module .\Kozubenko.Git.psm1
 $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
 $METHODS = @("NewVar(`$name, `$value = $PWD.Path)", "SetVar($name, $value)", "SetLocation(`$path = `$PWD.Path)");  function List { foreach ($method in $METHODS) {  Write-Host $method }  }
 
-function Restart {
-    Start-Process pwsh.exe -ArgumentList "-noexit","-Command `$Host.UI.RawUI.WindowTitle = 'Powershell 7'"; exit
-}
+function Restart {  Invoke-Item $pshome\pwsh.exe; exit  }
 function Open($path) {
     if ($path -eq $null) {  explorer.exe "$PWD.Path"; return; }
     if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
@@ -86,21 +84,27 @@ function CheckGlobalsFile() {
 function OnOpen() {
     if (CheckGlobalsFile) {
         LoadInGlobals
+        WriteRed "In OnOpen. After LoadInGloBALS `$startLocation: $startLocation"
 
         $openedTo = $PWD.Path
+        WriteRed "In OnOpen. `$openedTo: $openedTo"
         Write-Host
         if ($openedTo -ieq "$env:userprofile" -or $openedTo -ieq "C:\WINDOWS\system32") {  # Did Not start Powershell from a specific directory in mind; Set-Location to $startLocation.
             if ($startLocation -eq $null) {
                 # Do Nothing
+                WriteDarkRed "1"
             }
             elseif (TestPathSilently $startLocation) {
-                Set-Location $startLocation  }
+                Set-Location $startLocation; WriteDarkRed "2"}
             else {
                 WriteRed "`$startLocation path does not exist anymore. Defaulting to userdirectory..."
                 Start-Sleep -Seconds 3
                 SetLocation $Env:USERPROFILE
+                WriteDarkRed "3"
             }
+            WriteDarkRed "conclusion"
         }
+        WriteDarkRed "conclusion forreal"
     }
     Set-PSReadLineKeyHandler -Key Ctrl+z -Function ClearScreen
     Set-PSReadLineKeyHandler -Key Alt+Backspace -Description "Delete Line" -ScriptBlock {
@@ -110,5 +114,5 @@ function OnOpen() {
     
     SetAliases Restart @("r", "re", "res")
 }
-Clear-Host
+# Clear-Host
 OnOpen
