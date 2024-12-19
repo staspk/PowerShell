@@ -17,19 +17,18 @@ function VsCode($path) {
     if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir; return; }
     else { code $path }
 }
-function LoadInGlobals() {
-    $variables = @{}   # Dict{key==varName, value==varValue}
+function LoadInGlobals($deleteVarName = "") {   # deletes duplicates as well
+    $variables = @{}   # Dict{key==varName, value==varValue}, uses dict to check if is duplicate
     $lines = (Get-Content -Path $GLOBALS).Split([Environment]::NewLine)
     $lines2 = New-Object System.Collections.Generic.List[System.String]
     for ($i = 0; $i -lt $lines.Count; $i++) {
-        $left = $lines[$i].Split("=")[0]; $right = $lines[$i].Split("=")[1]
+        $left = $lines[$i].Split("=")[0];
+        $right = $lines[$i].Split("=")[1]
         if (-not([string]::IsNullOrEmpty($left)) -AND -not([string]::IsNullOrEmpty($right))) {
             if (-not($variables.ContainsKey($left))) {
                 $variables.Add($left, $right)
-                $lines2.Add($lines[$i])
-                if (-not(Get-Variable -Name $left -Scope Global -ErrorAction SilentlyContinue)) {
-                    New-Variable -Name $left -Value $right -Scope Global  }
-                else {
+                if($left -ne $deleteVarName) {
+                    $lines2.Add($lines[$i])
                     Set-Variable -Name $left -Value $right -Scope Global
                 }
                 if ($left -ne "startLocation") {    # startLocation visible on most startups anyways, no need to be redundant
@@ -64,6 +63,7 @@ function SetVar($name, $value) {
     SaveToGlobals $name $value
     Clear-Host; LoadInGlobals; Write-Host
 }
+function DeleteVar($varName) {  LoadInGlobals($varName)  }
 function SetLocation($path = $PWD.Path) {
     if (-not(TestPathSilently($path))) {
         WriteRed "Given `$path is not a real directory. `$path == $path"; WriteRed "Exiting SetLocation..."; return
