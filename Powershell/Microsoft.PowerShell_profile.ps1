@@ -114,5 +114,5 @@ function OnOpen() {
     
     SetAliases Restart @("r", "re", "res")
 }
-# Clear-Host
+Clear-Host
 OnOpen
