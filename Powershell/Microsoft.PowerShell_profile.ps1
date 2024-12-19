@@ -18,53 +18,58 @@ function VsCode($path) {
     else { code $path }
 }
 function LoadInGlobals($deleteVarName = "") {   # deletes duplicates as well
-    $variables = @{}   # Dict{key==varName, value==varValue}, uses dict to check if is duplicate
-    $lines = (Get-Content -Path $GLOBALS).Split([Environment]::NewLine)
-    $lines2 = New-Object System.Collections.Generic.List[System.String]
+    $variables = @{}   # Dict{key==varName, value==varValue}
+    $_globals = (Get-Content -Path $GLOBALS)
+    
+    if(-not($_globals)) {  WriteRed "Globals Empty"; return  }
+    Clear-Host
+
+    $lines = [System.Collections.Generic.List[Object]]::new(); $lines.AddRange($_globals)
     for ($i = 0; $i -lt $lines.Count; $i++) {
-        $left = $lines[$i].Split("=")[0];
+        $left = $lines[$i].Split("=")[0]
         $right = $lines[$i].Split("=")[1]
-        if (-not([string]::IsNullOrEmpty($left)) -AND -not([string]::IsNullOrEmpty($right))) {
-            if (-not($variables.ContainsKey($left))) {
-                $variables.Add($left, $right)
-                if($left -ne $deleteVarName) {
-                    $lines2.Add($lines[$i])
-                    Set-Variable -Name $left -Value $right -Scope Global
-                }
-                if ($left -ne "startLocation") {    # startLocation visible on most startups anyways, no need to be redundant
-                    Write-Host "$left" -ForegroundColor White -NoNewline; Write-Host "=$right" -ForegroundColor Gray
-                }
+        if ($left -eq "" -or $right -eq "" -or $left -eq $deleteVarName -or $variables.ContainsKey($left)) {    # is duplicate if $variables.containsKey
+            $lines.RemoveAt($i)
+            if ($i -ne 0) {
+                $i--
+            }
+        }
+        else {
+            $variables.Add($left, $right)
+            Set-Variable -Name $left -Value $right -Scope Global
+
+            if ($left -ne "startLocation") {    # startLocation visible on most startups anyways, no need to be redundant
+                Write-Host "$left" -ForegroundColor White -NoNewline; Write-Host "=$right" -ForegroundColor Gray
             }
         }
     }
-    Set-Content -Path $GLOBALS -Value $lines2
+    Set-Content -Path $GLOBALS -Value $lines
+    Write-Host
 }
 function SaveToGlobals([string]$varName, $varValue) {
     $lines = (Get-Content -Path $GLOBALS).Split([Environment]::NewLine)
     for ($i = 0; $i -lt $lines.Count; $i++) {
-        $line = $lines[$i]
-        $left = $line.Split("=")[0]
+        $left = $lines[$i].Split("=")[0]
         if ($left -eq $varName) {
             $lines[$i] = "$varName=$varValue"
-            Set-Content -Path $GLOBALS -Value $lines;  return;
+            Set-Content -Path $GLOBALS -Value $lines;   return;
         }
     }
-    Add-Content -Path $GLOBALS -Value "$varName=$varValue"; New-Variable -Name $varName -Value $varValue -Scope Global
+    Add-Content -Path $GLOBALS -Value "$([Environment]::NewLine)$varName=$varValue"; Set-Variable -Name $varName -Value $varValue -Scope Global
 }
 function NewVar($name, $value = $PWD.Path) {
     if ([string]::IsNullOrEmpty($name)) { return }
-    if ([string]::IsNullOrEmpty($value)) { $value = $PWD.Path }
     if ($name[0] -eq "$") { $name = $name.Substring(1, $name.Length - 1 ) }
     SaveToGlobals $name $value
-    Clear-Host; LoadInGlobals; Write-Host
+    LoadInGlobals
 }
 function SetVar($name, $value) {
     if ([string]::IsNullOrEmpty($name) -or [string]::IsNullOrEmpty($value)) { return }
     if ($name[0] -eq "$") { $name = $name.Substring(1, $name.Length - 1 ) }
     SaveToGlobals $name $value
-    Clear-Host; LoadInGlobals; Write-Host
+    LoadInGlobals
 }
-function DeleteVar($varName) {  LoadInGlobals($varName)  }
+function DeleteVar($varName) {  Clear-Host; Write-Host; LoadInGlobals($varName)  }
 function SetLocation($path = $PWD.Path) {
     if (-not(TestPathSilently($path))) {
         WriteRed "Given `$path is not a real directory. `$path == $path"; WriteRed "Exiting SetLocation..."; return
@@ -75,8 +80,8 @@ function SetLocation($path = $PWD.Path) {
 
 function CheckGlobalsFile() {
     if (-not(TestPathSilently($GLOBALS))) {
-        WriteRed "Globals file not found. Set path to globals at top of `$Profile `$GLOBALS == $GLOBALS"; WriteRed "Disabling Functions: LoadInGlobals, SaveToGlobals, NewVar, SetVar"
-        Remove-Item Function:LoadInGlobals; Remove-Item Function:SaveToGlobals; Remove-Item Function:NewVar; Remove-Item Function:SetVar
+        WriteRed "Globals file not found. `$GLOBALS == $GLOBALS"; WriteRed "Disabling Functions: { LoadInGlobals, SaveToGlobals, NewVar, SetVar, DeleteVar } "
+        Remove-Item Function:LoadInGlobals; Remove-Item Function:SaveToGlobals; Remove-Item Function:NewVar; Remove-Item Function:SetVar; Remove-Item Function:DeleteVar
         return $false
     }
     return $true
@@ -84,27 +89,20 @@ function CheckGlobalsFile() {
 function OnOpen() {
     if (CheckGlobalsFile) {
         LoadInGlobals
-        WriteRed "In OnOpen. After LoadInGloBALS `$startLocation: $startLocation"
 
         $openedTo = $PWD.Path
-        WriteRed "In OnOpen. `$openedTo: $openedTo"
-        Write-Host
         if ($openedTo -ieq "$env:userprofile" -or $openedTo -ieq "C:\WINDOWS\system32") {  # Did Not start Powershell from a specific directory in mind; Set-Location to $startLocation.
             if ($startLocation -eq $null) {
                 # Do Nothing
-                WriteDarkRed "1"
             }
             elseif (TestPathSilently $startLocation) {
-                Set-Location $startLocation; WriteDarkRed "2"}
+                Set-Location $startLocation  }
             else {
                 WriteRed "`$startLocation path does not exist anymore. Defaulting to userdirectory..."
                 Start-Sleep -Seconds 3
                 SetLocation $Env:USERPROFILE
-                WriteDarkRed "3"
             }
-            WriteDarkRed "conclusion"
         }
-        WriteDarkRed "conclusion forreal"
     }
     Set-PSReadLineKeyHandler -Key Ctrl+z -Function ClearScreen
     Set-PSReadLineKeyHandler -Key Alt+Backspace -Description "Delete Line" -ScriptBlock {
