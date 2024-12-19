@@ -4,7 +4,7 @@ using module .\Kozubenko.Git.psm1
 $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
 $METHODS = @("NewVar(`$name, `$value = $PWD.Path)", "SetVar($name, $value)", "SetLocation(`$path = `$PWD.Path)");  function List { foreach ($method in $METHODS) {  Write-Host $method }  }
 
-function Restart { wt.exe; exit }                   SetAliases Restart @("r", "re", "res")
+function Restart { wt.exe; exit }
 function Open($path) {
     if ($path -eq $null) {  explorer.exe "$PWD.Path"; return; }
     if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
@@ -104,6 +104,7 @@ function OnOpen() {
         [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition(0)
         [Microsoft.PowerShell.PSConsoleReadLine]::KillLine()
     }
+    SetAliases Restart @("r", "re", "res")
 }
 Clear-Host
 OnOpen

@@ -4,7 +4,7 @@ using module .\Kozubenko.Git.psm1
 $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
 $METHODS = @("NewVar(`$name, `$value = $PWD.Path)", "SetVar($name, $value)", "SetLocation(`$path = `$PWD.Path)");  function List { foreach ($method in $METHODS) {  Write-Host $method }  }
 
-function Restart {                                  SetAliases Restart @("r", "re", "res")
+function Restart {
     Start-Process pwsh.exe -ArgumentList "-noexit","-Command `$Host.UI.RawUI.WindowTitle = 'Powershell 7'"; exit
 }
 function Open($path) {
@@ -107,6 +107,8 @@ function OnOpen() {
         [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition(0)
         [Microsoft.PowerShell.PSConsoleReadLine]::KillLine()
     }
+    
+    SetAliases Restart @("r", "re", "res")
 }
 Clear-Host
 OnOpen
