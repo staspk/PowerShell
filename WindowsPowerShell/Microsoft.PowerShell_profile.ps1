@@ -5,14 +5,12 @@ $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
 $METHODS = @("NewVar(`$name, `$value = $PWD.Path)", "SetVar($name, $value)", "SetLocation(`$path = `$PWD.Path)");  function List { foreach ($method in $METHODS) {  Write-Host $method }  }
 
 function Restart {  Invoke-Item $pshome\powershell.exe; exit  }
-function Open($path) {
-    if ($path -eq $null) {  explorer.exe "$PWD.Path"; return; }
+function Open($path = $PWD.Path) {
     if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
     if (IsFile($path)) {  explorer.exe "$([System.IO.Path]::GetDirectoryName($path))"  }
     else {  explorer.exe $path  }
 }
-function VsCode($path) {
-    if ($path -eq $null) {  code .; return; }
+function VsCode($path = $PWD.Path) {
     if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path"; return; }
     if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir; return; }
     else { code $path }
@@ -47,12 +45,10 @@ function LoadInGlobals($deleteVarName = "") {   # deletes duplicates as well
     Write-Host
 }
 function SaveToGlobals([string]$varName, $varValue) {
-    WriteRed "In SaveToGlobals: `$varName: $varName. `$varValue: $varValue"
     $lines = (Get-Content -Path $GLOBALS).Split([Environment]::NewLine)
     for ($i = 0; $i -lt $lines.Count; $i++) {
         $left = $lines[$i].Split("=")[0]
         if ($left -eq $varName) {
-            WriteRed "In `$left == `$varname: `$left: $left. `$varValue: $varValue"
             $lines[$i] = "$varName=$varValue"
             Set-Content -Path $GLOBALS -Value $lines;   return;
         }
@@ -112,6 +108,6 @@ function OnOpen() {
         [Microsoft.PowerShell.PSConsoleReadLine]::KillLine()
     }
     SetAliases Restart @("r", "re", "res")
+    SetAliases VsCode  @("vs", "vsc")
 }
-Clear-Host
 OnOpen
