@@ -102,7 +102,13 @@ function OnOpen() {
             }
         }
     }
-    Set-PSReadLineKeyHandler -Key Ctrl+z -Function ClearScreen
+    Set-PSReadLineKeyHandler -Key Ctrl+z -Description "Clear Host" -ScriptBlock {
+        Clear-Host
+        if (CheckGlobalsFile) {
+            LoadInGlobals
+        }
+        Write-Host "PS $PWD> " -NoNewline
+    }
     Set-PSReadLineKeyHandler -Key Alt+Backspace -Description "Delete Line" -ScriptBlock {
         [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition(0)
         [Microsoft.PowerShell.PSConsoleReadLine]::KillLine()
