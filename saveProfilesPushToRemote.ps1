@@ -1,16 +1,16 @@
 #  1) Deletes contents and copy-pastes into: .\WindowsPowerShell, from: $Env:userprofile\Documents\WindowsPowerShell
-#  2) Deletes contents and copy-pastes into: .\Powershell,        from: $Env:userprofile\Documents\WindowsPowerShell
+#  2) Deletes contents and copy-pastes into: .\Powershell,        from: $Env:userprofile\Documents\Powershell
 #  3) Asks for Commit Message, pushes to Remote
 
-function DeleteContentsThenCopyPasteFromTo($profileDir, $scriptDir) {
-    Get-ChildItem -Path $scriptDir -Recurse | ForEach-Object {
+function DeleteDirContentsAndPasteInto($fromDir, $toDir) {
+    Get-ChildItem -Path $toDir -Recurse | ForEach-Object {
         $_.Delete()
         Write-Host "Deleted File: $_" -ForegroundColor Red
         Start-Sleep -Milliseconds 10
     }
     
-    Copy-Item -Path "$profileDir\*" -Destination $scriptDir -Recurse
-    Write-Host "`$Profile Contents COPY-PASTED to: $scriptDir" -ForegroundColor Green
+    Copy-Item -Path "$fromDir\*" -Destination $toDir -Recurse
+    Write-Host "`$Profile Contents COPY-PASTED to: $toDir" -ForegroundColor Green
     Start-Sleep -Milliseconds 800
     
     
@@ -22,8 +22,8 @@ function DeleteContentsThenCopyPasteFromTo($profileDir, $scriptDir) {
     }
 }
 
-DeleteContentsThenCopyPasteFromTo "$env:USERPROFILE\Documents\WindowsPowerShell" ".\WindowsPowerShell"
-DeleteContentsThenCopyPasteFromTo "$env:USERPROFILE\Documents\Powershell" ".\Powershell"
+DeleteDirContentsAndPasteInto "$env:USERPROFILE\Documents\WindowsPowerShell" ".\WindowsPowerShell"
+DeleteDirContentsAndPasteInto "$env:USERPROFILE\Documents\Powershell"        ".\Powershell"
 $commitMessage = Read-Host "Enter Commit Message"
 
 git add .
