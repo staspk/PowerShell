@@ -9,7 +9,7 @@ function DeleteDirContentsAndPasteInto($fromDir, $toDir) {
     }
 
     Copy-Item -Path "$fromDir\*" -Destination $toDir -Recurse
-    Write-Host "`$Profile Contents COPY-PASTED into from: $fromDir" -ForegroundColor Green
+    Write-Host "`$Profile COPY-PASTED into from: $fromDir" -ForegroundColor Green
     Start-Sleep -Milliseconds 800
 
     for ($i = 1; $i -le 5; $i++) {
