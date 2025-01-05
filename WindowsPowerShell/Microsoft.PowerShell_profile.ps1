@@ -109,5 +109,6 @@ function OnOpen() {
     }
     SetAliases Restart @("r", "re", "res")
     SetAliases VsCode  @("vs", "vsc")
+    SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note", "npp")
 }
 OnOpen

@@ -76,6 +76,10 @@ function SetLocation($path = $PWD.Path) {
 	Restart
 }
 
+function Activate {     # Use from a Python project root dir, to activate a venv virtual environment. Assumes your file activate.ps1 is under .venv, not venv
+    if (TestPathSilently "$PWD\.venv")    {  Invoke-Expression "$PWD\.venv\Scripts\Activate.ps1"    }
+    if (TestPathSilently "$PWD\venv")     {  Invoke-Expression "$PWD\venv\Scripts\Activate.ps1"     }
+}
 function CheckGlobalsFile() {
     if (-not(TestPathSilently($GLOBALS))) {
         WriteRed "Globals file not found. `$GLOBALS == $GLOBALS"; WriteRed "Disabling Functions: { LoadInGlobals, SaveToGlobals, NewVar, SetVar, DeleteVar } "
@@ -86,10 +90,10 @@ function CheckGlobalsFile() {
 }
 function OnOpen() {
     if (CheckGlobalsFile) {
-        LoadInGlobals
+        LoadInGlobals        
 
         $openedTo = $PWD.Path
-        if ($openedTo -ieq "$env:userprofile" -or $openedTo -ieq "C:\WINDOWS\system32") {  # Did Not start Powershell from a specific directory in mind; Set-Location to $startLocation.
+        if ($openedTo -ieq "$env:userprofile" -or $openedTo -ieq "C:\WINDOWS\system32") {  # Almost certainly, started powershell from taskbar/exe/shortcut and not from right_click->open_in_terminal. No specific directory in mind; defaulting to the global $startLocation.
             if ($startLocation -eq $null) {
                 # Do Nothing
             }
@@ -109,6 +113,8 @@ function OnOpen() {
     }
     
     SetAliases Restart @("r", "re", "res")
+    SetAliases VsCode  @("vs", "vsc")
+    SetAliases Clear-Host  @("z")
+    SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note", "npp")
 }
-Clear-Host
 OnOpen
