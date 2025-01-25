@@ -1,5 +1,6 @@
 using module .\Kozubenko.Utils.psm1
 using module .\Kozubenko.Git.psm1
+using module .\Kozubenko.Python.psm1
 
 $GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
 $METHODS = @("NewVar(`$name, `$value = `$PWD.Path)", "SetVar(`$name, `$value)", "DeleteVar(`$varName)", "SetLocation(`$path = `$PWD.Path)");  function List { foreach ($method in $METHODS) {  WriteCyan $method }  }
@@ -15,7 +16,7 @@ function VsCode($path = $PWD.Path) {
     if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir; return; }
     else { code $path }
 }
-function LoadInGlobals($deleteVarName = "") {   # deletes duplicates as well
+function LoadInGlobals($varToDelete = "") {   # Cleanup while loading-in, e.g. duplicate removal.
     $variables = @{}   # Dict{key==varName, value==varValue}
     $_globals = (Get-Content -Path $GLOBALS)
     
@@ -26,7 +27,7 @@ function LoadInGlobals($deleteVarName = "") {   # deletes duplicates as well
     for ($i = 0; $i -lt $lines.Count; $i++) {
         $left = $lines[$i].Split("=")[0]
         $right = $lines[$i].Split("=")[1]
-        if ($left -eq "" -or $right -eq "" -or $left -eq $deleteVarName -or $variables.ContainsKey($left)) {    # is duplicate if $variables.containsKey
+        if ($left -eq "" -or $right -eq "" -or $left -eq $varToDelete -or $variables.ContainsKey($left)) {    # is duplicate if $variables.containsKey($left)
             $lines.RemoveAt($i)
             if ($i -ne 0) {
                 $i--
@@ -76,10 +77,6 @@ function SetLocation($path = $PWD.Path) {
 	Restart
 }
 
-function Activate {     # Use from a Python project root dir, to activate a venv virtual environment. Assumes your file activate.ps1 is under .venv, not venv
-    if (TestPathSilently "$PWD\.venv")    {  Invoke-Expression "$PWD\.venv\Scripts\Activate.ps1"    }
-    if (TestPathSilently "$PWD\venv")     {  Invoke-Expression "$PWD\venv\Scripts\Activate.ps1"     }
-}
 function CheckGlobalsFile() {
     if (-not(TestPathSilently($GLOBALS))) {
         WriteRed "Globals file not found. `$GLOBALS == $GLOBALS"; WriteRed "Disabling Functions: { LoadInGlobals, SaveToGlobals, NewVar, SetVar, DeleteVar } "
