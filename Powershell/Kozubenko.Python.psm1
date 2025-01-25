@@ -6,8 +6,11 @@ function Activate {     # Use from a Python project root dir, to activate a venv
 }
 
 function Freeze {
-    if ($venvActive -and (TestPathSilently "$PWD\.venv" -or TestPathSilently "$PWD\venv")) {
+    if ($global:venvActive -and (TestPathSilently "$PWD\.venv" -or TestPathSilently "$PWD\venv")) {
         pip freeze > requirements.txt
         WriteCyan "Frozen: $PWD\requirements.txt"
+    }
+    else {
+        WriteRed "`$venvActive == False"
     }
 }
