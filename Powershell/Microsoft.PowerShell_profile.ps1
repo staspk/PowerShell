@@ -2,8 +2,24 @@ using module .\Kozubenko.Utils.psm1
 using module .\Kozubenko.Git.psm1
 using module .\Kozubenko.Python.psm1
 
-$GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
-$METHODS = @("NewVar(`$name, `$value = `$PWD.Path)", "SetVar(`$name, `$value)", "DeleteVar(`$varName)", "SetLocation(`$path = `$PWD.Path)");  function List { foreach ($method in $METHODS) {  WriteCyan $method }  }
+[String] $global:GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
+[Array]  $global:Methods = @("NewVar(`$name, `$value = `$PWD.Path)", "SetVar(`$name, `$value)", "DeleteVar(`$varName)", "SetLocation(`$path = `$PWD.Path)")
+function AddMethods([Array]$newMethods) {
+    $global:Methods = $($global:Methods; $newMethods)
+}
+AddMethods(
+    @(
+        "Kozubenko.Python: Activate",
+        "Kozubenko.Python: venvInstallRequirements",
+        "Kozubenko.Python: venvFreeze",
+        "Kozubenko.Python: KillPythonProcesses",
+        "Kozubenko.Git: Push",
+        "Kozubenko.Git: Github"
+    )
+)
+function List {     # Lists functions in $global:Methods
+    foreach ($method in $global:Methods) {  WriteCyan $method  }
+}
 
 function Restart {  Invoke-Item $pshome\pwsh.exe; exit  }
 function Open($path = $PWD.Path) {
