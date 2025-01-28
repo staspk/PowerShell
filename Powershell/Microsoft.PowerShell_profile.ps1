@@ -3,7 +3,7 @@ using module .\Kozubenko.Git.psm1
 using module .\Kozubenko.Python.psm1
 
 [String] $global:GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
-[Array]  $global:Methods = @("NewVar(`$name, `$value = `$PWD.Path)", "SetVar(`$name, `$value)", "DeleteVar(`$varName)")
+[Array]  $global:Methods = @("SetStartLocation(`$path = `$PWD.Path)", "NewVar(`$name, `$value = `$PWD.Path)", "SetVar(`$name, `$value)", "DeleteVar(`$varName)")
 function AddMethods([Array]$newMethods) {
     $global:Methods = $($global:Methods; $newMethods)
 }
@@ -94,14 +94,11 @@ function SetStartLocation($path = $PWD.Path) {
 	Restart
 }
 
-
-function SetLocation($path) {   # Extends functionality of Set-Location
-    if(TestPathSilently $path) {
-        $true
+function Display($directory) {
+    if(IsDirectory($directory)) {  $directory | Get-ChildItem  }
+    else {
+        WriteRed "`$directory must be a valid directory. `$directory: $directory"
     }
-}
-function Main {
-    $PWD.GetType()
 }
 
 function CheckGlobalsFile() {
@@ -117,16 +114,16 @@ function OnOpen() {
         LoadInGlobals        
 
         $openedTo = $PWD.Path
-        if ($openedTo -ieq "$env:userprofile" -or $openedTo -ieq "C:\WINDOWS\system32") {  # Almost certainly, started powershell from taskbar/exe/shortcut and not from right_click->open_in_terminal. No specific directory in mind; defaulting to the global $startLocation.
+        if ($openedTo -ieq "$env:userprofile" -or $openedTo -ieq "C:\WINDOWS\system32") {   # Powershell almost certainly started from taskbar/shortcut, not from right_click->open_in_terminal... No specific directory in mind => checking $GLOBALS:$startLocation
             if ($startLocation -eq $null) {
                 # Do Nothing
             }
-            elseif (TestPathSilently $startLocation) {
-                Set-Location $startLocation  }
+            elseif(IsDirectory $startLocation) {  Set-Location $startLocation }
+            elseif(IsFile $startLocation)      {  Set-Location $([System.IO.Path]::GetDirectoryName($startLocation))  }
             else {
                 WriteRed "`$startLocation path does not exist anymore. Defaulting to userdirectory..."
                 Start-Sleep -Seconds 3
-                SetLocation $Env:USERPROFILE
+                Set-Location $Env:USERPROFILE
             }
         }
     }
@@ -136,11 +133,9 @@ function OnOpen() {
         [Microsoft.PowerShell.PSConsoleReadLine]::KillLine()
     }
     
-    SetAliases Restart @("r", "re", "res")
+    SetAliases Restart @("re", "res")
     SetAliases VsCode  @("vs", "vsc")
     SetAliases Clear-Host  @("z")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note", "npp")
-
-    SetAliases "SetLocation" @("cd")    # An override, to extend functionality of "cd"
 }
 OnOpen
