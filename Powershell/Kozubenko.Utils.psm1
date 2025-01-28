@@ -16,14 +16,22 @@ function TestPathSilently($dirPath, $returnPath = $false) {
     return $dirPath
 }
 function IsFile($path) {
-    if ([string]::IsNullOrEmpty($path) -OR -not(Test-Path $path -ErrorAction SilentlyContinue)) {  return $false  }
-    if (Test-Path -Path $path -PathType Leaf) {  return $true  }
+    if ([string]::IsNullOrEmpty($path) -OR -not(Test-Path $path -ErrorAction SilentlyContinue)) {
+        Write-Host "Kozubenko.Utils:IsFile(`$path) has hit sanity check. `$path: $path"
+        return $false
+    }
+
+    if (Test-Path -Path $path -PathType Leaf) {  return $true;  }
     else {
         return $false
     }
 }
-function IsDirectory ($path) {
-    if ([string]::IsNullOrEmpty($path) -OR -not(Test-Path $path -ErrorAction SilentlyContinue)) {  return $false  }
+function IsDirectory($path) {
+    if ([string]::IsNullOrEmpty($path) -OR -not(Test-Path $path -ErrorAction SilentlyContinue)) {
+        Write-Host "Kozubenko.Utils:IsDirectory(`$path) has hit sanity check. `$path: $path"
+        return $false
+    }
+
     if (Test-Path -Path $path -PathType Container) {  return $true  }
     else {
         return $false
@@ -35,22 +43,12 @@ function WriteErrorExit([string]$errorMsg) {
     exit
 }
 
-function SetAliases($function, [Array]$aliases) {   # Includes functionality for overriding aliases currently in use by the pwsh standard library
-    if ([string]::IsNullOrEmpty($function) -or [string]::IsNullOrEmpty($aliases)) {  return  }
+function SetAliases($function, [Array]$aliases) {   # Throws exception if you try to call twice on same alias
+    if ($function -eq $null -or $aliases -eq $null) {  return  }
 
-    foreach($alias in $aliases) {
-        try {
-            $ErrorActionPreference = "Stop"     # Needs to be set so the possible error throws
-            Set-Alias -Name $alias -Value $function -Scope Global
-        }
-        catch {
-            if ($_.FullyQualifiedErrorId -eq "AliasAllScopeOptionCannotBeRemoved,Microsoft.PowerShell.Commands.SetAliasCommand") {
-                $isAnAlias = Get-Alias $alias
-                if($isAnAlias) {
-                    Set-Alias $alias $function -Force -Scope Global -Option 'Constant','AllScope' }
-            }
-            else {  throw $_  }
-        }
-        finally {  $ErrorActionPreference = "Continue"  }
+    $ErrorActionPreference = "Stop"     # A relic of a past implementation. Want everything that can be thrown, thrown. Can likely remove in the future.
+    foreach ($alias in $aliases) {
+        Set-Alias -Name $alias -Value $function -Scope Global -Option Constant,AllScope -Force
     }
+    $ErrorActionPreference = "Continue"
 }
