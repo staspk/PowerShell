@@ -2,6 +2,10 @@
 #  2) Deletes contents and copy-pastes into: .\Powershell,        from: $Env:userprofile\Documents\Powershell
 #  3) Asks for Commit Message, pushes to Remote
 
+param(
+    $commitMessage
+)
+
 function DeleteDirContentsAndPasteInto($fromDir, $toDir) {
     Get-ChildItem -Path $toDir -Recurse | ForEach-Object {
         $_.Delete()
@@ -24,7 +28,11 @@ function DeleteDirContentsAndPasteInto($fromDir, $toDir) {
 
 DeleteDirContentsAndPasteInto "$env:USERPROFILE\Documents\WindowsPowerShell" ".\WindowsPowerShell"
 DeleteDirContentsAndPasteInto "$env:USERPROFILE\Documents\Powershell"        ".\Powershell"
-$commitMessage = Read-Host "Enter Commit Message"
+
+if($path -eq "") {  $commitMessage = "Automatic Push"  }
+if($path -eq $null) {
+    $commitMessage = Read-Host "Enter Commit Message"
+}
 
 git add .
 git commit -a -m $commitMessage

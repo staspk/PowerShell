@@ -3,7 +3,7 @@ using module .\Kozubenko.Git.psm1
 using module .\Kozubenko.Python.psm1
 
 [String] $global:GLOBALS = "$([System.IO.Path]::GetDirectoryName($PROFILE))\globals"
-[Array]  $global:Methods = @("NewVar(`$name, `$value = `$PWD.Path)", "SetVar(`$name, `$value)", "DeleteVar(`$varName)", "SetLocation(`$path = `$PWD.Path)")
+[Array]  $global:Methods = @("NewVar(`$name, `$value = `$PWD.Path)", "SetVar(`$name, `$value)", "DeleteVar(`$varName)")
 function AddMethods([Array]$newMethods) {
     $global:Methods = $($global:Methods; $newMethods)
 }
@@ -32,6 +32,7 @@ function VsCode($path = $PWD.Path) {
     if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir; return; }
     else { code $path }
 }
+
 function LoadInGlobals($varToDelete = "") {   # Cleanup while loading-in, e.g. duplicate removal.
     $variables = @{}   # Dict{key==varName, value==varValue}
     $_globals = (Get-Content -Path $GLOBALS)
@@ -85,12 +86,22 @@ function SetVar($name, $value) {
     LoadInGlobals
 }
 function DeleteVar($varName) {  Clear-Host; Write-Host; LoadInGlobals($varName)  }
-function SetLocation($path = $PWD.Path) {
+function SetStartLocation($path = $PWD.Path) {  
     if (-not(TestPathSilently($path))) {
         WriteRed "Given `$path is not a real directory. `$path == $path"; WriteRed "Exiting SetLocation..."; return
 	}
 	SaveToGlobals "startLocation" $path
 	Restart
+}
+
+
+function SetLocation($path) {   # Extends functionality of Set-Location
+    if(TestPathSilently $path) {
+        $true
+    }
+}
+function Main {
+    $PWD.GetType()
 }
 
 function CheckGlobalsFile() {
@@ -129,5 +140,7 @@ function OnOpen() {
     SetAliases VsCode  @("vs", "vsc")
     SetAliases Clear-Host  @("z")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note", "npp")
+
+    SetAliases "SetLocation" @("cd")    # An override, to extend functionality of "cd"
 }
 OnOpen

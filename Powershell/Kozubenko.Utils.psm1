@@ -18,6 +18,16 @@ function TestPathSilently($dirPath, $returnPath = $false) {
 function IsFile($path) {
     if ([string]::IsNullOrEmpty($path) -OR -not(Test-Path $path -ErrorAction SilentlyContinue)) {  return $false  }
     if (Test-Path -Path $path -PathType Leaf) {  return $true  }
+    else {
+        return $false
+    }
+}
+function IsDirectory ($path) {
+    if ([string]::IsNullOrEmpty($path) -OR -not(Test-Path $path -ErrorAction SilentlyContinue)) {  return $false  }
+    if (Test-Path -Path $path -PathType Container) {  return $true  }
+    else {
+        return $false
+    }
 }
 function WriteErrorExit([string]$errorMsg) {
     WriteDarkRed $errorMsg
@@ -25,7 +35,7 @@ function WriteErrorExit([string]$errorMsg) {
     exit
 }
 
-function SetAliases($function, [Array]$aliases) {
+function SetAliases($function, [Array]$aliases) {   # Includes functionality for overriding aliases currently in use by the pwsh standard library
     if ([string]::IsNullOrEmpty($function) -or [string]::IsNullOrEmpty($aliases)) {  return  }
 
     foreach($alias in $aliases) {
