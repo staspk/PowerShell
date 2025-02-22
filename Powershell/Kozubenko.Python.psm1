@@ -6,7 +6,7 @@ class KozubenkoPython {
             @(
                 "Activate()                    -->  activate venv/.venv environment",
                 "venvFreeze()                  -->  pip freeze > requirements.txt",
-                "Activate()                    -->  py -m pip install -r requirements.txt",
+                "venvInstallRequirements()     -->  py -m pip install -r requirements.txt",
                 "KillPythonProcesses()         -->  kills all python processes"
             ));
     }

@@ -5,9 +5,9 @@ class KozubenkoGit {
         return [FunctionRegistry]::new(
             "Kozubenko.Git",
             @(
-                "Github()                      -->  goes to the github page",
-                "GitHistory()                  -->  git log --oneline",
                 "Push(`$commitMsg = 'no_msg')   -->  push to github repo. does not work with branches",
+                "GitHistory()                  -->  git log --oneline",
+                "Github()                      -->  goes to remote.origin.url in the browser",
                 "GitConfig(`$email, `$name)      -->  git config --global user.email `$email; etc."
             ));
     }

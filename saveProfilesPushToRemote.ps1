@@ -3,25 +3,31 @@
 #  3) Asks for Commit Message, pushes to Remote
 
 
-# Only pull Powershell profiles => .\saveProfilesPushToRemote.ps1 shouldPush=$false
+# Standard:                         .\saveProfilesPushToRemote.ps1 "Some Commit Message"
+# Pull, don't Push:                 .\saveProfilesPushToRemote.ps1 -shouldPush $false
+# Pushes, with "Automatic Push":    .\saveProfilesPushToRemote.ps1
 param(
     $commitMessage,
-    [bool] $shouldPush
+    [bool] $shouldPush = $true
 )
 
 function DeleteDirContentsAndPasteInto($fromDir, $toDir) {
+    $linesToDelete = 0;
     Get-ChildItem -Path $toDir -Recurse | ForEach-Object {
-        $_.Delete()
-        Write-Host "Deleted File: $_" -ForegroundColor Red
+        if ($_.PSIsContainer) {  $_.Delete($true)  }
+        else {
+            $_.Delete()
+        }
+        Write-Host "Deleted: $_" -ForegroundColor Red; $linesToDelete++;
         Start-Sleep -Milliseconds 10
     }
     
     Copy-Item -Path "$fromDir\*" -Destination $toDir -Recurse
-    Write-Host "`$Profile Contents COPY-PASTED to: $toDir" -ForegroundColor Green
+    Write-Host "`$Profile Contents COPY-PASTED to: $toDir" -ForegroundColor Green;  $linesToDelete++;
     Start-Sleep -Milliseconds 800
     
     
-    for ($i = 1; $i -le 5; $i++) {
+    for ($i = 1; $i -le $linesToDelete; $i++) {
         Start-Sleep -Milliseconds 5
         [console]::SetCursorPosition(0, [console]::CursorTop - 1)
         Write-Host (" " * [console]::WindowWidth)
@@ -36,10 +42,10 @@ if($shouldPush -eq $false) {
     return
 }
 
-if($path -eq "") {  $commitMessage = "Automatic Push"  }
-if($path -eq $null) {
-    $commitMessage = Read-Host "Enter Commit Message"
+if($commitMessage -eq $null -or $commitMessage -eq "") {
+    $commitMessage = "Automatic Push"
 }
+
 
 git add .
 git commit -a -m $commitMessage

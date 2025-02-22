@@ -13,7 +13,7 @@ class KozubenkoProfile {
             @(
                 "Restart()                     -->  restarts Terminal. alias: re",    
                 "Open(`$path = 'PWD.Path')      -->  opens .\ or `$path in File Explorer",
-                "VsCode(`$path = 'PWD.Path')    -->  opens .\ or `$path in Visual Studio Code",
+                "VsCode(`$path = 'PWD.Path')    -->  opens .\ or `$path in Visual Studio Code. alias: vsc",
                 "Note(`$path = 'PWD.Path')      -->  opens .\ or `$path in Notepad++",
                 "DisplayFolderSizes()          -->  lists folders in current directory with their sizes (not on disk)",
                 "Bible(`$passage)               -->  `$passage == 'John:10'; opens in BibleGateway with 5 languages"
@@ -100,10 +100,10 @@ function OnOpen() {
         [Microsoft.PowerShell.PSConsoleReadLine]::KillLine()
     }
     
+    
     SetAliases VsCode @("vsc")
     SetAliases Restart @("re", "res")
     SetAliases Clear-Host  @("z", "zz", "zzz")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
 }
 OnOpen
-

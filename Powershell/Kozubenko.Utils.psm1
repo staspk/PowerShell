@@ -56,14 +56,12 @@ function WriteErrorExit([string]$errorMsg) {
     exit
 }
 
-function SetAliases($function, [Array]$aliases) {   # Throws exception if you try to call twice on same alias
+function SetAliases($function, [Array]$aliases) {   # Throws exception if you try to set an alias on a keyword you already set an alias on
     if ($function -eq $null -or $aliases -eq $null) {  return  }
 
-    $ErrorActionPreference = "Stop"     # A relic of a past implementation. Want everything that can be thrown, thrown. Can likely remove in the future.
     foreach ($alias in $aliases) {
         Set-Alias -Name $alias -Value $function -Scope Global -Option Constant,AllScope -Force
     }
-    $ErrorActionPreference = "Continue"
 }
 
 function WriteCustomColor($msg, $color, $newLine = $true) {     # 
