@@ -6,8 +6,4 @@ class FunctionRegistry {
         $this.moduleName = $moduleName;
         $this.functions = $($this.functions; $functions)
     }
-
-    [void] AddMethods([Array]$newMethods) {
-
-    }
 }
