@@ -1,3 +1,18 @@
+using module .\classes\FunctionRegistry.psm1
+class KozubenkoPython {   
+    static [FunctionRegistry] GetFunctionRegistry() {
+        return [FunctionRegistry]::new(
+            "Kozubenko.Python",
+            @(
+                "Activate()                    -->  activate venv/.venv environment",
+                "venvFreeze()                  -->  pip freeze > requirements.txt",
+                "Activate()                    -->  py -m pip install -r requirements.txt",
+                "KillPythonProcesses()         -->  kills all python processes"
+            ));
+    }
+}
+
+
 $global:venvActive = $false
 
 function Activate {     # Use from a Python project root dir, to activate a venv virtual environment

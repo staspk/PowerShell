@@ -1,4 +1,18 @@
-using module ".\Kozubenko.Utils.psm1"
+using module .\classes\FunctionRegistry.psm1
+using module .\Kozubenko.Utils.psm1
+class KozubenkoGit {   
+    static [FunctionRegistry] GetFunctionRegistry() {
+        return [FunctionRegistry]::new(
+            "Kozubenko.Git",
+            @(
+                "Github()                      -->  goes to the github page",
+                "GitHistory()                  -->  git log --oneline",
+                "Push(`$commitMsg = 'no_msg')   -->  push to github repo. does not work with branches",
+                "GitConfig(`$email, `$name)      -->  git config --global user.email `$email; etc."
+            ));
+    }
+}
+
 
 function GitConfig ($email, $name) {
     git config --global user.email $email
@@ -13,9 +27,17 @@ function Push ($commitMsg = "No Commit Message") {
 
 function Github ($path = $PWD.Path) {
     $configFile = "$path\.git\config"
-    if (-not(TestPathSilently $configFile)) {  WriteRed "No .git config file found under `$path: $path"; Return; }
+    if(TestPathSilently $configFile) {  $url = git config --file $configFile --get remote.origin.url; Start-Process $url;  Return;  }
 
-    $url = git config --file $configFile --get remote.origin.url
+    $possibleAltConfigLocation = "$path\..\.git\config"
+    if(TestPathSilently $possibleAltConfigLocation) {  $url = git config --file $possibleAltConfigLocation --get remote.origin.url; Start-Process $url;  Return;  }
 
-    Start-Process $url
+    $possibleAltConfigLocation2 = "$path\..\..\.git\config"
+    if(TestPathSilently $possibleAltConfigLocation2) {  $url = git config --file $possibleAltConfigLocation2 --get remote.origin.url; Start-Process $url;  Return;  }
+
+    WriteRed "No .git config file found under `$path: $path";
+}
+
+function GitHistory {
+    git log --oneline
 }
