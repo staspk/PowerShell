@@ -16,13 +16,24 @@ function fixNodeIntellisense() {
 
 # "edge://inspect/#devices"
 # "chrome://inspect/#devices"
+# chrome://inspect
 function debug($file) {
     if(-not(TestPathSilently $file)) {
         WriteDarkRed "Can't find js/ts file to debug: $file"
-        Return;
+        RETURN;
     }
     $file = (Resolve-Path $file).Path
-    Start-Process "chrome.exe"
+
+    $process = "Chrome"
+    Start-Process $process
+    $wshell = New-Object -ComObject wscript.shell;
+    $wshell.AppActivate("$process")
+    Start-Sleep 1
+    $wshell.SendKeys("^(l)")  # Ctrl+L
+    Start-Sleep 1
+    $wshell.SendKeys("chrome://inspect")
+    Start-Sleep 1
+    $wshell.SendKeys("{ENTER}")
 
     node --inspect-brk $file
 }

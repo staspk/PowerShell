@@ -49,8 +49,8 @@ function IsDirectory($path) {
     }
 }
 function GetParentDir($path) {
-    if(-not(TestPathSilently($path))) {  WriteDarkRed "Skipping GetParent(`$path) since `$path does not exist: $path";  Return;  }
-    return [System.IO.Path]::GetDirectoryName($path)
+    if(-not(TestPathSilently($path))) {  WriteDarkRed "Skipping GetParent(`$path) since `$path does not exist: $path";  RETURN;  }
+    RETURN [System.IO.Path]::GetDirectoryName($path)
 }
 
 function WriteErrorExit([string]$errorMsg) {
@@ -60,7 +60,7 @@ function WriteErrorExit([string]$errorMsg) {
 }
 
 function SetAliases($function, [Array]$aliases) {   # Throws exception if you try to set an alias on a keyword you already set an alias on
-    if ($function -eq $null -or $aliases -eq $null) {  return  }
+    if ($function -eq $null -or $aliases -eq $null) {  RETURN  }
 
     foreach ($alias in $aliases) {
         Set-Alias -Name $alias -Value $function -Scope Global -Option Constant,AllScope -Force

@@ -43,12 +43,12 @@ class MyRuntime {
     SetStartLocation($path) {   # PUBLIC
         if($this.runEnvMethods -eq $false) {
             WriteRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS"
-            Return;
+            RETURN;
         }
 
         if (-not(TestPathSilently($path))) {
             WriteRed "Given `$path is not a real directory. `$path == $path"; WriteRed "Exiting SetLocation...";
-            Return
+            RETURN
         }
 
         $this.SaveToGlobals("startLocation", $path)
@@ -61,7 +61,7 @@ class MyRuntime {
             WriteRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS"
         }
 
-        if ([string]::IsNullOrEmpty($name)) {  Return  }
+        if ([string]::IsNullOrEmpty($name)) {  RETURN  }
         if ($name[0] -eq "$") {  $name = $name.Substring(1, $name.Length - 1 )  }
         $this.SaveToGlobals($name, $value)
         $this.LoadInGlobals($null)
@@ -72,7 +72,7 @@ class MyRuntime {
             WriteRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS" 
         }
 
-        if ([string]::IsNullOrEmpty($name) -or [string]::IsNullOrEmpty($value)) {  Return  }
+        if ([string]::IsNullOrEmpty($name) -or [string]::IsNullOrEmpty($value)) {  RETURN  }
         if ($name[0] -eq "$") {  $name = $name.Substring(1, $name.Length - 1 )  }
         $this.SaveToGlobals($name, $value)
         $this.LoadInGlobals($null)
@@ -81,7 +81,7 @@ class MyRuntime {
     DeleteVar($varName) {    # PUBLIC
         if($this.runEnvMethods -eq $false) {
             WriteRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS"
-            Return;
+            RETURN;
         }
 
         Clear-Host; $this.LoadInGlobals($varName)
@@ -161,7 +161,7 @@ class MyRuntime {
     #             WriteRed "Kozubenko.$($module.moduleName)"
     #         }
     #         Write-Host
-    #         Return
+    #         RETURN
     #     }
 
     #     foreach ($module in $this.modules) {

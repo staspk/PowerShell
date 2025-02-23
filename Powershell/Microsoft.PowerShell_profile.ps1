@@ -28,7 +28,7 @@ function Restart() {   # PUBLIC  -->  Restarts Terminal
     Invoke-Item $global:pshome\pwsh.exe; Exit
 }
 function Open($path = $PWD.Path) {   # PUBLIC  -->  Opens In File Explorer
-    if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path";  Return; }
+    if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path";  RETURN; }
     if (IsFile($path)) {  explorer.exe "$([System.IO.Path]::GetDirectoryName($path))"  }
     else {  explorer.exe $path  }
 }
@@ -37,13 +37,13 @@ function VsCode($path = $PWD.Path) {    # PUBLIC  -->  Opens in Visual Studio Co
         $path = "$PWD.Path\.."
     }
 
-    if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path";  Return; }
+    if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path";  RETURN; }
 
-    if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir;  Return; }
+    if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir;  RETURN; }
     else { code $path }
 }
 function ClearFolder($folderPath = ".\") {
-    if (-not(IsDirectory $folderPath)) {  WriteDarkRed "Skipping ClearFolder, `$folderPath is not a directory: $folderPath";  Return;  }
+    if (-not(IsDirectory $folderPath)) {  WriteDarkRed "Skipping ClearFolder, `$folderPath is not a directory: $folderPath";  RETURN;  }
     Get-ChildItem -Path $folderPath -Recurse | ForEach-Object {
         if ($_.PSIsContainer) {  $_.Delete($true)  }
         else {  $_.Delete()  }
@@ -62,7 +62,7 @@ function Bible($string) {       # BIBLE John:10
     
     if($array.Count -ne 2) {
         WriteRed "Bible(`$input) => input must follow format: Matthew:10"
-        return
+        RETURN
     }
 
     $version = "kjv;nasb;rsv;rusv;nrt"
