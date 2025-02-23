@@ -53,7 +53,7 @@ class MyRuntime {
 
         $this.SaveToGlobals("startLocation", $path)
         $this.LoadInGlobals($null)
-        Set-Location $this.PATH_TO_GLOBALS
+        Set-Location $global:startlocation;
     }
 
     NewVar($name, $value) {   # PUBLIC

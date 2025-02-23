@@ -18,8 +18,6 @@ function WriteWhite($msg, $newLine = $true)    {  if($newLine) { Write-Host $msg
 
 
 
-
-
 function TestPathSilently($dirPath, $returnPath = $false) { 
     $exists = Test-Path $dirPath -ErrorAction SilentlyContinue
     
@@ -30,7 +28,7 @@ function TestPathSilently($dirPath, $returnPath = $false) {
 }
 function IsFile($path) {
     if ([string]::IsNullOrEmpty($path) -OR -not(Test-Path $path -ErrorAction SilentlyContinue)) {
-        Write-Host "Kozubenko.Utils:IsFile(`$path) has hit sanity check. `$path: $path"
+        # Write-Host "Kozubenko.Utils:IsFile(`$path) has hit sanity check. `$path: $path"
         return $false
     }
 
@@ -41,7 +39,7 @@ function IsFile($path) {
 }
 function IsDirectory($path) {
     if ([string]::IsNullOrEmpty($path) -OR -not(Test-Path $path -ErrorAction SilentlyContinue)) {
-        Write-Host "Kozubenko.Utils:IsDirectory(`$path) has hit sanity check. `$path: $path"
+        # Write-Host "Kozubenko.Utils:IsDirectory(`$path) has hit sanity check. `$path: $path"
         return $false
     }
 
@@ -50,6 +48,11 @@ function IsDirectory($path) {
         return $false
     }
 }
+function GetParentDir($path) {
+    if(-not(TestPathSilently($path))) {  WriteDarkRed "Skipping GetParent(`$path) since `$path does not exist: $path";  Return;  }
+    return [System.IO.Path]::GetDirectoryName($path)
+}
+
 function WriteErrorExit([string]$errorMsg) {
     WriteDarkRed $errorMsg
     WriteDarkRed "Exiting Script..."

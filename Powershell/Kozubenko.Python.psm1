@@ -4,10 +4,10 @@ class KozubenkoPython {
         return [FunctionRegistry]::new(
             "Kozubenko.Python",
             @(
-                "Activate()                    -->  activate venv/.venv environment",
-                "venvFreeze()                  -->  pip freeze > requirements.txt",
-                "venvInstallRequirements()     -->  py -m pip install -r requirements.txt",
-                "KillPythonProcesses()         -->  kills all python processes"
+                "Activate()                        -->  activate venv/.venv environment",
+                "venvFreeze()                      -->  pip freeze > requirements.txt",
+                "venvInstallRequirements()         -->  py -m pip install -r requirements.txt",
+                "KillPythonProcesses()             -->  kills all python processes"
             ));
     }
 }
