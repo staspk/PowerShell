@@ -123,23 +123,9 @@ function OnOpen() {
     ));
 
 
-    Set-PSReadLineKeyHandler -Key Ctrl+z -Description "Clear Screen" -ScriptBlock {
-        Clear-Host
-        [Microsoft.PowerShell.PSConsoleReadLine]::ClearScreen()
-        [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()
-    }
-    Set-PSReadLineKeyHandler -Key Alt+a -Description "Print `$cheats files" -ScriptBlock {
-        Clear-Host
-        Get-ChildItem -Path $global:cheats | ForEach-Object {
-            WriteRed $_.Name
-        }
-        [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$cheats\")
-    }
-    Set-PSReadLineKeyHandler -Key Alt+Backspace -Description "Delete Line" -ScriptBlock {
-        [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition(0)
-        [Microsoft.PowerShell.PSConsoleReadLine]::KillLine()
-    }
-    
+    Set-PSReadLineKeyHandler -Key Alt+1          -Description "Print `$cheats files"  -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { WriteRed $_.Name}; [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$cheats\")  }
+    Set-PSReadLineKeyHandler -Key Alt+Backspace  -Description "Delete Line"           -ScriptBlock {  [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()  }
+    Set-PSReadLineKeyHandler -Key Ctrl+z         -Description "Clear Screen"          -ScriptBlock {  Clear-Host; [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()  }
     
     SetAliases List @("help")
     SetAliases VsCode @("vsc")
