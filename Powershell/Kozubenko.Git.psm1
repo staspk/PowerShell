@@ -6,7 +6,7 @@ class KozubenkoGit {
             "Kozubenko.Git",
             @(
                 "Push(`$commitMsg = 'no_msg')       -->  push to github repo. does not work with branches",
-                "GitHistory()                      -->  git log --oneline",
+                "GitHistory()                      -->  git log --oneline, afterwards: git show 06cb024", 
                 "Github()                          -->  goes to remote.origin.url in the browser",
                 "GitConfig(`$email, `$name)          -->  git config --global user.email `$email; etc."
             ));

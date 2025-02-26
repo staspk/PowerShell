@@ -4,6 +4,7 @@ using module .\Kozubenko.Git.psm1
 using module .\Kozubenko.Python.psm1
 using module .\Kozubenko.Node.psm1
 using module .\Kozubenko.Runtime.psm1
+using module .\Kozubenko.IO.psm1
 
 
 [String] $global:GLOBALS = "$(GetParentDir($PROFILE))\globals"
@@ -17,8 +18,6 @@ class KozubenkoProfile {
                 "Open(`$path = 'PWD.Path')          -->  opens .\ or `$path in File Explorer",
                 "VsCode(`$path = 'PWD.Path')        -->  opens .\ or `$path in Visual Studio Code. alias: vsc",
                 "Note(`$path = 'PWD.Path')          -->  opens .\ or `$path in Notepad++",
-                "ClearFolder(`$folderPath = '.\')   -->  recursively deletes contents of directory", 
-                "DisplayFolderSizes()              -->  lists folders in current directory with their sizes (not on disk)",
                 "Bible(`$passage)                   -->  `$passage == 'John:10'; opens in BibleGateway with 5 languages"
                 # "StartCoreServer(`$projectDir)  -->  dotnet run"
             ));
@@ -41,21 +40,6 @@ function VsCode($path = $PWD.Path) {    # PUBLIC  -->  Opens in Visual Studio Co
 
     if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir;  RETURN; }
     else { code $path }
-}
-function ClearFolder($folderPath = ".\") {
-    if (-not(IsDirectory $folderPath)) {  WriteDarkRed "Skipping ClearFolder, `$folderPath is not a directory: $folderPath";  RETURN;  }
-    Get-ChildItem -Path $folderPath -Recurse | ForEach-Object {
-        if ($_.PSIsContainer) {  $_.Delete($true)  }
-        else {  $_.Delete()  }
-    }
-}
-function DisplayFolderSizes {
-    $colItems = Get-ChildItem $startFolder | Where-Object {$_.PSIsContainer -eq $true} | Sort-Object
-    foreach ($i in $colItems)
-    {
-        $subFolderItems = Get-ChildItem $i.FullName -recurse -force | Where-Object {$_.PSIsContainer -eq $false} | Measure-Object -property Length -sum | Select-Object Sum
-        WriteGreen "$($i.Name)" $false; WriteGray " --> " $false; WriteDarkRed "$("{0:N2}" -f ($subFolderItems.sum / 1MB))MB"
-    }
 }
 function Bible($string) {       # BIBLE John:10
     $array = $string.Split(":")
@@ -115,23 +99,25 @@ function OnOpen() {
     $global:MyRuntime = [MyRuntime]::new($global:GLOBALS);
 
     $global:MyRuntime.AddModules(@(
+        [KozubenkoIO]::GetFunctionRegistry(),
         [KozubenkoProfile]::GetFunctionRegistry(),
         [KozubenkoGit]::GetFunctionRegistry(),
         [KozubenkoPython]::GetFunctionRegistry(),
         [KozubenkoNode]::GetFunctionRegistry()
-
     ));
 
 
-    Set-PSReadLineKeyHandler -Key Alt+1          -Description "Print `$cheats files"  -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { WriteRed $_.Name}; [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$cheats\")  }
-    Set-PSReadLineKeyHandler -Key Alt+Backspace  -Description "Delete Line"           -ScriptBlock {  [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()  }
-    Set-PSReadLineKeyHandler -Key Ctrl+z         -Description "Clear Screen"          -ScriptBlock {  Clear-Host; [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()  }
+    Set-PSReadLineKeyHandler -Key Alt+1           -Description "Print `$cheats files"   -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { WriteRed $_.Name }; ConsoleInsert("$cheats\")  }
+    Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"            -ScriptBlock {  ConsoleDeleteInput  }
+    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"           -ScriptBlock {  ClearTerminal  } 
     
     SetAliases List @("help")
     SetAliases VsCode @("vsc")
     SetAliases Restart @("re", "res")
     SetAliases Clear-Host  @("z", "zz", "zzz")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
+
+    SetGlobal "roaming" "C:\Users\stasp\AppData\Roaming\"
 }
 OnOpen
 
@@ -150,3 +136,6 @@ function StartCoreServer($projectDir = "C:\Users\stasp\Desktop\C#\Shared.Kozuben
     dotnet run
 }
 
+function profile {
+    vsc $profile
+}

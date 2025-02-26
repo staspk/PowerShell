@@ -70,3 +70,43 @@ function SetAliases($function, [Array]$aliases) {   # Throws exception if you tr
 function WriteCustomColor($msg, $color, $newLine = $true) {     # 
     if($newLine) {  Write-Host "${color}$msg"  }    else {  Write-Host "${color}$msg" -NoNewline  }
 }
+
+function SetGlobal($varName, $value) {
+    if($varName[0] -eq "$") {
+        $varName = $varName.Substring(1, $name.Length - 1 )
+    }
+        
+    Set-Variable -Name $varName -Value $value -Scope Global
+}
+
+function ClearTerminal {
+    if(ConsoleInputTextLength gt 0) {
+        ConsoleDeleteInput
+    }
+    Clear-Host
+    ConsoleAcceptLine
+    ConsoleDeletePreviousLine
+}
+function ConsoleInputTextLength() {
+    $buffer = $null
+    $cursor = 0
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)
+    return $cursor
+}
+function ConsoleAcceptLine() {
+    [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+}
+function ConsoleDeleteInput {
+    if(ConsoleInputTextLength gt 0) {
+        [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()
+    }
+}
+function ConsoleDeletePreviousLine {
+    [console]::SetCursorPosition(0, [console]::CursorTop - 1)
+    Write-Host (" " * [console]::WindowWidth)
+    [console]::SetCursorPosition(0, [console]::CursorTop - 1)
+}
+function ConsoleInsert($text) { 
+    [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$cheats\")
+}
+
