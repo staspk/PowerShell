@@ -14,11 +14,11 @@ class KozubenkoProfile {
         return [FunctionRegistry]::new(
             "Kozubenko.Profile",
             @(
-                "Restart()                         -->  restarts Terminal. alias: re",    
-                "Open(`$path = 'PWD.Path')          -->  opens .\ or `$path in File Explorer",
-                "VsCode(`$path = 'PWD.Path')        -->  opens .\ or `$path in Visual Studio Code. alias: vsc",
-                "Note(`$path = 'PWD.Path')          -->  opens .\ or `$path in Notepad++",
-                "Bible(`$passage)                   -->  `$passage == 'John:10'; opens in BibleGateway with 5 languages"
+                "Restart()                             -->   restarts Terminal. alias: re",    
+                "Open(`$path = 'PWD.Path')              -->   opens .\ or `$path in File Explorer",
+                "VsCode(`$path = 'PWD.Path')            -->   opens .\ or `$path in Visual Studio Code. alias: vsc",
+                "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++",
+                "Bible(`$passage)                       -->   `$passage == 'John:10'; opens in BibleGateway with 5 languages"
                 # "StartCoreServer(`$projectDir)  -->  dotnet run"
             ));
     }
@@ -107,9 +107,11 @@ function OnOpen() {
     ));
 
 
-    Set-PSReadLineKeyHandler -Key Alt+1           -Description "Print `$cheats files"   -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { WriteRed $_.Name }; ConsoleInsert("$cheats\")  }
-    Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"            -ScriptBlock {  ConsoleDeleteInput  }
-    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"           -ScriptBlock {  ClearTerminal  } 
+    Set-PSReadLineKeyHandler -Key Alt+1           -Description "Print `$cheats files"    -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { WriteRed $_.Name }; ConsoleInsert("$cheats\")  }
+    Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"             -ScriptBlock {  ConsoleDeleteInput  }
+    Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"   -ScriptBlock {  ConsoleMoveToStartofLine  }
+    Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"     -ScriptBlock {  ConsoleMoveToEndofLine  }
+    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"            -ScriptBlock {  ClearTerminal  } 
     
     SetAliases List @("help")
     SetAliases VsCode @("vsc")

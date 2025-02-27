@@ -91,13 +91,19 @@ function ConsoleInputTextLength() {
     $buffer = $null
     $cursor = 0
     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)
-    return $cursor
+    return @($buffer, $cursor)
 }
-function ConsoleAcceptLine() {
-    [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+function ConsoleInsert($text) {  [Microsoft.PowerShell.PSConsoleReadLine]::Insert($text)  }
+function ConsoleAcceptLine() {  [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()  }
+function ConsoleMoveToStartofLine {  [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition(0)  }
+function ConsoleMoveToEndofLine {
+    $buffer = $null
+    $cursor = 0
+    [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)
+    [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($buffer.Length)
 }
 function ConsoleDeleteInput {
-    if(ConsoleInputTextLength gt 0) {
+    if ((ConsoleInputTextLength)[1] -gt 0) {
         [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()
     }
 }
@@ -106,7 +112,6 @@ function ConsoleDeletePreviousLine {
     Write-Host (" " * [console]::WindowWidth)
     [console]::SetCursorPosition(0, [console]::CursorTop - 1)
 }
-function ConsoleInsert($text) { 
-    [Microsoft.PowerShell.PSConsoleReadLine]::Insert("$cheats\")
-}
+
+
 

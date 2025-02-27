@@ -4,12 +4,14 @@ class KozubenkoNode {
         return [FunctionRegistry]::new(
             "Kozubenko.Node",
             @(
-                "fixNodeIntellisense()             -->  npm install --save-dev @types/node; 'Go To Definition' will not work in Code without this",
-                "debug(`$file)                      -->  node --inspect-brk `$file, and opens browser debugger"
+                "fixNodeIntellisense()                 -->   npm install --save-dev @types/node; 'Go To Definition' may not work in Code without this",
+                "debug(`$file)                          -->   node --inspect-brk `$file, and opens browser debugger"
             ));
     }
 }
 
+
+# Note: may have been a coincidence -> may have nothing to do with fixing node intellisense 
 function fixNodeIntellisense() {
     npm install --save-dev @types/node
 }

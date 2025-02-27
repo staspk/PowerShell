@@ -4,10 +4,11 @@ class KozubenkoPython {
         return [FunctionRegistry]::new(
             "Kozubenko.Python",
             @(
-                "Activate()                        -->  activate venv/.venv environment",
-                "venvFreeze()                      -->  pip freeze > requirements.txt",
-                "venvInstallRequirements()         -->  py -m pip install -r requirements.txt",
-                "KillPythonProcesses()             -->  kills all python processes"
+                "CreateVenvEnvironment()               -->   py -m venv .venv",
+                "Activate()                            -->   activate venv/.venv environment",
+                "venvFreeze()                          -->   pip freeze > requirements.txt; pip freeze -> print to console",
+                "venvInstallRequirements()             -->   py -m pip install -r requirements.txt",
+                "KillPythonProcesses()                 -->   kills all python processes"
             ));
     }
 }
@@ -15,12 +16,18 @@ class KozubenkoPython {
 
 $global:venvActive = $false
 
+function CreateVenvEnvironment {
+    py -m venv .venv
+    python.exe -m pip install --upgrade pip;
+    Activate
+}
+
 function Activate {     # Use from a Python project root dir, to activate a venv virtual environment
     if (TestPathSilently "$PWD\.venv")    {  Invoke-Expression "$PWD\.venv\Scripts\Activate.ps1";   $global:venvActive = $true   }
     if (TestPathSilently "$PWD\venv")     {  Invoke-Expression "$PWD\venv\Scripts\Activate.ps1";    $global:venvActive = $true   }
 }
 
-function venvFreeze {
+function venvFreeze($onlyPrint) {
     if ($global:venvActive -and (TestPathSilently "$PWD\.venv" -or TestPathSilently "$PWD\venv")) {
         pip freeze > requirements.txt
         WriteCyan "Frozen: $PWD\requirements.txt"
