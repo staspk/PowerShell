@@ -23,9 +23,12 @@ class KozubenkoProfile {
             ));
     }
 }
-function Restart() {   # PUBLIC  -->  Restarts Terminal
-    Invoke-Item $global:pshome\pwsh.exe; Exit
+function Restart {
+    $oldPid = $PID
+    Start-Process "$global:pshome\pwsh.exe" -ArgumentList '-NoExit', "-Command `"Start-Sleep -Seconds .1; Stop-Process -Id $oldPid -ErrorAction SilentlyContinue`""
+    exit
 }
+
 function Open($path = $PWD.Path) {   # PUBLIC  -->  Opens In File Explorer
     if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path";  RETURN; }
     if (IsFile($path)) {  explorer.exe "$([System.IO.Path]::GetDirectoryName($path))"  }
