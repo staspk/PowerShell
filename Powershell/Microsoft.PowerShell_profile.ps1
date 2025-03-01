@@ -25,8 +25,8 @@ class KozubenkoProfile {
 }
 function Restart {
     $oldPid = $PID
-    Start-Process "$global:pshome\pwsh.exe" -ArgumentList '-NoExit', "-Command `"Start-Sleep -Seconds .1; Stop-Process -Id $oldPid -ErrorAction SilentlyContinue`""
-    exit
+    Invoke-Item "$global:pshome\pwsh.exe"
+    Stop-Process -Id $oldPid -ErrorAction SilentlyContinue
 }
 
 function Open($path = $PWD.Path) {   # PUBLIC  -->  Opens In File Explorer
