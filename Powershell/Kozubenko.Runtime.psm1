@@ -144,35 +144,4 @@ class MyRuntime {
         }
         Add-Content -Path $this.PATH_TO_GLOBALS -Value "$([Environment]::NewLine)$varName=$varValue"; Set-Variable -Name $varName -Value $varValue -Scope Global
     }
-
-    # ---------------------------------------------------------------------------------
-    #   Saving this alternate List for the day I want only certain functions appearing at List, and targetted modules with List($moduleName) 
-    # ---------------------------------------------------------------------------------
-    #
-    # List($moduleName) {   # PUBLIC  -->  Lists functions in $global:Methods
-    #     Write-Host
-    #     if($moduleName -eq $null) {
-    #         WriteRed "Kozubenko.Profile:"
-    #         foreach($func in $this.profileFuncRegistry.functions) {
-    #             WriteLiteRed "   $func";
-    #         }
-    #         Write-Host
-    #         foreach($module in $this.modules) {
-    #             WriteRed "Kozubenko.$($module.moduleName)"
-    #         }
-    #         Write-Host
-    #         RETURN
-    #     }
-
-    #     foreach ($module in $this.modules) {
-    #         if($module.moduleName -eq $moduleName) {
-    #             WriteRed "Kozubenko.$($module.moduleName)"
-    #             foreach($func in $module.functions) {
-    #                 WriteLiteRed "   $func"
-    #             }
-    #             Write-Host;
-    #         }
-    #     }
-    # }
-    # ---------------------------------------------------------------------------------
 }

@@ -4,7 +4,7 @@ class KozubenkoIO {
         return [FunctionRegistry]::new(
             "Kozubenko.IO",
             @(
-                "AddToEnvPath(`$newPathItem)            -->   add to Windows user Env PATH. DeleteEnvPath(`$pathItemToRemove), Path (lists) also exist",
+                "AddToEnvPath(`$path)            -->   add to Windows user Env PATH. also: DeleteEnvPath(`$path), Path (lists)",
                 "DisplayFolderSizes()                  -->   lists folders in current directory with their sizes (not on disk)",
                 "ClearFolder(`$folder = '.\')           -->   recursively deletes contents of directory", 
                 "LockFolder(`$folder)                   -->   remove write access rules for 'Everyone'"
@@ -23,7 +23,7 @@ function Path {
 }
 
 # Adds to Windows PATH
-function AddToEnvPath($newPathItem) {
+function AddToEnvPath($path) {
     $userPath = [Environment]::GetEnvironmentVariable("PATH", "User")
 
     $pathArray = $userPath.Split(";")
@@ -37,7 +37,7 @@ function AddToEnvPath($newPathItem) {
     [System.Environment]::SetEnvironmentVariable("PATH", $newPath, "User")
 }
 
-function DeleteEnvPath($pathItemToRemove) {     # example $pathItemToRemove: %USERPROFILE%\AppData\Local\Microsoft\WindowsApps
+function DeleteEnvPath($path) {     # example $pathItemToRemove: %USERPROFILE%\AppData\Local\Microsoft\WindowsApps
     $currentPath = [System.Environment]::GetEnvironmentVariable("PATH", "User")
     $pathArray = $currentPath.Split(";")
 

@@ -4,16 +4,18 @@ class KozubenkoNode {
         return [FunctionRegistry]::new(
             "Kozubenko.Node",
             @(
-                "fixNodeIntellisense()                 -->   npm install --save-dev @types/node; 'Go To Definition' may not work in Code without this",
-                "debug(`$file)                          -->   node --inspect-brk `$file, and opens browser debugger"
+                "debug(`$file)                          -->   node --inspect-brk `$file, and opens browser debugger",
+                "setupTsDevEnvironment()               -->   npm i typescript @types/node tsx -D; use: 'npx tsx index.ts'"
             ));
     }
 }
 
 
 # Note: may have been a coincidence -> may have nothing to do with fixing node intellisense 
-function fixNodeIntellisense() {
-    npm install --save-dev @types/node
+function setupTsDevEnvironment() {
+    npm install typescript --save-dev
+    npm install @types/node --save-dev
+    npm install tsx --save-dev
 }
 
 # "edge://inspect/#devices"
