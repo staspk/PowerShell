@@ -18,7 +18,7 @@ class KozubenkoProfile {
                 "Open(`$path = 'PWD.Path')              -->   opens .\ or `$path in File Explorer",
                 "VsCode(`$path = 'PWD.Path')            -->   opens .\ or `$path in Visual Studio Code. alias: vsc",
                 "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++",
-                "Bible(`$passage)                       -->   `$passage == 'John:10'; opens in BibleGateway with 5 languages"
+                "Bible(`$passage)                       -->   `$passage == 'John:10'; opens in BibleGateway in 5 translations"
                 # "StartCoreServer(`$projectDir)  -->  dotnet run"
             ));
     }
@@ -31,7 +31,16 @@ function Restart {
 
 function Open($path = $PWD.Path) {   # PUBLIC  -->  Opens In File Explorer
     if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path";  RETURN; }
-    if (IsFile($path)) {  explorer.exe "$([System.IO.Path]::GetDirectoryName($path))"  }
+
+    $path = (Resolve-Path $path).Path
+
+    if (IsFile($path)) {
+        $extension = [System.IO.Path]::GetExtension($path)
+        if($extension -eq ".html") {  Start-Process msedge "file:///$path"  }
+        else {
+            explorer.exe "$([System.IO.Path]::GetDirectoryName($path))"
+        }
+    }
     else {  explorer.exe $path  }
 }
 function VsCode($path = $PWD.Path) {    # PUBLIC  -->  Opens in Visual Studio Code
