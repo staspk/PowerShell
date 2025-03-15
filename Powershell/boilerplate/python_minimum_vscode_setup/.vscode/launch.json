@@ -1,0 +1,12 @@
+{
+        "configurations": [
+            {
+                "name": "Python: Debug main.py",
+                "type": "debugpy",
+                "python": "C:/Users/stasp/Desktop/options-data/.venv/Scripts/python.exe",
+                "request": "launch",
+                "program": "${workspaceFolder}/main.py",
+                "justMyCode": false
+            }
+        ]
+    }

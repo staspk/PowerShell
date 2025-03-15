@@ -7,6 +7,7 @@ class KozubenkoGit {
             @(
                 "Push(`$commitMsg = 'no_msg')           -->   push to github repo. does not work with branches",
                 "PushFiles(`$commitMsg, [Array]`$files)  -->   a more targeted push. declare array = @('one', 'two')",
+                "HardReset()                           -->   git reset --hard HEAD; git clean -fd"
                 "GitHistory()                          -->   git log --oneline, afterwards: git show 06cb024", 
                 "Github()                              -->   goes to remote.origin.url in the browser",
                 "GitConfig(`$email, `$name)              -->   git config --global user.email `$email; etc."
@@ -33,6 +34,11 @@ function PushFiles($commitMsg, [Array]$files) {
 
     git commit -m $commitMsg
     git push
+}
+
+function HardReset() {
+    git reset --hard HEAD
+    git clean -fd
 }
 
 function Github ($path = $PWD.Path) {
