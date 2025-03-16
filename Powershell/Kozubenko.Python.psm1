@@ -34,6 +34,8 @@ function SetupBasicPythonEnvironment($path = $PWD.Path) {
     Copy-Item -Path "$BOILERPLATE_PYTHON_PROJECT\*" -Destination $path -Recurse
 
     Set-Content -Path "$BOILERPLATE_PYTHON_PROJECT\.vscode\launch.json" -Value $(_VsCode_Python_Launch_Json $path)
+
+    Clear-Host
 }
 
 
