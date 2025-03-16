@@ -18,9 +18,50 @@ class KozubenkoProfile {
                 "Open(`$path = 'PWD.Path')              -->   opens .\ or `$path in File Explorer",
                 "VsCode(`$path = 'PWD.Path')            -->   opens .\ or `$path in Visual Studio Code. alias: vsc",
                 "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++",
-                "Bible(`$passage)                       -->   `$passage == 'John:10'; opens in BibleGateway in 5 translations"
+                "Bible(`$passage)                       -->   `$passage == 'John:10'; opens in BibleGateway in 5 translations",
+                "UnixToMyTime(`$timestamp)              -->   self-explanatory"
                 # "StartCoreServer(`$projectDir)  -->  dotnet run"
             ));
+    }
+}
+function Help($moduleName = $null) {
+    $PrintModuleToConsoleScript = {
+        param([FunctionRegistry]$module)
+        
+        WriteRed $module.moduleName
+            foreach($func in $module.functions) {
+                $funcName = $func.Split("(")[0]
+                $insideParentheses = $($func.Split("(")[1]).Split(")")[0]
+    
+                WriteLiteRed "   $funcName" $false
+                WriteLiteRed "(" $false
+                WriteDarkGray "`e[3m$insideParentheses" $false
+                WriteLiteRed ")" $false
+    
+                if($module.moduleName -ne "Kozubenko.MyRuntime") {      # hard coded fix. Kozubenko.MyRuntime does not have anything to the right side of -->
+                    $rightOfParenthesesLeftFromArrow = $($func.Split(")")[1]).Split("-->")[0];
+                    $funcExplanation = $func.Split("-->")[1];
+    
+                    WriteLiteRed "$rightOfParenthesesLeftFromArrow -->" $false
+                    WriteWhiteRed "$funcExplanation" $false
+                }
+                Write-Host
+            }
+            Write-Host;
+    }
+
+    Clear-Host
+    if($moduleName -eq $null) {
+        foreach ($module in $global:MyRuntime.modules) {
+            & $PrintModuleToConsoleScript -module $module
+        } 
+    }
+    else {
+        foreach ($module in $global:MyRuntime.modules) {
+            if($module.moduleName -match $moduleName) {
+                & $PrintModuleToConsoleScript -module $module
+            }
+        }
     }
 }
 function Restart {
@@ -65,45 +106,12 @@ function Bible($string) {       # BIBLE John:10
 
     Start-Process microsoft-edge:"https://www.biblegateway.com/passage/?search=$($array[0])$($array[1])&version=$version" -WindowStyle maximized
 }
-function List($moduleName = $null) {
-    $PrintModuleToConsoleScript = {
-        param([FunctionRegistry]$module)
-        
-        WriteRed $module.moduleName
-            foreach($func in $module.functions) {
-                $funcName = $func.Split("(")[0]
-                $insideParentheses = $($func.Split("(")[1]).Split(")")[0]
-    
-                WriteLiteRed "   $funcName" $false
-                WriteLiteRed "(" $false
-                WriteDarkGray "`e[3m$insideParentheses" $false
-                WriteLiteRed ")" $false
-    
-                if($module.moduleName -ne "Kozubenko.MyRuntime") {      # hard coded fix. Kozubenko.MyRuntime does not have anything to the right side of -->
-                    $rightOfParenthesesLeftFromArrow = $($func.Split(")")[1]).Split("-->")[0];
-                    $funcExplanation = $func.Split("-->")[1];
-    
-                    WriteLiteRed "$rightOfParenthesesLeftFromArrow -->" $false
-                    WriteWhiteRed "$funcExplanation" $false
-                }
-                Write-Host
-            }
-            Write-Host;
-    }
+function UnixToMyTime($timestamp) {
+    $dateTimeUtc = [System.DateTimeOffset]::FromUnixTimeSeconds($timestamp).DateTime
 
-    Clear-Host
-    if($moduleName -eq $null) {
-        foreach ($module in $global:MyRuntime.modules) {
-            & $PrintModuleToConsoleScript -module $module
-        } 
-    }
-    else {
-        foreach ($module in $global:MyRuntime.modules) {
-            if($module.moduleName -match $moduleName) {
-                & $PrintModuleToConsoleScript -module $module
-            }
-        }
-    }
+    $dateTimeLocal = $dateTimeUtc.ToLocalTime()
+
+    WriteCyan $dateTimeLocal
 }
 
 
@@ -125,7 +133,7 @@ function OnOpen() {
     Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"     -ScriptBlock {  ConsoleMoveToEndofLine  }
     Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"            -ScriptBlock {  ClearTerminal  } 
     
-    SetAliases List @("help")
+
     SetAliases VsCode @("vsc")
     SetAliases Restart @("re", "res")
     SetAliases Clear-Host  @("z", "zz", "zzz")
