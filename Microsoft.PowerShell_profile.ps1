@@ -7,7 +7,7 @@ using module .\Kozubenko.Runtime.psm1
 using module .\Kozubenko.IO.psm1
 
 
-[String] $global:GLOBALS = "$(GetParentDir($PROFILE))\globals"
+[String] $global:GLOBALS = "$(ParentDir($PROFILE))\globals"
 
 class KozubenkoProfile {   
     static [FunctionRegistry] GetFunctionRegistry() {
@@ -146,7 +146,7 @@ OnOpen
 
 function NodeRun([string]$server = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\NodeJS\server.js", [string]$client = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\NodeJS\client.js") {
     Clear-Host
-    # Set-Location $(GetParentDir($server))
+    # Set-Location $(ParentDir($server))
     Start-Process pwsh -ArgumentList '-NoExit', '-Command', "Clear-Host; node $client"
     node $server
 }
