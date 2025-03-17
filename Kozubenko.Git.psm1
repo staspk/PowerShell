@@ -6,7 +6,7 @@ class KozubenkoGit {
             "Kozubenko.Git",
             @(
                 "Push(`$commitMsg = 'no_msg')           -->   push to github repo. does not work with branches",
-                "PushFiles(`$commitMsg, [Array]`$files)  -->   a more targeted push. declare array = @('one', 'two')",
+                "SubmoduleUpdate()                     -->   git submodule update --remote --merge",
                 "HardReset()                           -->   git reset --hard HEAD; git clean -fd"
                 "GitHistory()                          -->   git log --oneline, afterwards: git show 06cb024", 
                 "Github()                              -->   goes to remote.origin.url in the browser",
@@ -27,13 +27,8 @@ function Push ($commitMsg = "No Commit Message") {
     git push
 }
 
-function PushFiles($commitMsg, [Array]$files) {
-    foreach($file in $files) {
-        git add $file
-    }
-
-    git commit -m $commitMsg
-    git push
+function SubmoduleUpdate {
+    git submodule update --remote --merge
 }
 
 function HardReset() {
