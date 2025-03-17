@@ -20,7 +20,6 @@ class KozubenkoProfile {
                 "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++",
                 "Bible(`$passage)                       -->   `$passage == 'John:10'; opens in BibleGateway in 5 translations",
                 "UnixToMyTime(`$timestamp)              -->   self-explanatory"
-                # "StartCoreServer(`$projectDir)  -->  dotnet run"
             ));
     }
 }
