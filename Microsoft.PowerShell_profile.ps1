@@ -126,11 +126,11 @@ function vtt_to_srt($file) {
         RETURN;
     }
 
-    $new_file = ""
-    if($file.Substring($file.Length - 4) -eq ".vtt") {  $new_file = "$($file.Substring(0, $file.Length - 4)).srt"  }
-    else {$new_file = "$file.srt"}
+    # $new_file = ""
+    # if($file.Substring($file.Length - 4) -eq ".vtt") {  $new_file = "$($file.Substring(0, $file.Length - 4)).srt"  }
+    # else {$new_file = "$file.srt"}
 
-    
+    print $new_file
     return;
 
     ffmpeg -i tucker-putin.en.vtt -c:s subrip tucker-putin.en.srt

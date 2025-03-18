@@ -3,7 +3,7 @@ using module .\classes\FunctionRegistry.psm1
 $WhiteRed = $PSStyle.Foreground.FromRgb(255, 196, 201);
 $LiteRed = $PSStyle.Foreground.FromRgb(223, 96, 107);
 
-function Print($text, $newLine = $true)        {  if($newLine) { Write-Host $text }  }       else {  Write-Host $text - -NoNewline  }
+function Print($text, $newLine = $true)         {  if($newLine) { Write-Host $text }         else {  Write-Host $text - -NoNewline  }  }
 function PrintWhiteRed($text, $newLine = $true) {  if($newLine) { Write-Host ${WhiteRed}$text }       else { Write-Host ${WhiteRed}$text -NoNewline }  }
 function PrintWhiteRed($text, $newLine = $true)  {  if($newLine) { Write-Host ${LiteRed}$text -ForegroundColor Red }      else { Write-Host ${LiteRed}$text -ForegroundColor Red -NoNewline }  }
 function PrintRed($text, $newLine = $true)      {  if($newLine) { Write-Host $text -ForegroundColor Red }      else { Write-Host $text -ForegroundColor Red -NoNewline }        }
