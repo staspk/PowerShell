@@ -6,9 +6,10 @@ using module .\Kozubenko.Node.psm1
 using module .\Kozubenko.Runtime.psm1
 using module .\Kozubenko.IO.psm1
 
-
-[String] $global:GLOBALS = "$(ParentDir($PROFILE))\globals"
-
+SetGlobal "GLOBALS"  "$(ParentDir($PROFILE))\globals"
+SetGlobal "cheats"   "$HOME\cheat-notes"
+SetGlobal "roaming"  "$HOME\AppData\Roaming"
+SetGlobal "desktop"  "$HOME\Desktop"
 class KozubenkoProfile {   
     static [FunctionRegistry] GetFunctionRegistry() {
         return [FunctionRegistry]::new(
@@ -20,7 +21,8 @@ class KozubenkoProfile {
                 "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++",
                 "Bible(`$passage)                       -->   `$passage == 'John:10'; opens in BibleGateway in 5 translations",
                 "UnixToMyTime(`$timestamp)              -->   self-explanatory",
-                "vtt_to_srt(`$file)                     -->   convert subtitles from format .vtt to .srt"
+                "vtt_to_srt(`$file)                     -->   convert subtitles from format .vtt to .srt",
+                "webm_to_mp4(`$file)                    -->   convert webm to mp4 file, crt==18 (visually lossless)"
             ));
     }
 }
@@ -66,14 +68,18 @@ function Help($moduleName = $null) {
 }
 function Restart {                                         # try this version for a while...perhaps it will resolve the edge case of not always closing original window
     $oldPid = $PID
+    PrintRed "`$oldPid==$oldPid"
     Invoke-Item "$global:pshome\pwsh.exe"
     try {
-        Stop-Process -Id $oldPid -ErrorAction SilentlyContinue
+        PrintRed "before exit command"
+        exit
+        PrintRed "after exit command"
     }
     finally {
-        exit
+        PrintRed "before stop-process command"
+        Stop-Process -Id $oldPid -ErrorAction SilentlyContinue
+        PrintRed "after stop-process command"
     }
-    
 }
 
 function Open($path = $PWD.Path) {   # PUBLIC  -->  Opens In File Explorer
@@ -120,7 +126,6 @@ function UnixToMyTime($timestamp) {
     PrintCyan $dateTimeLocal
 }
 
-# 
 function vtt_to_srt($file) {
     if (-not(Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
         PrintRed "ffmpeg library required for function."
@@ -132,6 +137,18 @@ function vtt_to_srt($file) {
     else {$new_file = "$file.srt"}
 
     ffmpeg -i "$file" -c:s subrip "$new_file" -loglevel quiet
+}
+function webm_to_mp4($file) {
+    if (-not(Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
+        PrintRed "ffmpeg library required for function."
+        RETURN;
+    }
+    
+    $new_file = ""
+    if($file.Substring($file.Length - 5) -eq ".webm") {  $new_file = "$($file.Substring(0, $file.Length - 5)).mp4"  }
+    else {$new_file = "$file.mp4"}
+
+    ffmpeg -i "$file" -c:v libx264 -crf 18 -preset medium "$new_file"
 }
 
 
@@ -146,21 +163,16 @@ function OnOpen() {
         [KozubenkoNode]::GetFunctionRegistry()
     ));
 
+    SetAliases VsCode @("vsc")
+    SetAliases Restart @("re", "res")
+    SetAliases Clear-Host  @("z", "zz", "zzz")
+    SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
 
     Set-PSReadLineKeyHandler -Key Alt+1           -Description "Print `$cheats files"    -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintRed $_.Name }; ConsoleInsert("$cheats\")  }
     Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"             -ScriptBlock {  ConsoleDeleteInput  }
     Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"   -ScriptBlock {  ConsoleMoveToStartofLine  }
     Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"     -ScriptBlock {  ConsoleMoveToEndofLine  }
     Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"            -ScriptBlock {  ClearTerminal  } 
-    
-
-    SetAliases VsCode @("vsc")
-    SetAliases Restart @("re", "res")
-    SetAliases Clear-Host  @("z", "zz", "zzz")
-    SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
-
-    SetGlobal "roaming" "$HOME\AppData\Roaming"
-    SetGlobal "desktop" "$HOME\Desktop"
 }
 OnOpen
 
