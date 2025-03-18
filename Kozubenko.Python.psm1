@@ -21,7 +21,7 @@ $BOILERPLATE_PYTHON_PROJECT = "$profile\..\boilerplate\python_minimum_vscode_set
 
 function SetupBasicPythonProject($path = $PWD.Path) {
     if (-not(TestPathSilently $path)) {
-        WriteDarkRed "`please give valid `$path"
+        PrintDarkRed "`please give valid `$path"
         RETURN;
     }
 
@@ -51,19 +51,19 @@ function Activate {     # Use from a Python project root dir, to activate a venv
 function venvFreeze {
     if ($global:venvActive -and (TestPathSilently "$PWD\.venv" -or TestPathSilently "$PWD\venv")) {
         pip freeze > requirements.txt
-        WriteCyan "Frozen: $PWD\requirements.txt"
+        PrintCyan "Frozen: $PWD\requirements.txt"
     }
     else {
-        WriteRed "`$venvActive == False"
+        PrintRed "`$venvActive == False"
     }
 }
 function venvInstallRequirements {
     if ($global:venvActive -and (TestPathSilently "$PWD\.venv" -or TestPathSilently "$PWD\venv")) {
         py -m pip install -r requirements.txt
-        WriteCyan "requirements.txt installed"
+        PrintCyan "requirements.txt installed"
     }
     else {
-        WriteRed "`$venvActive == False"
+        PrintRed "`$venvActive == False"
     }
 }
 

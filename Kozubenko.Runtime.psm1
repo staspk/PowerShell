@@ -42,12 +42,12 @@ class MyRuntime {
     
     SetStartLocation($path) {   # PUBLIC
         if($this.runEnvMethods -eq $false) {
-            WriteRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS"
+            PrintRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS"
             RETURN;
         }
 
         if (-not(TestPathSilently($path))) {
-            WriteRed "Given `$path is not a real directory. `$path == $path"; WriteRed "Exiting SetLocation...";
+            PrintRed "Given `$path is not a real directory. `$path == $path"; PrintRed "Exiting SetLocation...";
             RETURN
         }
 
@@ -58,7 +58,7 @@ class MyRuntime {
 
     NewVar($name, $value) {   # PUBLIC
         if($this.runEnvMethods -eq $false) {
-            WriteRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS"
+            PrintRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS"
         }
 
         if ([string]::IsNullOrEmpty($name)) {  RETURN  }
@@ -69,7 +69,7 @@ class MyRuntime {
 
     SetVar($name, $value) {   # PUBLIC
         if($this.runEnvMethods -eq $false) {
-            WriteRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS" 
+            PrintRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS" 
         }
 
         if ([string]::IsNullOrEmpty($name) -or [string]::IsNullOrEmpty($value)) {  RETURN  }
@@ -80,7 +80,7 @@ class MyRuntime {
 
     DeleteVar($varName) {    # PUBLIC
         if($this.runEnvMethods -eq $false) {
-            WriteRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS"
+            PrintRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS"
             RETURN;
         }
 
@@ -97,7 +97,7 @@ class MyRuntime {
             elseif(IsDirectory $global:startLocation) {  Set-Location $global:startLocation }
             elseif(IsFile $global:startLocation)      {  Set-Location $([System.IO.Path]::GetDirectoryName($global:startLocation))  }  # QoL, so it's easy to add eg: $startupLocation==$profile ie: the containing directory of a file, without being specific
             else {
-                WriteRed "`$startLocation path does not exist anymore. Defaulting to userdirectory..."
+                PrintRed "`$startLocation path does not exist anymore. Defaulting to userdirectory..."
                 Set-Location $Env:USERPROFILE
             }
         }
@@ -107,7 +107,7 @@ class MyRuntime {
         $variables = @{}   # Dict{key==varName, value==varValue}
         $_globals = (Get-Content -Path $this.PATH_TO_GLOBALS)
         
-        if(-not($_globals)) {  WriteRed "Globals Empty"; return  }
+        if(-not($_globals)) {  PrintRed "Globals Empty"; return  }
         Clear-Host
 
         $lines = [System.Collections.Generic.List[Object]]::new(); $lines.AddRange($_globals)

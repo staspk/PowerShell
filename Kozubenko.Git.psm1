@@ -46,7 +46,7 @@ function Github ($path = $PWD.Path) {
     $possibleAltConfigLocation2 = "$path\..\..\.git\config"
     if(TestPathSilently $possibleAltConfigLocation2) {  $url = git config --file $possibleAltConfigLocation2 --get remote.origin.url; Start-Process $url;  RETURN;  }
 
-    WriteRed "No .git config file found under `$path: $path";
+    PrintRed "No .git config file found under `$path: $path";
 }
 
 function GitHistory {

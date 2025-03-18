@@ -23,7 +23,7 @@ function setupTsDevEnvironment() {
 # chrome://inspect
 function debug($file) {
     if(-not(TestPathSilently $file)) {
-        WriteDarkRed "Can't find js/ts file to debug: $file"
+        PrintDarkRed "Can't find js/ts file to debug: $file"
         RETURN;
     }
     $file = (Resolve-Path $file).Path

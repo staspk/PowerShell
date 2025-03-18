@@ -28,7 +28,7 @@ function AddToEnvPath($path) {
 
     $pathArray = $userPath.Split(";")
 
-    if ($pathArray -contains $newPathItem) {  WriteRed "The path '$newPathItem' is already in your PATH.";  RETURN;  }
+    if ($pathArray -contains $newPathItem) {  PrintRed "The path '$newPathItem' is already in your PATH.";  RETURN;  }
 
     $newPath = ""
     foreach ($pathItem in $pathArray) {  $newPath += $pathItem + ";"  }
@@ -57,12 +57,12 @@ function DisplayFolderSizes {
     foreach ($i in $colItems)
     {
         $subFolderItems = Get-ChildItem $i.FullName -recurse -force | Where-Object {$_.PSIsContainer -eq $false} | Measure-Object -property Length -sum | Select-Object Sum
-        WriteGreen "$($i.Name)" $false; WriteGray " --> " $false; WriteDarkRed "$("{0:N2}" -f ($subFolderItems.sum / 1MB))MB"
+        PrintGreen "$($i.Name)" $false; PrintGray " --> " $false; PrintDarkRed "$("{0:N2}" -f ($subFolderItems.sum / 1MB))MB"
     }
 }
 
 function ClearFolder($folder = ".\") {
-    if (-not(IsDirectory $folder)) {  WriteDarkRed "Skipping ClearFolder, `$folder is not a directory: $folder";  RETURN;  }
+    if (-not(IsDirectory $folder)) {  PrintDarkRed "Skipping ClearFolder, `$folder is not a directory: $folder";  RETURN;  }
     Get-ChildItem -Path $folder -Recurse | ForEach-Object {
         if ($_.PSIsContainer) {  $_.Delete($true)  }
         else {  $_.Delete()  }
@@ -70,7 +70,7 @@ function ClearFolder($folder = ".\") {
 }
 
 function LockFolder($folder) {
-    if (-not(IsDirectory $folder)) {  WriteDarkRed "Skipping LockFolder, `$folder is not a directory: $folder";  RETURN;  }
+    if (-not(IsDirectory $folder)) {  PrintDarkRed "Skipping LockFolder, `$folder is not a directory: $folder";  RETURN;  }
 
     $acl = Get-Acl -Path $folder
 

@@ -27,14 +27,14 @@ function Help($moduleName = $null) {
     $PrintModuleToConsoleScript = {
         param([FunctionRegistry]$module)
         
-        WriteRed $module.moduleName
+        PrintRed $module.moduleName
             foreach($func in $module.functions) {
                 $funcName = $func.Split("(")[0]
                 $insideParentheses = $($func.Split("(")[1]).Split(")")[0]
     
                 WriteLiteRed "   $funcName" $false
                 WriteLiteRed "(" $false
-                WriteDarkGray "`e[3m$insideParentheses" $false
+                PrintDarkGray "`e[3m$insideParentheses" $false
                 WriteLiteRed ")" $false
     
                 if($module.moduleName -ne "Kozubenko.MyRuntime") {      # hard coded fix. Kozubenko.MyRuntime does not have anything to the right side of -->
@@ -42,7 +42,7 @@ function Help($moduleName = $null) {
                     $funcExplanation = $func.Split("-->")[1];
     
                     WriteLiteRed "$rightOfParenthesesLeftFromArrow -->" $false
-                    WriteWhiteRed "$funcExplanation" $false
+                    PrintWhiteRed "$funcExplanation" $false
                 }
                 Write-Host
             }
@@ -63,14 +63,20 @@ function Help($moduleName = $null) {
         }
     }
 }
-function Restart {
+function Restart {                                         # try this version for a while...perhaps it will resolve the edge case of not always closing original window
     $oldPid = $PID
     Invoke-Item "$global:pshome\pwsh.exe"
-    Stop-Process -Id $oldPid -ErrorAction SilentlyContinue
+    try {
+        Stop-Process -Id $oldPid -ErrorAction SilentlyContinue
+    }
+    finally {
+        exit
+    }
+    
 }
 
 function Open($path = $PWD.Path) {   # PUBLIC  -->  Opens In File Explorer
-    if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path";  RETURN; }
+    if (-not(TestPathSilently($path))) { PrintRed "`$path is not a valid path. `$path == $path";  RETURN; }
 
     $path = (Resolve-Path $path).Path
 
@@ -88,7 +94,7 @@ function VsCode($path = $PWD.Path) {    # PUBLIC  -->  Opens in Visual Studio Co
         $path = "$PWD.Path\.."
     }
 
-    if (-not(TestPathSilently($path))) { WriteRed "`$path is not a valid path. `$path == $path";  RETURN; }
+    if (-not(TestPathSilently($path))) { PrintRed "`$path is not a valid path. `$path == $path";  RETURN; }
 
     if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir;  RETURN; }
     else { code $path }
@@ -97,7 +103,7 @@ function Bible($string) {       # BIBLE John:10
     $array = $string.Split(":")
     
     if($array.Count -ne 2) {
-        WriteRed "Bible(`$input) => input must follow format: Matthew:10"
+        PrintRed "Bible(`$input) => input must follow format: Matthew:10"
         RETURN
     }
 
@@ -110,7 +116,24 @@ function UnixToMyTime($timestamp) {
 
     $dateTimeLocal = $dateTimeUtc.ToLocalTime()
 
-    WriteCyan $dateTimeLocal
+    PrintCyan $dateTimeLocal
+}
+
+# 
+function vtt_to_srt($file) {
+    if (-not(Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
+        PrintRed "ffmpeg library required for function."
+        RETURN;
+    }
+
+    $new_file = ""
+    if($file.Substring($file.Length - 4) -eq ".vtt") {  $new_file = "$($file.Substring(0, $file.Length - 4)).srt"  }
+    else {$new_file = "$file.srt"}
+
+    
+    return;
+
+    ffmpeg -i tucker-putin.en.vtt -c:s subrip tucker-putin.en.srt
 }
 
 
@@ -126,7 +149,7 @@ function OnOpen() {
     ));
 
 
-    Set-PSReadLineKeyHandler -Key Alt+1           -Description "Print `$cheats files"    -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { WriteRed $_.Name }; ConsoleInsert("$cheats\")  }
+    Set-PSReadLineKeyHandler -Key Alt+1           -Description "Print `$cheats files"    -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintRed $_.Name }; ConsoleInsert("$cheats\")  }
     Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"             -ScriptBlock {  ConsoleDeleteInput  }
     Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"   -ScriptBlock {  ConsoleMoveToStartofLine  }
     Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"     -ScriptBlock {  ConsoleMoveToEndofLine  }
@@ -138,7 +161,8 @@ function OnOpen() {
     SetAliases Clear-Host  @("z", "zz", "zzz")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
 
-    SetGlobal "roaming" "C:\Users\stasp\AppData\Roaming\"
+    SetGlobal "roaming" "$HOME\AppData\Roaming"
+    SetGlobal "desktop" "$HOME\Desktop"
 }
 OnOpen
 
