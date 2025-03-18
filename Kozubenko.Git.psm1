@@ -6,7 +6,7 @@ class KozubenkoGit {
             "Kozubenko.Git",
             @(
                 "Push(`$commitMsg = 'no_msg')           -->   push to github repo. does not work with branches",
-                "SubmoduleUpdate()                     -->   git submodule update --remote --merge",
+                "UpdateSubmodules(`$merge=`$false)       -->   (recursive): git submodule update --remote; (merge): --merge",
                 "HardReset()                           -->   git reset --hard HEAD; git clean -fd"
                 "GitHistory()                          -->   git log --oneline, afterwards: git show 06cb024", 
                 "Github()                              -->   goes to remote.origin.url in the browser",
@@ -16,7 +16,7 @@ class KozubenkoGit {
 }
 
 
-function GitConfig ($email, $name) {
+function GitConfig($email, $name) {
     git config --global user.email $email
     git config --global user.name $name
 }
@@ -27,8 +27,9 @@ function Push ($commitMsg = "No Commit Message") {
     git push
 }
 
-function SubmoduleUpdate {
-    git submodule update --remote --merge
+function UpdateSubmodules($merge=$false) {
+    if($merge) {  git submodule update --remote  }
+    else       {  git submodule update --remote --merge  }
 }
 
 function HardReset() {

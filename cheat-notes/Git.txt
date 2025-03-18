@@ -12,3 +12,8 @@ git log --oneline						=>	Get a history of changes to repo
 git revert cc3bbf7 --no-edit			=>	Undo a specific commit. Don't forget to push after...
 
 git show cbb0c31						=>  Prints out changes in that commit
+
+
+git submodule add <repository-url> <path>
+git submodule update --remote
+git submodule update --remote --merge
