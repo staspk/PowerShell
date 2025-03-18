@@ -33,16 +33,16 @@ function Help($moduleName = $null) {
                 $funcName = $func.Split("(")[0]
                 $insideParentheses = $($func.Split("(")[1]).Split(")")[0]
     
-                WriteLiteRed "   $funcName" $false
-                WriteLiteRed "(" $false
+                PrintLiteRed "   $funcName" $false
+                PrintLiteRed "(" $false
                 PrintDarkGray "`e[3m$insideParentheses" $false
-                WriteLiteRed ")" $false
+                PrintLiteRed ")" $false
     
                 if($module.moduleName -ne "Kozubenko.MyRuntime") {      # hard coded fix. Kozubenko.MyRuntime does not have anything to the right side of -->
                     $rightOfParenthesesLeftFromArrow = $($func.Split(")")[1]).Split("-->")[0];
                     $funcExplanation = $func.Split("-->")[1];
     
-                    WriteLiteRed "$rightOfParenthesesLeftFromArrow -->" $false
+                    PrintLiteRed "$rightOfParenthesesLeftFromArrow -->" $false
                     PrintWhiteRed "$funcExplanation" $false
                 }
                 Write-Host
@@ -131,7 +131,7 @@ function vtt_to_srt($file) {
     if($file.Substring($file.Length - 4) -eq ".vtt") {  $new_file = "$($file.Substring(0, $file.Length - 4)).srt"  }
     else {$new_file = "$file.srt"}
 
-    ffmpeg -i "$file" -c:s subrip "$new_file"
+    ffmpeg -i "$file" -c:s subrip "$new_file" -loglevel quiet
 }
 
 
