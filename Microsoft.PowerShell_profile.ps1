@@ -19,7 +19,8 @@ class KozubenkoProfile {
                 "VsCode(`$path = 'PWD.Path')            -->   opens .\ or `$path in Visual Studio Code. alias: vsc",
                 "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++",
                 "Bible(`$passage)                       -->   `$passage == 'John:10'; opens in BibleGateway in 5 translations",
-                "UnixToMyTime(`$timestamp)              -->   self-explanatory"
+                "UnixToMyTime(`$timestamp)              -->   self-explanatory",
+                "vtt_to_srt(`$file)                     -->   convert subtitles from format .vtt to .srt"
             ));
     }
 }
@@ -126,14 +127,11 @@ function vtt_to_srt($file) {
         RETURN;
     }
 
-    # $new_file = ""
-    # if($file.Substring($file.Length - 4) -eq ".vtt") {  $new_file = "$($file.Substring(0, $file.Length - 4)).srt"  }
-    # else {$new_file = "$file.srt"}
+    $new_file = ""
+    if($file.Substring($file.Length - 4) -eq ".vtt") {  $new_file = "$($file.Substring(0, $file.Length - 4)).srt"  }
+    else {$new_file = "$file.srt"}
 
-    print $new_file
-    return;
-
-    ffmpeg -i tucker-putin.en.vtt -c:s subrip tucker-putin.en.srt
+    ffmpeg -i "$file" -c:s subrip "$new_file"
 }
 
 
