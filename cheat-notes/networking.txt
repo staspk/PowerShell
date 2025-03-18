@@ -8,6 +8,7 @@ systemctl status tor			=> Check if Tor is running
 sudo systemctl restart tor		=> restart
 
 curl --proxy socks5h://localhost:9050 https://api.ipify.org
+curl --proxy socks5h://localhost:9050 httpbin.org/ip
 curl https://api.ipify.org
 
 
