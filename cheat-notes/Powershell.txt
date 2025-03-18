@@ -1,0 +1,21 @@
+Use $ErrorActionPreference = "Stop" in function if you need to a Try-Catch to work correctly.
+Is automatically scoped to the function it is used in. Outside of func, $ErrorActionPreference will still be set to default == 'Continue'
+
+# Iterate through class static property values
+foreach( $prop in ([ProfilePaths] | Get-Member -MemberType Property -Static).Name ) {
+	[ProfilePaths]::$prop
+}
+
+Get-PSReadLineKeyHandler 					=> Shows a list of shortcuts
+(Get-PSReadlineOption).HistorySavePath  	=> Shows path to file that saves History of commands
+
+Test-ModuleManifest Kozubenko.Utils.psm1
+
+$PROFILE | Select-Object *					=> e.g. Get Note Properties
+(Get-Command Set-Location).Definition		=> e.g. Get Function Headers
+$profile.gettype()							=> e.g. GetType()
+Get-Help set-alias -full					=> The Ultimate Info Dump
+
+where.exe node => prints PATH for sofware (node in this case)
+
+[Microsoft.PowerShell.PSConsoleReadLine].GetMethod("AcceptLine")

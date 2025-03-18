@@ -1,0 +1,14 @@
+git branch -r							=>	This Git command will show you remote branches. 
+
+git branch --merged						=>  Lists branches that have been merged into the current branch on remote.
+
+git remote prune origin					=>	Deletes / stops tracking branches locally that have been deleted on remote.
+
+git add -A								=>	Adds literally all changes, while 'git add .' will skip deletions/new files/etc.
+git commit; git push
+
+git log --oneline						=>	Get a history of changes to repo
+
+git revert cc3bbf7 --no-edit			=>	Undo a specific commit. Don't forget to push after...
+
+git show cbb0c31						=>  Prints out changes in that commit

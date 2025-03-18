@@ -1,0 +1,13 @@
+Silver 565
+This. DMZs, VLANs and the like are pretty old school solutions that don't make much sense anymore.
+
+
+tor on linux
+sudo systemctl start tor		=> Start the service
+systemctl status tor			=> Check if Tor is running
+sudo systemctl restart tor		=> restart
+
+curl --proxy socks5h://localhost:9050 https://api.ipify.org
+curl https://api.ipify.org
+
+

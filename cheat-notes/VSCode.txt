@@ -1,0 +1,8 @@
+Ctrl+Shift+P => "Restart Extension Host"
+Ctrl+Shift+P => "Inspect Editor Tokens and Scopes"
+Ctrl+Shift+P => "Open Default Keyboard Shortcuts (JSON)"
+Ctrl+Shift+P => "Reindent Lines"
+Ctrl+Shift+P => "Change Tab Size"
+
+Alt+Click 	 => Multiple Cursors
+Alt+Q		 => Editor.Action.IndentLines  [indent without need to select entire line]

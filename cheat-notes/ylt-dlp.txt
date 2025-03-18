@@ -1,0 +1,20 @@
+
+
+Download only 1min: [note: downloads really slow in this case]
+./yt-dlp.exe --download-sections "*00:00:00-00:01:00" "https://www.youtube.com/watch?v=ncPW2pyOzJU&ab_channel=kremlin"
+
+list formats available:
+./yt-dlp.exe --skip-download --list-formats "https://www.youtube.com/watch?v=ncPW2pyOzJU&ab_channel=kremlin"
+
+./yt-dlp.exe -k "https://www.youtube.com/watch?v=fOCWBhuDdDo&ab_channel=TuckerCarlson" --write-auto-sub --sub-lang en --sub-format srt
+./yt-dlp.exe -k "https://www.youtube.com/watch?v=ncPW2pyOzJU&ab_channel=kremlin" --write-auto-sub --sub-lang ru --sub-format srt 
+
+
+JUST SUBS:
+./yt-dlp.exe --skip-download "https://www.youtube.com/watch?v=fOCWBhuDdDo&ab_channel=TuckerCarlson" --write-auto-sub --sub-lang en,ru --sub-format srt
+
+
+
+
+Convert webm to mp4: [note: crf 18 considered visually loss-less]
+ffmpeg -i tucker-putin-ru.webm -c:v libx264 -crf 18 -preset medium tucker-putin-ru.mp4
