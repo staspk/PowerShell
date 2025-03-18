@@ -6,10 +6,11 @@ using module .\Kozubenko.Node.psm1
 using module .\Kozubenko.Runtime.psm1
 using module .\Kozubenko.IO.psm1
 
-SetGlobal "GLOBALS"  "$(ParentDir($PROFILE))\globals"
-SetGlobal "cheats"   "$HOME\cheat-notes"
-SetGlobal "roaming"  "$HOME\AppData\Roaming"
-SetGlobal "desktop"  "$HOME\Desktop"
+SetGlobal "PROFILE_DIR"  $(ParentDir($PROFILE))
+SetGlobal "GLOBALS"      "$PROFILE_DIR\globals"
+SetGlobal "cheats"       "$PROFILE_DIR\cheat-notes"
+SetGlobal "roaming"      "$HOME\AppData\Roaming"
+SetGlobal "desktop"      "$HOME\Desktop"
 class KozubenkoProfile {   
     static [FunctionRegistry] GetFunctionRegistry() {
         return [FunctionRegistry]::new(
@@ -70,16 +71,17 @@ function Restart {                                         # try this version fo
     $oldPid = $PID
     PrintRed "`$oldPid==$oldPid"
     Invoke-Item "$global:pshome\pwsh.exe"
+    
+    PrintRed "before exit command"
+    [System.Environment]::Exit(0)
+    PrintRed "after exit command"
     try {
-        PrintRed "before exit command"
-        exit
-        PrintRed "after exit command"
-    }
-    finally {
+        
         PrintRed "before stop-process command"
         Stop-Process -Id $oldPid -ErrorAction SilentlyContinue
         PrintRed "after stop-process command"
     }
+    catch{}
 }
 
 function Open($path = $PWD.Path) {   # PUBLIC  -->  Opens In File Explorer
@@ -135,6 +137,8 @@ function vtt_to_srt($file) {
     $new_file = ""
     if($file.Substring($file.Length - 4) -eq ".vtt") {  $new_file = "$($file.Substring(0, $file.Length - 4)).srt"  }
     else {$new_file = "$file.srt"}
+
+    PrintGreen "output: $new_file"
 
     ffmpeg -i "$file" -c:s subrip "$new_file" -loglevel quiet
 }
