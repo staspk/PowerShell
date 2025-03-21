@@ -3,22 +3,10 @@ using module .\classes\FunctionRegistry.psm1
 $WhiteRed = $PSStyle.Foreground.FromRgb(255, 196, 201);
 $LiteRed = $PSStyle.Foreground.FromRgb(223, 96, 107);
 
-function Print($text, $newLine = $true)         {  if($newLine) { Write-Host $text }         else {  Write-Host $text - -NoNewline  }  }
-function PrintWhiteRed($text, $newLine = $true) {  if($newLine) { Write-Host ${WhiteRed}$text }       else { Write-Host ${WhiteRed}$text -NoNewline }  }
-function PrintLiteRed($text, $newLine = $true)  {  if($newLine) { Write-Host ${LiteRed}$text -ForegroundColor Red }      else { Write-Host ${LiteRed}$text -ForegroundColor Red -NoNewline }  }
-function PrintRed($text, $newLine = $true)      {  if($newLine) { Write-Host $text -ForegroundColor Red }      else { Write-Host $text -ForegroundColor Red -NoNewline }        }
-function PrintDarkRed($text, $newLine = $true)  {  if($newLine) { Write-Host $text -ForegroundColor DarkRed }   else { Write-Host $text -ForegroundColor DarkRed -NoNewline }    }
-function PrintYellow($text, $newLine = $true)   {  if($newLine) { Write-Host $text -ForegroundColor Yellow }    else { Write-Host $text -ForegroundColor Yellow -NoNewline }     }
-function PrintCyan($text, $newLine = $true)     {  if($newLine) { Write-Host $text -ForegroundColor Cyan }      else { Write-Host $text -ForegroundColor Cyan -NoNewline }       }
-function PrintDarkCyan($text, $newLine = $true) {  if($newLine) { Write-Host $text -ForegroundColor DarkCyan }    else { Write-Host $text -ForegroundColor DarkCyan -NoNewline }      }
-function PrintGreen($text, $newLine = $true)    {  if($newLine) { Write-Host $text -ForegroundColor Green }     else { Write-Host $text -ForegroundColor Green -NoNewline }      }
-function PrintDarkGreen($text, $newLine = $true){  if($newLine) { Write-Host $text -ForegroundColor DarkGreen } else { Write-Host $text -ForegroundColor DarkGreen -NoNewline }  }
-function PrintDarkGray($text, $newLine = $true) {  if($newLine) { Write-Host $text -ForegroundColor DarkGray }    else { Write-Host $text -ForegroundColor DarkGray -NoNewline }      }
-function PrintGray($text, $newLine = $true)     {  if($newLine) { Write-Host $text -ForegroundColor Gray }      else { Write-Host $text -ForegroundColor Gray -NoNewline }       }
-function PrintWhite($text, $newLine = $true)    {  if($newLine) { Write-Host $text -ForegroundColor White }    else { Write-Host $text -ForegroundColor White -NoNewline }      }
+
 
 function ResolvePath($path) {
-    if (-not(TestPathSilently($path))) { PrintRed "`$path is not a valid path. `$path == $path";  RETURN; }
+    if (-not(TestPathSilently($path))) {  Write-Host "`$path is not a valid path. `$path == $path" -ForegroundColor Red;  RETURN;  }
 
     $path = (Resolve-Path $path).Path
 
@@ -56,13 +44,13 @@ function IsDirectory($path) {
     }
 }
 function ParentDir($path) {
-    if(-not(TestPathSilently($path))) {  PrintDarkRed "Skipping GetParent(`$path) since `$path does not exist: $path";  RETURN;  }
+    if(-not(TestPathSilently($path))) {  Write-Host "Skipping GetParent(`$path) since `$path does not exist: $path" -ForegroundColor Red;  RETURN;  }
     RETURN [System.IO.Path]::GetDirectoryName($path)
 }
 
 function WriteErrorExit([string]$errorMsg) {
-    PrintDarkRed $errorMsg
-    PrintDarkRed "Exiting Script..."
+    Write-Host $errorMsg -ForegroundColor DarkRed
+    Write-Host "Exiting Script..." -ForegroundColor DarkRed
     exit
 }
 
@@ -115,5 +103,19 @@ function ConsoleDeletePreviousLine {
     [console]::SetCursorPosition(0, [console]::CursorTop - 1)
 }
 
+
+function Print($text, $newLine = $true)         {  if($newLine) { Write-Host $text }         else {  Write-Host $text - -NoNewline  }  }
+function PrintWhiteRed($text, $newLine = $true) {  if($newLine) { Write-Host ${WhiteRed}$text }     else { Write-Host ${WhiteRed}$text -NoNewline }  }
+function PrintLiteRed($text, $newLine = $true)  {  if($newLine) { Write-Host ${LiteRed}$text  }      else { Write-Host ${LiteRed}$text -NoNewline }  }
+function PrintRed($text, $newLine = $true)      {  if($newLine) { Write-Host $text -ForegroundColor Red }      else { Write-Host $text -ForegroundColor Red -NoNewline }        }
+function PrintDarkRed($text, $newLine = $true)  {  if($newLine) { Write-Host $text -ForegroundColor DarkRed }   else { Write-Host $text -ForegroundColor DarkRed -NoNewline }    }
+function PrintYellow($text, $newLine = $true)   {  if($newLine) { Write-Host $text -ForegroundColor Yellow }    else { Write-Host $text -ForegroundColor Yellow -NoNewline }     }
+function PrintCyan($text, $newLine = $true)     {  if($newLine) { Write-Host $text -ForegroundColor Cyan }      else { Write-Host $text -ForegroundColor Cyan -NoNewline }       }
+function PrintDarkCyan($text, $newLine = $true) {  if($newLine) { Write-Host $text -ForegroundColor DarkCyan }    else { Write-Host $text -ForegroundColor DarkCyan -NoNewline }      }
+function PrintGreen($text, $newLine = $true)    {  if($newLine) { Write-Host $text -ForegroundColor Green }     else { Write-Host $text -ForegroundColor Green -NoNewline }      }
+function PrintDarkGreen($text, $newLine = $true){  if($newLine) { Write-Host $text -ForegroundColor DarkGreen } else { Write-Host $text -ForegroundColor DarkGreen -NoNewline }  }
+function PrintDarkGray($text, $newLine = $true) {  if($newLine) { Write-Host $text -ForegroundColor DarkGray }    else { Write-Host $text -ForegroundColor DarkGray -NoNewline }      }
+function PrintGray($text, $newLine = $true)     {  if($newLine) { Write-Host $text -ForegroundColor Gray }      else { Write-Host $text -ForegroundColor Gray -NoNewline }       }
+function PrintWhite($text, $newLine = $true)    {  if($newLine) { Write-Host $text -ForegroundColor White }    else { Write-Host $text -ForegroundColor White -NoNewline }      }
 
 
