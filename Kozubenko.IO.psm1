@@ -28,11 +28,10 @@ function AddToEnvPath($path) {
 
     $pathArray = $userPath.Split(";")
 
-    if ($pathArray -contains $newPathItem) {  PrintRed "The path '$newPathItem' is already in your PATH.";  RETURN;  }
+    if ($pathArray -contains $path) {  PrintGreen "The path '$path' is already in your PATH.";  RETURN;  }
 
     $newPath = ""
     foreach ($pathItem in $pathArray) {  $newPath += $pathItem + ";"  }
-    $newPath += "$($newPathItem);"
 
     [System.Environment]::SetEnvironmentVariable("PATH", $newPath, "User")
 }
@@ -43,7 +42,7 @@ function DeleteEnvPath($path) {     # example $pathItemToRemove: %USERPROFILE%\A
 
     $newPath = ""
     for ($i = 0; $i -lt $pathArray.Count; $i++) {
-        if ($pathArray[$i] -ne $pathItemToRemove) {
+        if ($pathArray[$i] -ne $path) {
             $newPath += "$($pathArray[$i]);"
         }
     }
