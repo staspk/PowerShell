@@ -3,6 +3,7 @@ Ctrl+Shift+P => "Inspect Editor Tokens and Scopes"
 Ctrl+Shift+P => "Open Default Keyboard Shortcuts (JSON)"
 Ctrl+Shift+P => "Reindent Lines"
 Ctrl+Shift+P => "Change Tab Size"
+Ctrl+Shift+P => "Format Document"	eg use: when the html you pasted in has wrong # of spaces/tabs
 
 Alt+Click 	 => Multiple Cursors
 Alt+Q		 => Editor.Action.IndentLines  [indent without need to select entire line]
