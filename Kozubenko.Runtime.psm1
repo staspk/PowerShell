@@ -13,8 +13,6 @@ class MyRuntime {
 
     [string] $START_LOCATION_KEY = "startLocation";
 
-    [bool]$runEnvMethods = $false;
-
     MyRuntime([string]$pathToGlobals) {
         $this.PATH_TO_GLOBALS = $pathToGlobals;
         $this.modules = [System.Collections.Generic.List[FunctionRegistry]]::new();
@@ -26,9 +24,9 @@ class MyRuntime {
         );
 
         if(-not(TestPathSilently($this.PATH_TO_GLOBALS))) {
-            Set-Content -Path $this.PATH_TO_GLOBALS -Value "$($this.START_LOCATION_KEY)=`$env:userprofile"
+            Set-Content -Path $this.PATH_TO_GLOBALS -Value "$($this.START_LOCATION_KEY)=$env:userprofile"
         }
-
+        
         $this.LoadInGlobals($null);
         $this.HandleStartupConsoleLocation();
     }
@@ -46,7 +44,7 @@ class MyRuntime {
     SetStartLocation($path) {   # PUBLIC
         $this.SaveToGlobals($this.START_LOCATION_KEY, $path)
         $this.LoadInGlobals($null)
-        Set-Location $global:startlocation;
+        Set-Location $global:startlocation
     }
 
     NewVar($name, $value) {   # PUBLIC
@@ -85,11 +83,11 @@ class MyRuntime {
 
     hidden [void] LoadInGlobals($varToDelete) {      # Cleanup while loading-in, e.g. duplicate removal, varToDelete.
         $variables = @{}   # Dict{key==varName, value==varValue}
-        $_globals = @(Get-Content -Path $this.PATH_TO_GLOBALS)      # "@" added. Get-Content returns string when <2 lines
+        $_globals = @(Get-Content -Path $this.PATH_TO_GLOBALS)      # "@" added, Get-Content returns string when < 2 lines, making `$lines.AddRange($_globals)` throw an exception
         
-        if(-not($_globals)) {  PrintRed "Globals Empty"; return  }
-        # Clear-Host
+        if(-not($_globals)) {  PrintRed "Globals Empty";  RETURN;  }
 
+        Clear-Host
         $lines = [System.Collections.Generic.List[Object]]::new(); $lines.AddRange($_globals)
         for ($i = 0; $i -lt $lines.Count; $i++) {
             $left = $lines[$i].Split("=")[0]
@@ -101,6 +99,7 @@ class MyRuntime {
                 }
             }
             else {
+                
                 $variables.Add($left, $right)
                 Set-Variable -Name $left -Value $right -Scope Global
 

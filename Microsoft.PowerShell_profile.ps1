@@ -157,7 +157,6 @@ function webm_to_mp4($file) {
 
 function OnOpen() {
     $global:MyRuntime = [MyRuntime]::new($global:GLOBALS);
-
     $global:MyRuntime.AddModules(@(
         [KozubenkoIO]::GetFunctionRegistry(),
         [KozubenkoProfile]::GetFunctionRegistry(),
