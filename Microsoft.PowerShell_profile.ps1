@@ -78,7 +78,7 @@ function Restart {                                         # try this version fo
     try {
         
         PrintRed "before stop-process command"
-        Stop-Process -Id $oldPid -ErrorAction SilentlyContinue
+        Stop-Process -Id $oldPid# -ErrorAction SilentlyContinue
         PrintRed "after stop-process command"
     }
     catch{}
@@ -155,6 +155,39 @@ function webm_to_mp4($file) {
     ffmpeg -i "$file" -c:v libx264 -crf 18 -preset medium "$new_file"
 }
 
+function TurnOffSleepSettings([int]$time_in_hours = 0) {
+    $screen_sleep = ((powercfg -query @(
+    (powercfg -getactivescheme) -replace '^.+ \b([0-9a-f]+-[^ ]+).+', '$1'
+        '7516b95f-f776-4464-8c53-06167f40cc99'
+        '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e'
+    ))[-3] -replace '^.+: ') / 60
+
+    $device_sleep  = ((powercfg -query @(
+        (powercfg -getactivescheme) -replace '^.+ \b([0-9a-f]+-[^ ]+).+', '$1'
+        '238c9fa8-0aad-41ed-83f4-97be242c8f20'
+        '29f6c1db-86da-48c5-9fdb-f2b67b1f44da'
+    ))[-3] -replace '^.+: ') / 60
+
+    powercfg /change monitor-timeout-ac 5
+    powercfg /change standby-timeout-ac 0
+
+    if($time_in_hours -gt 0) {
+        $temp_file = "$PROFILE_DIR\TurnSleepSettingsBackOn.ps1"
+        $script = "powercfg /change monitor-timeout-ac $screen_sleep; powercfg /change standby-timeout-ac $device_sleep; Remove-Item $temp_file -Force; schtasks /delete /tn `"TurnSleepSettingsBackOn`" /f; exit;"
+        $script | Out-File -FilePath $temp_file -Encoding UTF8
+
+        $runTime = (Get-Date).AddMinutes($time_in_hours).ToString("HH:mm")
+        $runDate = (Get-Date).AddMinutes($time_in_hours).ToString("MM/dd/yyyy")
+
+        schtasks /create /tn "TurnSleepSettingsBackOn" `
+            /tr "pwsh.exe -NoProfile -File $temp_file" `
+            /sc once `
+            /st $runTime /sd $runDate `
+            /rl LIMITED `
+            /f
+    }
+}
+
 
 function OnOpen() {
     $global:MyRuntime = [MyRuntime]::new($global:GLOBALS);
@@ -189,7 +222,6 @@ function NodeRun([string]$server = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\N
 }
 
 
-# does not work
 function StartCoreServer($projectDir = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\TcpServer") {
     Set-Location $projectDir
     dotnet run

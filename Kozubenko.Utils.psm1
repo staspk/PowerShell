@@ -4,6 +4,10 @@ $WhiteRed = $PSStyle.Foreground.FromRgb(255, 196, 201);
 $LiteRed = $PSStyle.Foreground.FromRgb(223, 96, 107);
 
 
+function IsAdmin() {
+    $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+    return $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
 
 function ResolvePath($path) {
     if (-not(TestPathSilently($path))) {  Write-Host "`$path is not a valid path. `$path == $path" -ForegroundColor Red;  RETURN;  }
