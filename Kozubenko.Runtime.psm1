@@ -31,7 +31,6 @@ class MyRuntime {
 
         $this.LoadInGlobals($null);
         $this.HandleStartupConsoleLocation();
-        $this.runEnvMethods = $true;
     }
 
     [void] AddModule([FunctionRegistry]$functionRegistry) {
@@ -45,26 +44,12 @@ class MyRuntime {
     }
     
     SetStartLocation($path) {   # PUBLIC
-        if($this.runEnvMethods -eq $false) {
-            PrintRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS"
-            RETURN;
-        }
-
-        if (-not(TestPathSilently($path))) {
-            PrintRed "Given `$path is not a real directory. `$path == $path"; PrintRed "Exiting SetLocation...";
-            RETURN
-        }
-
         $this.SaveToGlobals($this.START_LOCATION_KEY, $path)
         $this.LoadInGlobals($null)
         Set-Location $global:startlocation;
     }
 
     NewVar($name, $value) {   # PUBLIC
-        if($this.runEnvMethods -eq $false) {
-            PrintRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS"
-        }
-
         if ([string]::IsNullOrEmpty($name)) {  RETURN  }
         if ($name[0] -eq "$") {  $name = $name.Substring(1, $name.Length - 1 )  }
         $this.SaveToGlobals($name, $value)
@@ -72,10 +57,6 @@ class MyRuntime {
     }
 
     SetVar($name, $value) {   # PUBLIC
-        if($this.runEnvMethods -eq $false) {
-            PrintRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS" 
-        }
-
         if ([string]::IsNullOrEmpty($name) -or [string]::IsNullOrEmpty($value)) {  RETURN  }
         if ($name[0] -eq "$") {  $name = $name.Substring(1, $name.Length - 1 )  }
         $this.SaveToGlobals($name, $value)
@@ -83,11 +64,6 @@ class MyRuntime {
     }
 
     DeleteVar($varName) {    # PUBLIC
-        if($this.runEnvMethods -eq $false) {
-            PrintRed "Kozubenko.Runtime can't run Environment methods due to faulty path location: $this.PATH_TO_GLOBALS"
-            RETURN;
-        }
-
         Clear-Host; $this.LoadInGlobals($varName)
     }
 
@@ -109,7 +85,7 @@ class MyRuntime {
 
     hidden [void] LoadInGlobals($varToDelete) {      # Cleanup while loading-in, e.g. duplicate removal, varToDelete.
         $variables = @{}   # Dict{key==varName, value==varValue}
-        $_globals = (Get-Content -Path $this.PATH_TO_GLOBALS)
+        $_globals = @(Get-Content -Path $this.PATH_TO_GLOBALS)      # "@" added. Get-Content returns string when <2 lines
         
         if(-not($_globals)) {  PrintRed "Globals Empty"; return  }
         # Clear-Host
