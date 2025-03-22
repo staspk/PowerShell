@@ -14,8 +14,18 @@ git revert cc3bbf7 --no-edit			=>	Undo a specific commit. Don't forget to push a
 git show cbb0c31						=>  Prints out changes in that commit
 
 
-git submodule add <repository-url> <path>
+Add Submodule:
+1. git submodule add <repository-url> <path-to-submodule>
+2. git submodule update --init --recursive
+
+To update:
 git submodule update --remote
 git submodule update --remote --merge
+git submodule update --remote --merge --recursive
+
 
 git submodule sync --recursive			=> Use when updating .gitmodules
+
+
+Remove Submodule:
+1. git submodule deinit -f <path-to-submodule>
