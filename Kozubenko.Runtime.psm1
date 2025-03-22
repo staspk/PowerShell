@@ -23,11 +23,14 @@ class MyRuntime {
             "DeleteVar(`$varName)"))
         );
 
-        if(TestPathSilently($this.PATH_TO_GLOBALS)) {
-            $this.LoadInGlobals($null);
-            $this.HandleStartupConsoleLocation();
-            $this.runEnvMethods = $true;
+        if(-not(TestPathSilently($this.PATH_TO_GLOBALS))) {
+            PrintDarkRed "Globals File not Found"
+            Return
         }
+
+        $this.LoadInGlobals($null);
+        $this.HandleStartupConsoleLocation();
+        $this.runEnvMethods = $true;
     }
 
     [void] AddModule([FunctionRegistry]$functionRegistry) {
