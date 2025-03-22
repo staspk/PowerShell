@@ -6,7 +6,7 @@ class KozubenkoGit {
             "Kozubenko.Git",
             @(
                 "Push(`$commitMsg = 'no_msg')           -->   push to github repo. does not work with branches",
-                "UpdateSubmodules(`$merge=`$false)       -->   (recursive): git submodule update --remote; (merge): --merge",
+                "UpdateSubmodules(`$merge=`$false)       -->   do not use until you update",
                 "HardReset()                           -->   git reset --hard HEAD; git clean -fd"
                 "GitHistory()                          -->   git log --oneline, afterwards: git show 06cb024", 
                 "Github()                              -->   goes to remote.origin.url in the browser",
