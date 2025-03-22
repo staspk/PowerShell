@@ -11,6 +11,8 @@ class MyRuntime {
     [String] $PATH_TO_GLOBALS;
     [System.Collections.Generic.List[FunctionRegistry]] $modules;
 
+    [string] $START_LOCATION_KEY = "startLocation";
+
     [bool]$runEnvMethods = $false;
 
     MyRuntime([string]$pathToGlobals) {
@@ -24,8 +26,7 @@ class MyRuntime {
         );
 
         if(-not(TestPathSilently($this.PATH_TO_GLOBALS))) {
-            PrintDarkRed "Globals File not Found"
-            Return
+            Set-Content -Path $this.PATH_TO_GLOBALS -Value "$($this.START_LOCATION_KEY)=`$env:userprofile"
         }
 
         $this.LoadInGlobals($null);
@@ -54,7 +55,7 @@ class MyRuntime {
             RETURN
         }
 
-        $this.SaveToGlobals("startLocation", $path)
+        $this.SaveToGlobals($this.START_LOCATION_KEY, $path)
         $this.LoadInGlobals($null)
         Set-Location $global:startlocation;
     }
@@ -111,7 +112,7 @@ class MyRuntime {
         $_globals = (Get-Content -Path $this.PATH_TO_GLOBALS)
         
         if(-not($_globals)) {  PrintRed "Globals Empty"; return  }
-        Clear-Host
+        # Clear-Host
 
         $lines = [System.Collections.Generic.List[Object]]::new(); $lines.AddRange($_globals)
         for ($i = 0; $i -lt $lines.Count; $i++) {
@@ -127,7 +128,7 @@ class MyRuntime {
                 $variables.Add($left, $right)
                 Set-Variable -Name $left -Value $right -Scope Global
 
-                if ($left -ne "startLocation") {    # startLocation visible on most startups anyways, no need to be redundant
+                if ($left -ne $this.START_LOCATION_KEY) {    # startLocation visible on most startups anyways, no need to be redundant
                     Write-Host "$left" -ForegroundColor White -NoNewline; Write-Host "=$right" -ForegroundColor Gray
                 }
             }

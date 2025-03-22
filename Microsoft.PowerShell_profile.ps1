@@ -7,7 +7,7 @@ using module .\Kozubenko.Runtime.psm1
 using module .\Kozubenko.IO.psm1
 
 SetGlobal "PROFILE_DIR"  $(ParentDir($PROFILE))
-SetGlobal "GLOBALS"      "$PROFILE_DIR\globals"
+SetGlobal "GLOBALS"      "$PROFILE_DIR\.globals"
 SetGlobal "cheats"       "$PROFILE_DIR\cheat-notes"
 SetGlobal "roaming"      "$HOME\AppData\Roaming"
 SetGlobal "desktop"      "$HOME\Desktop"
