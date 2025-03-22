@@ -1,3 +1,3 @@
-[submodule "boilerplate/python_minimum_vscode_setup/kozubenko"]
-	path = boilerplate/python_minimum_vscode_setup/kozubenko
+[submodule "boilerplate/python_vscode_setup/kozubenko"]
+	path = boilerplate/python_vscode_setup/kozubenko
 	url = https://github.com/staspk/Python.git
