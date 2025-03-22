@@ -17,3 +17,5 @@ git show cbb0c31						=>  Prints out changes in that commit
 git submodule add <repository-url> <path>
 git submodule update --remote
 git submodule update --remote --merge
+
+git submodule sync --recursive			=> Use when updating .gitmodules
