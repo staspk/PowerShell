@@ -62,7 +62,9 @@ class MyRuntime {
     }
 
     DeleteVar($varName) {    # PUBLIC
-        Clear-Host; $this.LoadInGlobals($varName)
+        Clear-Host;
+        if($varName[0] -eq "$") {  $varName = $varName.Substring(1)  }
+        $this.LoadInGlobals($varName)
     }
 
 
