@@ -27,5 +27,13 @@ git submodule update --remote --merge --recursive
 git submodule sync --recursive			=> Use when updating .gitmodules
 
 
+Forces submodule to auto-update to latest version of branch:
+[submodule "Windows11/.powershell/PowerShell"]
+	path = Windows11/.powershell/PowerShell
+	url = https://github.com/staspk/PowerShell.git
+	branch = main										<------ then: git submodule update --remote --recursive
+
+
+
 Remove Submodule:
 1. git submodule deinit -f <path-to-submodule>
