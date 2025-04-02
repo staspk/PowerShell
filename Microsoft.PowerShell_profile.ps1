@@ -155,6 +155,11 @@ function webm_to_mp4($file) {
     ffmpeg -i "$file" -c:v libx264 -crf 18 -preset medium "$new_file"
 }
 
+function list() {
+    Clear-Host
+    $global:MyRuntime.LoadInGlobals($null)
+}
+
 function OnOpen() {
     $global:MyRuntime = [MyRuntime]::new($global:GLOBALS);
     $global:MyRuntime.AddModules(@(
