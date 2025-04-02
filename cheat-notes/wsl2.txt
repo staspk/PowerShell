@@ -1,0 +1,8 @@
+
+From Search or File-Explorer (access fs):
+\\wsl$\Ubuntu-24.04
+
+From Ubuntu into windows desktop:
+cd /mnt/c/users/stasp/Desktop
+
+\\wsl$\Ubuntu-24.04\home\stan
