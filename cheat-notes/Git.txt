@@ -16,7 +16,13 @@ git show cbb0c31						=>  Prints out changes in that commit
 
 Add Submodule:
 1. git submodule add <repository-url> <path-to-submodule>
+															git submodule add https://github.com/staspk/Python.git  
 2. git submodule update --init --recursive
+3. To force submodule to auto-update to latest version of branch:
+[submodule "Windows11/.powershell/PowerShell"]
+	path = Windows11/.powershell/PowerShell
+	url = https://github.com/staspk/PowerShell.git
+	branch = main										<------ then: git submodule update --remote --recursive
 
 To update:
 git submodule update --remote
@@ -27,13 +33,11 @@ git submodule update --remote --merge --recursive
 git submodule sync --recursive			=> Use when updating .gitmodules
 
 
-Forces submodule to auto-update to latest version of branch:
-[submodule "Windows11/.powershell/PowerShell"]
-	path = Windows11/.powershell/PowerShell
-	url = https://github.com/staspk/PowerShell.git
-	branch = main										<------ then: git submodule update --remote --recursive
+
 
 
 
 Remove Submodule:
 1. git submodule deinit -f <path-to-submodule>
+git rm --cached <path-to-submodule>						-> remove submodule from tracking
+rm <path-to-submodule>		-> delete folder
