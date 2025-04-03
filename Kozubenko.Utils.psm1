@@ -115,7 +115,7 @@ function RestoreClassicContextMenu([bool]$reverse = $false) {
 	else {
 		Remove-Item -Path "HKCU:\Software\Classes\CLSID\$guid" -Recurse -Force -ErrorAction SilentlyContinue
 	}
-    Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+    Stop-Process -Name explorer -Force -ErrorAction Ignore
 }
 
 function ClearTerminal {
