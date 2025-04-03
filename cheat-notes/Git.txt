@@ -24,10 +24,10 @@ Add Submodule:
 	url = https://github.com/staspk/PowerShell.git
 	branch = main										<------ then: git submodule update --remote --recursive
 
-To update:
-git submodule update --remote
-git submodule update --remote --merge
-git submodule update --remote --merge --recursive
+To update, candidates:
+git submodule update --remote --recursive
+git submodule update --remote --recursive --merge
+
 
 
 git submodule sync --recursive			=> Use when updating .gitmodules
