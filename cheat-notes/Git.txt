@@ -25,8 +25,9 @@ Add Submodule:
 	branch = main										<------ then: git submodule update --remote --recursive
 
 To update, candidates:
-git submodule update --remote --recursive
 git submodule update --remote --recursive --merge
+git submodule update --remote --recursive
+
 
 
 
