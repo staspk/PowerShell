@@ -11,7 +11,8 @@ SetGlobal "GLOBALS"      "$PROFILE_DIR\.globals"
 SetGlobal "cheats"       "$PROFILE_DIR\cheat-notes"
 SetGlobal "roaming"      "$HOME\AppData\Roaming"
 SetGlobal "desktop"      "$HOME\Desktop"
-class KozubenkoProfile {   
+SetGlobal "downloads"    "$HOME\Downloads"
+class KozubenkoProfile {
     static [FunctionRegistry] GetFunctionRegistry() {
         return [FunctionRegistry]::new(
             "Kozubenko.Profile",
