@@ -9,7 +9,7 @@ class KozubenkoGit {
                 "UpdateSubmodules(`$merge=`$false)       -->   do not use until you update",
                 "HardReset()                           -->   git reset --hard HEAD; git clean -fd"
                 "GitHistory()                          -->   git log --oneline, afterwards: git show 06cb024", 
-                "Github()                              -->   goes to remote.origin.url in the browser",
+                "GitPage()                             -->   goes to remote.origin.url in the browser",
                 "GitConfig(`$email, `$name)              -->   git config --global user.email `$email; etc."
             ));
     }
@@ -37,7 +37,7 @@ function HardReset() {
     git clean -fd
 }
 
-function Github ($path = $PWD.Path) {
+function GitPage($path = $PWD.Path) {
     $configFile = "$path\.git\config"
     if(TestPathSilently $configFile) {  $url = git config --file $configFile --get remote.origin.url; Start-Process $url;  RETURN;  }
 
