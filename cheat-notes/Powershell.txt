@@ -19,3 +19,5 @@ Get-Help set-alias -full					=> The Ultimate Info Dump
 where.exe node => prints PATH for sofware (node in this case)
 
 [Microsoft.PowerShell.PSConsoleReadLine].GetMethod("AcceptLine")
+
+Invoke-WebRequest https://www.autohotkey.com/download/ahk-v2.exe -Debug		=> Steps through and gives you all the info
