@@ -38,16 +38,23 @@ function HardReset() {
 }
 
 function GitPage($path = $PWD.Path) {
-    $configFile = "$path\.git\config"
-    if(TestPathSilently $configFile) {  $url = git config --file $configFile --get remote.origin.url; Start-Process $url;  RETURN;  }
+    function TryOpenGithub($path) {
+        $configFile = "$path\.git\config"
+        if(Test-Path $configFile) {
+            $url = git config --file $configFile --get remote.origin.url
+            Start-Process $url
+            return $true
+        } else { return $false }
+    }
 
-    $possibleAltConfigLocation = "$path\..\.git\config"
-    if(TestPathSilently $possibleAltConfigLocation) {  $url = git config --file $possibleAltConfigLocation --get remote.origin.url; Start-Process $url;  RETURN;  }
+    if(TryOpenGithub $path) { RETURN }
+    
+    while(Test-Path "$path\..") {
+        $path = (Resolve-Path "$path\..").Path
+        if(TryOpenGithub $path) { RETURN }  
+    }
 
-    $possibleAltConfigLocation2 = "$path\..\..\.git\config"
-    if(TestPathSilently $possibleAltConfigLocation2) {  $url = git config --file $possibleAltConfigLocation2 --get remote.origin.url; Start-Process $url;  RETURN;  }
-
-    PrintRed "No .git config file found under `$path: $path";
+    PrintRed "No .git config file found with `$path: $path, or with any ancestor";
 }
 
 function GitHistory {
