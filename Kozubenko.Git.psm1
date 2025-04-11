@@ -7,6 +7,7 @@ class KozubenkoGit {
             @(
                 "Push(`$commitMsg = 'no_msg')           -->   push to github repo. does not work with branches",
                 "UpdateSubmodules(`$merge=`$false)       -->   do not use until you update",
+                "GitUncommit()                         -->   git reset --mixed HEAD~1"
                 "HardReset()                           -->   git reset --hard HEAD; git clean -fd"
                 "GitHistory()                          -->   git log --oneline, afterwards: git show 06cb024", 
                 "GitPage()                             -->   goes to remote.origin.url in the browser",
@@ -30,6 +31,10 @@ function Push ($commitMsg = "No Commit Message") {
 function UpdateSubmodules($merge=$false) {
     if($merge) {  git submodule update --remote  }
     else       {  git submodule update --remote --merge  }
+}
+
+function GitUncommit {
+    git reset --mixed HEAD~1
 }
 
 function HardReset() {
