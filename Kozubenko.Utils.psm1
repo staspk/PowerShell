@@ -10,20 +10,20 @@ function IsAdmin() {
 }
 
 function ResolvePath($path) {
-    if (-not(TestPathSilently($path))) {  Write-Host "`$path is not a valid path. `$path == $path" -ForegroundColor Red;  RETURN;  }
+    if (-not(Test-Path $path)) {  Write-Host "`$path is not a valid path. `$path == $path" -ForegroundColor Red;  RETURN;  }
 
     $path = (Resolve-Path $path).Path
 
     return $path
 }
 
-function TestPathSilently($dirPath, $returnPath = $false) { 
-    $exists = Test-Path $dirPath -ErrorAction SilentlyContinue
+function TestPathSilently($path) { 
+    $exists = Test-Path $path -ErrorAction SilentlyContinue
     
-    If (-not($returnPath)) { return $exists }
     if (-not($exists)) {  return $null  }
-    
-    return $dirPath
+    else {
+        return $path
+    }
 }
 function IsFile($path) {
     if ([string]::IsNullOrEmpty($path) -OR -not(Test-Path $path -ErrorAction SilentlyContinue)) {
@@ -48,8 +48,8 @@ function IsDirectory($path) {
     }
 }
 function ParentDir($path) {
-    if(-not(TestPathSilently($path))) {  Write-Host "Skipping GetParent(`$path) since `$path does not exist: $path" -ForegroundColor Red;  RETURN;  }
-    RETURN [System.IO.Path]::GetDirectoryName($path)
+    if(-not(Test-Path $path)) {  Write-Host "Skipping GetParent(`$path) since `$path does not exist: $path" -ForegroundColor Red;  RETURN;  }
+    return [System.IO.Path]::GetDirectoryName($path)
 }
 
 function WriteErrorExit([string]$errorMsg) {

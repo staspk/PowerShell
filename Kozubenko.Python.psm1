@@ -20,7 +20,7 @@ $global:venvActive = $false
 $BOILERPLATE_PYTHON_PROJECT = "$profile\..\boilerplate\python_minimum_vscode_setup"
 
 function SetupBasicPythonProject($path = $PWD.Path) {
-    if (-not(TestPathSilently $path)) {
+    if (-not(Test-Path $path)) {
         PrintDarkRed "`please give valid `$path"
         RETURN;
     }
@@ -44,12 +44,12 @@ function CreateVenvEnvironment {
 }
 
 function Activate {     # Use from a Python project root dir, to activate a venv virtual environment
-    if (TestPathSilently "$PWD\.venv")    {  Invoke-Expression "$PWD\.venv\Scripts\Activate.ps1";   $global:venvActive = $true   }
-    if (TestPathSilently "$PWD\venv")     {  Invoke-Expression "$PWD\venv\Scripts\Activate.ps1";    $global:venvActive = $true   }
+    if (Test-Path "$PWD\.venv")    {  Invoke-Expression "$PWD\.venv\Scripts\Activate.ps1";   $global:venvActive = $true   }
+    if (Test-Path "$PWD\venv")     {  Invoke-Expression "$PWD\venv\Scripts\Activate.ps1";    $global:venvActive = $true   }
 }
 
 function venvFreeze {
-    if ($global:venvActive -and (TestPathSilently "$PWD\.venv" -or TestPathSilently "$PWD\venv")) {
+    if ($global:venvActive -and (Test-Path "$PWD\.venv" -or Test-Path "$PWD\venv")) {
         pip freeze > requirements.txt
         PrintCyan "Frozen: $PWD\requirements.txt"
     }
@@ -58,7 +58,7 @@ function venvFreeze {
     }
 }
 function venvInstallRequirements {
-    if ($global:venvActive -and (TestPathSilently "$PWD\.venv" -or TestPathSilently "$PWD\venv")) {
+    if ($global:venvActive -and (Test-Path "$PWD\.venv" -or Test-Path "$PWD\venv")) {
         py -m pip install -r requirements.txt
         PrintCyan "requirements.txt installed"
     }

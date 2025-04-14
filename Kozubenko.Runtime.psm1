@@ -23,7 +23,7 @@ class MyRuntime {
             "DeleteVar(`$varName)"))
         );
 
-        if(-not(TestPathSilently($this.PATH_TO_GLOBALS))) {
+        if(-not(Test-Path $this.PATH_TO_GLOBALS)) {
             Set-Content -Path $this.PATH_TO_GLOBALS -Value "$($this.START_LOCATION_KEY)=$env:userprofile"
         }
         

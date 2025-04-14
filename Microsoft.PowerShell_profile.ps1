@@ -86,8 +86,8 @@ function Restart {                                         # try this version fo
     catch{}
 }
 
-function Open($path = $PWD.Path) {   # PUBLIC  -->  Opens In File Explorer
-    if (-not(TestPathSilently($path))) { PrintRed "`$path is not a valid path. `$path == $path";  RETURN; }
+function Open($path = $PWD.Path) {
+    if (-not(Test-Path $path)) { PrintRed "`$path is not a valid path. `$path == $path";  RETURN; }
 
     $path = (Resolve-Path $path).Path
 
@@ -100,12 +100,15 @@ function Open($path = $PWD.Path) {   # PUBLIC  -->  Opens In File Explorer
     }
     else {  explorer.exe $path  }
 }
-function Vsc($path = $PWD.Path) {    # PUBLIC  -->  Opens in Visual Studio Code
+function Vs($path = $PWD.Path) {
+
+}
+function Vsc($path = $PWD.Path) {
     if ($path -eq "..") {
         $path = "$PWD.Path\.."
     }
 
-    if (-not(TestPathSilently($path))) { PrintRed "`$path is not a valid path. `$path == $path";  RETURN; }
+    if (-not(Test-Path $path)) { PrintRed "`$path is not a valid path. `$path == $path";  RETURN; }
 
     if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir;  RETURN; }
     else { code $path }

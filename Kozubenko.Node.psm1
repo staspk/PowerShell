@@ -22,7 +22,7 @@ function setupTsDevEnvironment() {
 # "chrome://inspect/#devices"
 # chrome://inspect
 function debug($file) {
-    if(-not(TestPathSilently $file)) {
+    if(-not(Test-Path $file)) {
         PrintDarkRed "Can't find js/ts file to debug: $file"
         RETURN;
     }
