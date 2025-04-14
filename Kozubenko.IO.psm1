@@ -50,8 +50,19 @@ function DeleteEnvPath($path) {     # example $pathItemToRemove: %USERPROFILE%\A
     [System.Environment]::SetEnvironmentVariable("PATH", $newPath, "User")
 }
 
-
-function DisplayFolderSizes {
+function AllSizes {
+    $colItems = Get-ChildItem $startFolder -Force | Sort-Object
+    foreach ($i in $colItems) {
+        if ($i.PSIsContainer) {
+            $subItems = Get-ChildItem $i.FullName -Recurse -Force | Where-Object { -not $_.PSIsContainer }
+            $totalSize = ($subItems | Measure-Object -Property Length -Sum).Sum
+        } else {
+            $totalSize = $i.Length
+        }
+        PrintGreen "$($i.Name)" $false; PrintGray " --> " $false; PrintDarkRed "$("{0:N2}" -f ($totalSize / 1MB))MB"
+    }
+}
+function FolderSizes {
     $colItems = Get-ChildItem $startFolder | Where-Object {$_.PSIsContainer -eq $true} | Sort-Object
     foreach ($i in $colItems)
     {
