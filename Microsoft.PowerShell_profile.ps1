@@ -19,7 +19,8 @@ class KozubenkoProfile {
             @(
                 "Restart()                             -->   restarts Terminal. alias: re",    
                 "Open(`$path = 'PWD.Path')              -->   opens .\ or `$path in File Explorer",
-                "VsCode(`$path = 'PWD.Path')            -->   opens .\ or `$path in Visual Studio Code. alias: vsc",
+                "Vs(`$path = 'PWD.Path')                -->   opens .\ or `$path in Visual Studio",
+                "Vsc(`$path = 'PWD.Path')               -->   opens .\ or `$path in Visual Studio Code.",
                 "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++",
                 "Bible(`$passage)                       -->   `$passage == 'John:10'; opens in BibleGateway in 5 translations",
                 "UnixToMyTime(`$timestamp)              -->   self-explanatory",
@@ -99,7 +100,7 @@ function Open($path = $PWD.Path) {   # PUBLIC  -->  Opens In File Explorer
     }
     else {  explorer.exe $path  }
 }
-function VsCode($path = $PWD.Path) {    # PUBLIC  -->  Opens in Visual Studio Code
+function Vsc($path = $PWD.Path) {    # PUBLIC  -->  Opens in Visual Studio Code
     if ($path -eq "..") {
         $path = "$PWD.Path\.."
     }
@@ -171,7 +172,6 @@ function OnOpen() {
         [KozubenkoNode]::GetFunctionRegistry()
     ));
 
-    SetAliases VsCode @("vsc")
     SetAliases Restart @("re", "res")
     SetAliases Clear-Host  @("z", "zz", "zzz")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
