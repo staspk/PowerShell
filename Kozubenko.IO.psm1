@@ -51,7 +51,7 @@ function DeleteEnvPath($path) {     # example $pathItemToRemove: %USERPROFILE%\A
 }
 
 function AllSizes {
-    $colItems = Get-ChildItem $startFolder -Force | Sort-Object
+    $colItems = Get-ChildItem $startFolder -Force
     foreach ($i in $colItems) {
         if ($i.PSIsContainer) {
             $subItems = Get-ChildItem $i.FullName -Recurse -Force | Where-Object { -not $_.PSIsContainer }
@@ -63,7 +63,7 @@ function AllSizes {
     }
 }
 function FolderSizes {
-    $colItems = Get-ChildItem $startFolder | Where-Object {$_.PSIsContainer -eq $true} | Sort-Object
+    $colItems = Get-ChildItem $startFolder | Where-Object {$_.PSIsContainer -eq $true}
     foreach ($i in $colItems)
     {
         $subFolderItems = Get-ChildItem $i.FullName -recurse -force | Where-Object {$_.PSIsContainer -eq $false} | Measure-Object -property Length -sum | Select-Object Sum
