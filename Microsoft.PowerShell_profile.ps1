@@ -69,22 +69,6 @@ function Help($moduleName = $null) {
         }
     }
 }
-function Restart {                                         # try this version for a while...perhaps it will resolve the edge case of not always closing original window
-    $oldPid = $PID
-    PrintRed "`$oldPid==$oldPid"
-    Invoke-Item "$global:pshome\pwsh.exe"
-    
-    PrintRed "before exit command"
-    [System.Environment]::Exit(0)
-    PrintRed "after exit command"
-    try {
-        
-        PrintRed "before stop-process command"
-        Stop-Process -Id $oldPid# -ErrorAction SilentlyContinue
-        PrintRed "after stop-process command"
-    }
-    catch{}
-}
 
 function Open($path = $PWD.Path) {
     if (-not(Test-Path $path)) { PrintRed "`$path is not a valid path. `$path == $path";  RETURN; }
