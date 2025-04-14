@@ -101,17 +101,23 @@ function Open($path = $PWD.Path) {
     else {  explorer.exe $path  }
 }
 function Vs($path = $PWD.Path) {
-
+    if ($path -eq "..") {  $path = "$PWD.Path\.."  }
+    if (-not(Test-Path $path)) {  PrintRed "`$path is not a valid path. `$path == $path";  RETURN;  }
+    if (IsFile($path)) {  $path = ParentDir($path)  }
+    
+    $solution = Get-ChildItem -Path $RootDirectory -Filter "*.sln"
+    if ($solution.Count -eq 1) {
+        Invoke-Item $solution.FullName
+    } else {
+        PrintRed "Directory must have a .sln file. .sln count: $($solutions.Count)"
+    }
 }
 function Vsc($path = $PWD.Path) {
-    if ($path -eq "..") {
-        $path = "$PWD.Path\.."
-    }
-
-    if (-not(Test-Path $path)) { PrintRed "`$path is not a valid path. `$path == $path";  RETURN; }
-
-    if (IsFile($path)) {  $containingDir = [System.IO.Path]::GetDirectoryName($path); code $containingDir;  RETURN; }
-    else { code $path }
+    if ($path -eq "..") {  $path = "$PWD.Path\.."  }
+    if (-not(Test-Path $path)) {  PrintRed "`$path is not a valid path. `$path == $path";  RETURN;  }
+    if (IsFile($path)) {  $path = ParentDir($path)  }
+    
+    code $path
 }
 function Bible($string) {       # BIBLE John:10
     $array = $string.Split(":")
