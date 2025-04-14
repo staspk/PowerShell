@@ -48,7 +48,7 @@ function IsDirectory($path) {
     }
 }
 function ParentDir($path) {
-    if(-not(Test-Path $path)) {  Write-Host "Skipping GetParent(`$path) since `$path does not exist: $path" -ForegroundColor Red;  RETURN;  }
+    if(-not(Test-Path $path)) {  Write-Host "Skipping ParentDir(`$path) since `$path does not exist: $path" -ForegroundColor Red;  RETURN;  }
     return [System.IO.Path]::GetDirectoryName($path)
 }
 
