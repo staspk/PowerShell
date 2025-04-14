@@ -70,12 +70,13 @@ class MyRuntime {
 
     hidden [void] HandleStartupConsoleLocation() {
         $openedTo = $PWD.Path
-        if ($openedTo -ieq "$env:userprofile" -or $openedTo -ieq "C:\WINDOWS\system32") {   # If true, Powershell almost certainly started from taskbar/shortcut, not from right_click->open_in_terminal with specific dir in mind => checking if globals file has $global:startLocation...
+        # "-or $openedTo -ieq "C:\Users\stasp\Desktop"" in the next statement is temporary, while using .ahk script file, and not moving onto my own implementation
+        if ($openedTo -ieq "$env:userprofile" -or $openedTo -ieq "C:\WINDOWS\system32" -or $openedTo -ieq "C:\Users\stasp\Desktop") {   # If true, Powershell almost certainly started from taskbar/shortcut, not from right_click->open_in_terminal with specific dir in mind => checking if globals file has $global:startLocation...
             if ($global:startLocation -eq $null) {
                 # Do Nothing
             }
             elseif(IsDirectory $global:startLocation) {  Set-Location $global:startLocation }
-            elseif(IsFile $global:startLocation)      {  Set-Location $([System.IO.Path]::GetDirectoryName($global:startLocation))  }  # QoL, so it's easy to add eg: $startupLocation==$profile ie: the containing directory of a file, without being specific
+            elseif(IsFile $global:startLocation)      {  Set-Location $([System.IO.Path]::GetDirectoryName($global:startLocation));  }  # QoL, so it's easy to add eg: $startupLocation==$profile ie: the containing directory of a file, without being specific
             else {
                 PrintRed "`$startLocation path does not exist anymore. Defaulting to userdirectory..."
                 Set-Location $Env:USERPROFILE
