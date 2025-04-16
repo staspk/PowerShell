@@ -8,7 +8,7 @@ class KozubenkoGit {
                 "Push(`$commitMsg = 'no_msg')           -->   push to github repo. does not work with branches",
                 "UpdateSubmodules(`$merge=`$false)       -->   do not use until you update",
                 "GitUncommit()                         -->   git reset --mixed HEAD~1"
-                "HardReset()                           -->   git reset --hard HEAD; git clean -fd"
+                "HardReset()                           -->   DISABLED UNTIL NEXT UPDATE"
                 "GitHistory()                          -->   git log --oneline, afterwards: git show 06cb024", 
                 "GitPage()                             -->   goes to remote.origin.url in the browser",
                 "GitConfig(`$email, `$name)              -->   git config --global user.email `$email; etc."
@@ -38,6 +38,9 @@ function GitUncommit {
 }
 
 function HardReset() {
+    PrintRed "Currently Turned off Until Next Update"
+    RETURN;
+
     git reset --hard HEAD
     git clean -fd
 }
