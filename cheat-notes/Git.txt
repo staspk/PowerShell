@@ -43,7 +43,7 @@ git submodule sync --recursive			=> Use when updating .gitmodules
 
 
 
-Remove Submodule:
-1. git submodule deinit -f <path-to-submodule>
-git rm --cached <path-to-submodule>						-> remove submodule from tracking
-rm <path-to-submodule>		-> delete folder
+Trash Submodules (the way that truly works):
+1. delete .gitmodules
+2. delete everything under .git/modules/
+3. Push to remote
