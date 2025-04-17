@@ -16,8 +16,10 @@ git show cbb0c31						=>  Prints out changes in that commit
 
 Add Submodule:
 1. git submodule add <repository-url> <path-to-submodule>
-															git submodule add https://github.com/staspk/Python.git  
+	e.g: git submodule add https://github.com/staspk/PowerShell.git ./Windows11/.powershell/PowerShell
 2. git submodule update --init --recursive
+
+
 3. To force submodule to auto-update to latest version of branch:
 [submodule "Windows11/.powershell/PowerShell"]
 	path = Windows11/.powershell/PowerShell
@@ -25,9 +27,11 @@ Add Submodule:
 	branch = main										<------ then: git submodule update --remote --recursive
 
 To update, candidates: (still no clue)
+1) git submodule update --init --recursive --force		"Don’t care submodule has locally, just give me what the parent repo wants. .gitmodules "branch = main"
 git submodule update --remote
-git submodule update --remote --recursive --merge
-git submodule update --remote --recursive
+git submodule update --remote --recursive --merge		-> next time: try this first
+git submodule update --remote --recursive				-> resulted in a detached HEAD, for submodule and submodule of submodule
+try the foreach perhaps on second
 
 
 
