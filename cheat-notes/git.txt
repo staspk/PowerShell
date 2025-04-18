@@ -5,7 +5,22 @@ git branch --merged						=>  Lists branches that have been merged into the curre
 git log --oneline -4					=>	See list of commits
 git show cbb0c31						=>  Prints out changes in that commit
 
-git reset --mixed HEAD~1 				=>	"Oops, messed up that last commit. Repo is mine - not shared. Let's try that one again"
+git reset --mixed HEAD~1 				=>	"Oops, messed up that last commit. Let's try that one again."
+
+
+"I need to merge the last n commits" => {
+	git reset --soft HEAD~n									# n == (total_commits - 1) [like in a for-loop]
+	git commit --amend
+}
+"I need to merge non-successive commits" => {
+	git stash												# do if you have uncommited changes
+	git rebase -i HEAD~n									# interactice mode. lists commits oldest to newest.
+	Reorder commits from bottom -> up. base should be oldest commit - the one on top. "squash" will merge the line up.
+}
+git push --force											# I am alone. Force remote branch to look exactly like my local branch, no exceptions
+git push --force-with-lease <remote_name> <branch_name>		# Force only if the remote branch hasn't been updated by someone else since you last fetched from it
+git reflog													# see this context's history
+
 
 
 SUBMODULES
