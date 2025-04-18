@@ -5,44 +5,37 @@ class KozubenkoGit {
         return [FunctionRegistry]::new(
             "Kozubenko.Git",
             @(
-                "Push(`$commitMsg = 'no_msg')           -->   push to github repo. does not work with branches",
-                "UpdateSubmodules(`$merge=`$false)       -->   do not use until you update",
-                "GitUncommit()                         -->   git reset --mixed HEAD~1"
-                "HardReset()                           -->   DISABLED UNTIL NEXT UPDATE"
-                "GitHistory()                          -->   git log --oneline, afterwards: git show 06cb024", 
+                "GitStatus()                           -->   Clear-Host; git status"
+                "Push(`$commitMsg)                      -->   push to github repo. does not work with branches",
+                "GitUpdateSubmodules()                 -->   git submodule update --init --recursive --remote --force",
+                "GitLog(`$lines=4)                      -->   afterwards use: 'git show 06cb024'",
+                "GitUncommit()                         -->   redo your last pushed commit: git reset --mixed HEAD~1",
                 "GitPage()                             -->   goes to remote.origin.url in the browser",
                 "GitConfig(`$email, `$name)              -->   git config --global user.email `$email; etc."
             ));
     }
 }
 
-
-function GitConfig($email, $name) {
-    git config --global user.email $email
-    git config --global user.name $name
+function GitStatus() {
+    Clear-Host; git status
 }
 
-function Push ($commitMsg = "No Commit Message") {
+function Push($commitMsg = "No Commit Message") {
     git add .
     git commit -a -m $commitMsg
     git push
 }
 
-function UpdateSubmodules($merge=$false) {
-    if($merge) {  git submodule update --remote  }
-    else       {  git submodule update --remote --merge  }
+function GitUpdateSubmodules {
+    git submodule update --init --recursive --remote --force
+}
+
+function GitLog($lines=4) {
+    git log --oneline -$($lines)
 }
 
 function GitUncommit {
     git reset --mixed HEAD~1
-}
-
-function HardReset() {
-    PrintRed "Currently Turned off Until Next Update"
-    RETURN;
-
-    git reset --hard HEAD
-    git clean -fd
 }
 
 function GitPage($path = $PWD.Path) {
@@ -65,6 +58,7 @@ function GitPage($path = $PWD.Path) {
     PrintRed "No .git config file found with `$path: $path, or with any ancestor";
 }
 
-function GitHistory {
-    git log --oneline
+function GitConfig($email, $name) {
+    git config --global user.email $email
+    git config --global user.name $name
 }
