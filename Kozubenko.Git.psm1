@@ -11,7 +11,7 @@ class KozubenkoGit {
                 "GitLog(`$lines=4)                      -->   afterwards use: 'git show 06cb024'",
                 "GitUncommit()                         -->   redo your last pushed commit: git reset --mixed HEAD~1",
                 "GitPage()                             -->   goes to remote.origin.url in the browser",
-                "GitConfig(`$email, `$name)              -->   git config --global user.email `$email; etc."
+                "SquashCommits(`$commitMsg, `$n)         -->   (n = # of all commits being combined). force push included"
             ));
     }
 }
@@ -56,6 +56,25 @@ function GitPage($path = $PWD.Path) {
     }
 
     PrintRed "No .git config file found with `$path: $path, or with any ancestor";
+}
+
+function SquashCommits($commitMsg, $n) {
+    AssertString $commitMsg "commitMsg"
+    if($n -lt 2) {  PrintRed "required: n > 1"; RETURN;  }
+
+    $need_stash = (git status --porcelain)
+    if($need_stash) {
+        git stash | Out-Null
+    }
+
+    git reset --soft HEAD~$($n - 1) | Out-Null
+    git commit --amend -m $commitMsg | Out-Null
+
+    git push --force
+
+    if($need_stash) {
+        git stash pop | Out-Null
+    }
 }
 
 function GitConfig($email, $name) {
