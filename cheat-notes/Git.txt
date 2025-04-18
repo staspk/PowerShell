@@ -1,49 +1,30 @@
+git remote prune origin					=>	Deletes / stops tracking branches locally that have been deleted on remote.
 git branch -r							=>	This Git command will show you remote branches. 
-
 git branch --merged						=>  Lists branches that have been merged into the current branch on remote.
 
-git remote prune origin					=>	Deletes / stops tracking branches locally that have been deleted on remote.
-
-git add -A								=>	Adds literally all changes, while 'git add .' will skip deletions/new files/etc.
-git commit; git push
-
-git log --oneline						=>	Get a history of changes to repo
-
-git revert cc3bbf7 --no-edit			=>	Undo a specific commit. Don't forget to push after...
-
+git log --oneline -4					=>	See list of commits
 git show cbb0c31						=>  Prints out changes in that commit
 
-
-Add Submodule:
-1. git submodule add <repository-url> <path-to-submodule>
-	e.g: git submodule add https://github.com/staspk/PowerShell.git ./Windows11/.powershell/PowerShell
-2. git submodule update --init --recursive
+git reset --mixed HEAD~1 				=>	"Oops, messed up that last commit. Repo is mine - not shared. Let's try that one again"
 
 
-3. To force submodule to auto-update to latest version of branch:
-[submodule "Windows11/.powershell/PowerShell"]
-	path = Windows11/.powershell/PowerShell
-	url = https://github.com/staspk/PowerShell.git
-	branch = main										<------ then: git submodule update --remote --recursive
+SUBMODULES
+{
+ADD SUBMODULE:
+	1. git submodule add <repository-url> <path-to-submodule>
+		e.g: git submodule add https://github.com/staspk/PowerShell.git ./Windows11/.powershell/PowerShell
+	2. make "branch = main" explicit for each submodule in .gitmodules
+	3. git submodule update --init --recursive --remote --force
 
-To update, candidates: (still no clue)
-1) git submodule update --init --recursive --force		"Don’t care submodule has locally, just give me what the parent repo wants. .gitmodules "branch = main"
-git submodule update --remote
-git submodule update --remote --recursive --merge		-> next time: try this first
-git submodule update --remote --recursive				-> resulted in a detached HEAD, for submodule and submodule of submodule
-try the foreach perhaps on second
+RECURSIVE LOCAL UPDATE OF ALL SUBMODULES FROM REMOTE:
+	git submodule update --recursive --remote --force
+	force is destructive of local changes (but should be your default go-to)
 
+PUSH CHANGES UP:
+	go down to the submodule, and do a pull request, probably the ideal way
 
-
-
-git submodule sync --recursive			=> Use when updating .gitmodules
-
-
-
-
-
-
-Trash Submodules (the way that truly works):
-1. delete .gitmodules
-2. delete everything under .git/modules/
-3. Push to remote
+TRUE DELETE OF SUBMODULES:
+	1. delete .gitmodules
+	2. delete everything under .git/modules/
+	3. Push to remote
+}
