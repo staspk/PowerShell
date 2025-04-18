@@ -4,6 +4,15 @@ $WhiteRed = $PSStyle.Foreground.FromRgb(255, 196, 201);
 $LiteRed = $PSStyle.Foreground.FromRgb(223, 96, 107);
 
 
+function AssertString($string, $stringVarName) {
+    if(-not($stringVarName)) {
+        throw [System.Management.Automation.RuntimeException]::new("AssertString second paramter required: `$stringVarName")
+    }
+    if([string]::IsNullOrEmpty($string)) {
+        throw [System.Management.Automation.RuntimeException]::new("$stringVarName is Null or Empty")
+    }
+}
+
 function IsAdmin() {
     $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     return $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
