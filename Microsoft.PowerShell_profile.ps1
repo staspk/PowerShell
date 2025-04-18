@@ -154,6 +154,9 @@ function list() {
     Clear-Host
     $global:MyRuntime.LoadInGlobals($null)
 }
+function profile() {
+    vsc $profile
+}
 
 function OnOpen() {
     $global:MyRuntime = [MyRuntime]::new($global:GLOBALS);
@@ -189,8 +192,4 @@ function NodeRun([string]$server = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\N
 function StartCoreServer($projectDir = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\TcpServer") {
     Set-Location $projectDir
     dotnet run
-}
-
-function profile {
-    vsc $profile
 }
