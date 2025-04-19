@@ -70,11 +70,13 @@ function SquashCommits($commitMsg, $n) {
     git reset --soft HEAD~$($n - 1) | Out-Null
     git commit --amend -m $commitMsg | Out-Null
 
-    git push --force
+    git push --force | Out-Null
 
     if($need_stash) {
         git stash pop | Out-Null
     }
+
+    PrintGreen "Squash Complete"
 }
 
 function GitConfig($email, $name) {
