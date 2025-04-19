@@ -5,6 +5,9 @@ $LiteRed = $PSStyle.Foreground.FromRgb(223, 96, 107);
 
 
 function AssertString($string, $stringVarName) {
+    if(-not($stringVarName)) {
+        throw [System.Management.Automation.RuntimeException]::new("AssertString second paramter required: `$stringVarName")
+    }
     if([string]::IsNullOrEmpty($string)) {
         throw [System.Management.Automation.RuntimeException]::new("$stringVarName is Null or Empty")
     }
