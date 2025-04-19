@@ -72,7 +72,6 @@ function SquashCommits($commitMsg, $n) {
     git commit --amend -m $commitMsg | Out-Null
 
     git push --force | Out-Null
-
     PrintGreen "Git Push --force"
 
     if($need_stash) {
