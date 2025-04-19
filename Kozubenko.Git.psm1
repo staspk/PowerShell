@@ -68,8 +68,8 @@ function SquashCommits($commitMsg, $n) {
         PrintGreen "Git Stash"
     }
 
-    git reset --soft HEAD~$($n - 1) | Out-Null
-    git commit --amend -m $commitMsg | Out-Null
+    git reset --soft HEAD~$($n - 1)
+    git commit --amend -m $commitMsg
 
     git push --force | Out-Null
     PrintGreen "Git Push --force"
