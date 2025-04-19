@@ -64,19 +64,17 @@ function SquashCommits($commitMsg, $n) {
 
     $need_stash = (git status --porcelain)
     if($need_stash) {
-        git stash | Out-Null
-        PrintGreen "Git Stash"
+        git stash
     }
 
     git reset --soft HEAD~$($n - 1)
     git commit --amend -m $commitMsg
 
-    git push --force | Out-Null
-    PrintGreen "Git Push --force"
+    git push --force
+    PrintGreen "Force Pushed to Remote"
 
     if($need_stash) {
-        git stash pop | Out-Null
-        PrintGreen "Git Stash Pop"
+        git stash pop
     }
 }
 
