@@ -65,6 +65,7 @@ function SquashCommits($commitMsg, $n) {
     $need_stash = (git status --porcelain)
     if($need_stash) {
         git stash | Out-Null
+        PrintGreen "Git Stash"
     }
 
     git reset --soft HEAD~$($n - 1) | Out-Null
@@ -72,11 +73,12 @@ function SquashCommits($commitMsg, $n) {
 
     git push --force | Out-Null
 
+    PrintGreen "Git Push --force"
+
     if($need_stash) {
         git stash pop | Out-Null
+        PrintGreen "Git Stash Pop"
     }
-
-    PrintGreen "Squash Complete"
 }
 
 function GitConfig($email, $name) {
