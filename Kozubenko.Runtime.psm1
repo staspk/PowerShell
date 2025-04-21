@@ -28,7 +28,7 @@ class MyRuntime {
         }
         
         $this.LoadInGlobals($null);
-        $this.HandleStartupConsoleLocation();
+        $this.HandleTerminalStartupLocation();
     }
 
     [void] AddModule([FunctionRegistry]$functionRegistry) {
@@ -48,14 +48,14 @@ class MyRuntime {
     }
 
     NewVar($name, $value) {   # PUBLIC
-        if ([string]::IsNullOrEmpty($name)) {  RETURN  }
+        AssertString $name "name"
         if ($name[0] -eq "$") {  $name = $name.Substring(1, $name.Length - 1 )  }
         $this.SaveToGlobals($name, $value)
         $this.LoadInGlobals($null)
     }
 
     SetVar($name, $value) {   # PUBLIC
-        if ([string]::IsNullOrEmpty($name) -or [string]::IsNullOrEmpty($value)) {  RETURN  }
+        AssertString $name "name"; AssertString $value "value"
         if ($name[0] -eq "$") {  $name = $name.Substring(1, $name.Length - 1 )  }
         $this.SaveToGlobals($name, $value)
         $this.LoadInGlobals($null)
@@ -68,15 +68,16 @@ class MyRuntime {
     }
 
 
-    hidden [void] HandleStartupConsoleLocation() {
+    hidden [void] HandleTerminalStartupLocation() {
         $openedTo = $PWD.Path
-        # "-or $openedTo -ieq "C:\Users\stasp\Desktop"" in the next statement is temporary, while using .ahk script file, and not moving onto my own implementation
-        if ($openedTo -ieq "$env:userprofile" -or $openedTo -ieq "C:\WINDOWS\system32" -or $openedTo -ieq "C:\Users\stasp\Desktop") {   # If true, Powershell almost certainly started from taskbar/shortcut, not from right_click->open_in_terminal with specific dir in mind => checking if globals file has $global:startLocation...
-            if ($global:startLocation -eq $null) {
-                # Do Nothing
-            }
-            elseif(IsDirectory $global:startLocation) {  Set-Location $global:startLocation }
-            elseif(IsFile $global:startLocation)      {  Set-Location $([System.IO.Path]::GetDirectoryName($global:startLocation));  }  # QoL, so it's easy to add eg: $startupLocation==$profile ie: the containing directory of a file, without being specific
+
+        # If true, Powershell has NOT started from right_click->open_in_terminal (with specific folder in mind). 
+        if ($openedTo -ieq "$env:userprofile" -or
+            $openedTo -ieq "C:\WINDOWS\system32" -or
+            $openedTo -ieq "C:\Users\stasp\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"    # Powershell started with .ahk hotkey
+        ) {
+            if(IsDirectory $global:startLocation) {  Set-Location $global:startLocation }
+            elseif(IsFile $global:startLocation)  {  Set-Location $(ParentDir $global:startLocation)  }  # QoL, so it's easy set $profile as startupLocation
             else {
                 PrintRed "`$startLocation path does not exist anymore. Defaulting to userdirectory..."
                 Set-Location $Env:USERPROFILE
