@@ -1,0 +1,5 @@
+for a c++ project, to force clean on f5 command:
+	Project Properties
+	Build Events
+	Pre-Build Event:
+	Command Line: msbuild /t:Clean "$(ProjectPath)" /p:Configuration=$(Configuration) /p:Platform=$(Platform)
