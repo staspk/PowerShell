@@ -13,6 +13,14 @@ function AssertString($string, $stringVarName) {
     }
 }
 
+function Capitalize($string) {
+    AssertString $string "string"
+
+    $string.Substring(0, 1).ToUpper()
+    $string.Substring(1, $string.Length - 1)
+    return $string
+}
+
 function IsAdmin() {
     $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     return $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
