@@ -6,7 +6,7 @@ $LiteRed = $PSStyle.Foreground.FromRgb(223, 96, 107);
 
 function AssertString($string, $stringVarName) {
     if(-not($stringVarName)) {
-        throw [System.Management.Automation.RuntimeException]::new("AssertString second paramter required: `$stringVarName")
+        throw [System.Management.Automation.RuntimeException]::new("AssertString second parameter required: `$stringVarName")
     }
     if([string]::IsNullOrEmpty($string)) {
         throw [System.Management.Automation.RuntimeException]::new("$stringVarName is Null or Empty")
@@ -16,14 +16,26 @@ function AssertString($string, $stringVarName) {
 function Capitalize($string) {
     AssertString $string "string"
 
-    $string.Substring(0, 1).ToUpper()
-    $string.Substring(1, $string.Length - 1)
-    return $string
+    $capitalizedStr = $string.Substring(0, 1).ToUpper()
+    $capitalizedStr += $string.Substring(1, $string.Length - 1).ToLower()
+    return $capitalizedStr
 }
 
 function IsAdmin() {
     $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     return $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+function ParentDir($path) {
+    return [System.IO.Path]::GetDirectoryName($path)
+}
+function Directory($path) {
+    if(-not(Test-Path $path)) {  mkdir $path  }
+    return $path
+}
+function File($path) {
+    $directory = Directory $(ParentDir $path)
+    return $path
 }
 
 function ResolvePath($path) {
@@ -36,17 +48,14 @@ function ResolvePath($path) {
 
 function TestPathSilently($path) { 
     $exists = Test-Path $path -ErrorAction SilentlyContinue
-    
+
     if (-not($exists)) {  return $null  }
     else {
         return $path
     }
 }
 function IsFile($path) {
-    if ([string]::IsNullOrEmpty($path) -OR -not(Test-Path $path -ErrorAction SilentlyContinue)) {
-        # Write-Host "Kozubenko.Utils:IsFile(`$path) has hit sanity check. `$path: $path"
-        return $false
-    }
+    AssertString $path "path"
 
     if (Test-Path -Path $path -PathType Leaf) {  return $true;  }
     else {
@@ -54,19 +63,12 @@ function IsFile($path) {
     }
 }
 function IsDirectory($path) {
-    if ([string]::IsNullOrEmpty($path) -OR -not(Test-Path $path -ErrorAction SilentlyContinue)) {
-        # Write-Host "Kozubenko.Utils:IsDirectory(`$path) has hit sanity check. `$path: $path"
-        return $false
-    }
+    AssertString $path "path"
 
     if (Test-Path -Path $path -PathType Container) {  return $true  }
     else {
         return $false
     }
-}
-function ParentDir($path) {
-    if(-not(Test-Path $path)) {  Write-Host "Skipping ParentDir(`$path) since `$path does not exist: $path" -ForegroundColor Red;  RETURN;  }
-    return [System.IO.Path]::GetDirectoryName($path)
 }
 
 function WriteErrorExit([string]$errorMsg) {
@@ -76,7 +78,7 @@ function WriteErrorExit([string]$errorMsg) {
 }
 
 function SetAliases($function, [Array]$aliases) {   # Throws exception if you try to set an alias on a keyword you already set an alias on
-    if ($function -eq $null -or $aliases -eq $null) {  RETURN  }
+    if (-not($function) -or -not($aliases)) {  PrintRed "Skipping SetAliases, `$function or `$aliases is falsy."; RETURN;  }
 
     foreach ($alias in $aliases) {
         Set-Alias -Name $alias -Value $function -Scope Global -Option Constant,AllScope -Force
@@ -84,7 +86,7 @@ function SetAliases($function, [Array]$aliases) {   # Throws exception if you tr
 }
 function SetGlobal($varName, $value) {
     if($varName[0] -eq "$") {
-        $varName = $varName.Substring(1, $name.Length - 1 )
+        $varName = $varName.Substring(1, $name.Length - 1)
     }
         
     Set-Variable -Name $varName -Value $value -Scope Global
