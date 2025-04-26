@@ -22,7 +22,6 @@ class KozubenkoProfile {
                 "Vs(`$path = 'PWD.Path')                -->   opens .\ or `$path in Visual Studio",
                 "Vsc(`$path = 'PWD.Path')               -->   opens .\ or `$path in Visual Studio Code.",
                 "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++",
-                "Bible(`$passage)                       -->   `$passage == 'John:10'; opens in BibleGateway in 5 translations",
                 "UnixToMyTime(`$timestamp)              -->   self-explanatory",
                 "vtt_to_srt(`$file)                     -->   convert subtitles from format .vtt to .srt",
                 "webm_to_mp4(`$file)                    -->   convert webm to mp4 file, crt==18 (visually lossless)"
@@ -103,18 +102,7 @@ function Vsc($path = $PWD.Path) {
     
     code $path
 }
-function Bible($string) {       # BIBLE John:10
-    $array = $string.Split(":")
-    
-    if($array.Count -ne 2) {
-        PrintRed "Bible(`$input) => input must follow format: Matthew:10"
-        RETURN
-    }
 
-    $version = "kjv;nasb;rsv;rusv;nrt"
-
-    Start-Process microsoft-edge:"https://www.biblegateway.com/passage/?search=$($array[0])$($array[1])&version=$version" -WindowStyle maximized
-}
 function UnixToMyTime($timestamp) {
     $dateTimeUtc = [System.DateTimeOffset]::FromUnixTimeSeconds($timestamp).DateTime
 
