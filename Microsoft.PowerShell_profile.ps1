@@ -1,5 +1,6 @@
 using module .\classes\FunctionRegistry.psm1
 using module .\Kozubenko.Utils.psm1
+using module .\Kozubenko.Bible.psm1
 using module .\Kozubenko.Git.psm1
 using module .\Kozubenko.Python.psm1
 using module .\Kozubenko.Node.psm1
@@ -17,7 +18,6 @@ class KozubenkoProfile {
         return [FunctionRegistry]::new(
             "Kozubenko.Profile",
             @(
-                "Restart()                             -->   restarts Terminal. alias: re",    
                 "Open(`$path = 'PWD.Path')              -->   opens .\ or `$path in File Explorer",
                 "Vs(`$path = 'PWD.Path')                -->   opens .\ or `$path in Visual Studio",
                 "Vsc(`$path = 'PWD.Path')               -->   opens .\ or `$path in Visual Studio Code.",
@@ -149,6 +149,7 @@ function profile() {
 function OnOpen() {
     $global:MyRuntime = [MyRuntime]::new($global:GLOBALS);
     $global:MyRuntime.AddModules(@(
+        # [KozubenkoBible]::GetFunctionRegistry(),
         [KozubenkoIO]::GetFunctionRegistry(),
         [KozubenkoProfile]::GetFunctionRegistry(),
         [KozubenkoGit]::GetFunctionRegistry(),
