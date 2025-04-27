@@ -17,7 +17,7 @@ class KozubenkoPython {
 
 $global:venvActive = $false
 
-$BOILERPLATE_PYTHON_PROJECT = "$profile\..\boilerplate\python_minimum_vscode_setup"
+$global:BOILERPLATE_PYTHON_PROJECT = "$profile\..\boilerplate\python_vscode_setup"
 
 function SetupBasicPythonProject($path = $PWD.Path) {
     if (-not(Test-Path $path)) {
@@ -33,7 +33,7 @@ function SetupBasicPythonProject($path = $PWD.Path) {
 
     Copy-Item -Path "$BOILERPLATE_PYTHON_PROJECT\*" -Destination $path -Recurse
 
-    Clear-Host
+    # Clear-Host
 }
 
 
