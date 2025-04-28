@@ -103,8 +103,8 @@ function BibleDeprecated($string) {
 }
 
 function Bible($book, $chapter) {
-    if($book -notin $BIBLE.Keys) {  PrintRed "Book does not exist: $book"  }
-    if($chapter -lt 1 -OR $chapter -gt $BIBLE[$book]) {  PrintRed "Chapter does not exist: $($book):$($chapter)"  }
+    if($book -notin $BIBLE.Keys) {  PrintRed "Book does not exist: $book"; RETURN;  }
+    if($chapter -lt 1 -OR $chapter -gt $BIBLE[$book]) {  PrintRed "Chapter does not exist: $($book):$($chapter)"; RETURN;  }
 
     $translations = "kjv;nasb;rsv;rusv;nrt"
     $targetUrl = "https://www.biblegateway.com/passage/?search=$book%20$chapter&version=$translations"      # %20 == space, e.g: ' '
@@ -112,6 +112,9 @@ function Bible($book, $chapter) {
     Start-Process microsoft-edge:"$targetUrl" -WindowStyle maximized
 }
 
+<# 
+    uses $BIBLE to construct dynamic functions that all internally call Bible(). e.g: 1John(5) calls Bible(1John, 5)
+#>
 foreach ($book in $BIBLE.Keys) {
     $scriptBlock = {
         param(
