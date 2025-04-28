@@ -14,6 +14,7 @@ SetGlobal "appdata"      "$HOME\AppData\Roaming"
 SetGlobal "roaming"      "$HOME\AppData\Roaming"
 SetGlobal "desktop"      "$HOME\Desktop"
 SetGlobal "downloads"    "$HOME\Downloads"
+SetGlobal "yt-dlp"       "$desktop\yt-dlp"
 class KozubenkoProfile {
     static [FunctionRegistry] GetFunctionRegistry() {
         return [FunctionRegistry]::new(

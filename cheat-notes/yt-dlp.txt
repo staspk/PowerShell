@@ -1,5 +1,10 @@
 
 
+https://www.youtube.com/watch?v=l-0FyvONb4c&t=53s&ab_channel=%D0%A2%D0%BE%D0%BF%D0%A4%D0%B8%D0%BB%D1%8C%D0%BC%D1%8B
+
+
+
+
 Download only 1min: [note: downloads really slow in this case]
 ./yt-dlp.exe --download-sections "*00:00:00-00:01:00" "https://www.youtube.com/watch?v=ncPW2pyOzJU&ab_channel=kremlin"
 
