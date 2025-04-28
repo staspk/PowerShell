@@ -10,6 +10,7 @@ using module .\Kozubenko.IO.psm1
 SetGlobal "PROFILE_DIR"  $(ParentDir($PROFILE))
 SetGlobal "GLOBALS"      "$PROFILE_DIR\.globals"
 SetGlobal "cheats"       "$PROFILE_DIR\cheat-notes"
+SetGlobal "appdata"      "$HOME\AppData\Roaming"
 SetGlobal "roaming"      "$HOME\AppData\Roaming"
 SetGlobal "desktop"      "$HOME\Desktop"
 SetGlobal "downloads"    "$HOME\Downloads"
@@ -146,6 +147,12 @@ function profile() {
     vsc $profile
 }
 
+function Find($filename) {
+    $path = $($PWD.Path)
+    Get-ChildItem -Path $path -Filter $filename -Recurse -File -ErrorAction SilentlyContinue
+    # $searchResults | Format-List *
+}
+
 function OnOpen() {
     $global:MyRuntime = [MyRuntime]::new($global:GLOBALS);
     $global:MyRuntime.AddModules(@(
@@ -169,6 +176,62 @@ function OnOpen() {
 }
 OnOpen
 
+
+
+function ReInstallUnpackedExtension($extensionName) {
+    AssertString $extensionName "extensionName"
+
+    $path = "C:\Users\stasp\Desktop\My-Garage\Fixit"
+
+    # $process = "Chrome"
+    # Start-Process $process;  Start-Sleep 2
+    # $wshell = New-Object -ComObject wscript.shell;
+    # $wshell.AppActivate("$process")
+    # Start-Sleep 1
+    # $wshell.SendKeys("^(l)")    # Ctrl+L
+    # Start-Sleep 1
+    # $wshell.SendKeys("chrome://inspect")
+    # Start-Sleep 1
+    # $wshell.SendKeys("{ENTER}")
+
+    # $edgeProcesses = Get-Process | Where-Object { $_.Name -eq "msedge" }
+    # $edgeWindowCount = $edgeProcesses.Count
+
+    # PrintYellow $edgeWindowCount
+
+    $process = Start-Process msedge -WindowStyle Maximized -PassThru;      Start-Sleep .2
+    $wshell = New-Object -ComObject wscript.shell
+    $wshell.AppActivate($process)
+    $wshell.SendKeys("^(l)")    # Ctrl+L
+    $wshell.SendKeys("edge://extensions/?q=$extensionName")
+    $wshell.SendKeys("{ENTER}");                                           Start-Sleep .2
+    
+    $wshell.SendKeys("^+j");                                               Start-Sleep .1   
+
+    # $wshell.AppActivate($process)
+    # $wshell.SendKeys("^(l)");                                              Start-Sleep .1                                        
+    # $wshell.SendKeys("{TAB 18}");
+
+    # $wshell.SendKeys("^(l)")    # Ctrl+L
+    # $wshell.SendKeys("edge://extensions/?q=$extensionName")
+    # $wshell.SendKeys("{TAB 11}{ENTER}");                    Start-Sleep .01
+    # $wshell.SendKeys("{ENTER}");
+
+
+    # if(-not($success)) {
+    #     PrintRed "Activation by PID: $success. Abandoning InstallUnpackedExtension."
+
+    #     if ($process.MainWindowTitle) {
+    #         $success = $wshell.AppActivate($process.MainWindowTitle)
+    #     }
+
+    #     if($success) {
+    #         PrintGreen "But second method worked"
+    #     }
+    # }
+
+    # $process | Format-List
+}
 
 function NodeRun([string]$server = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\NodeJS\server.js", [string]$client = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\NodeJS\client.js") {
     Clear-Host
