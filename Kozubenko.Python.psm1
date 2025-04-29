@@ -15,7 +15,7 @@ class KozubenkoPython {
 }
 
 
-$global:venvActive = $false
+$global:venvActive = $false     # Note: venvActive becomes $true, but the assumption is you will exit the terminal, i.e: Deactivate does not venvActive=$false
 
 $global:BOILERPLATE_PYTHON_PROJECT = "$profile\..\boilerplate\python_vscode_setup"
 
@@ -25,9 +25,10 @@ function SetupBasicPythonProject($path = $PWD.Path) {
         RETURN;
     }
 
-    py -m venv .venv
+    py -m venv --system-site-packages .venv
 
     .venv\Scripts\Activate.ps1
+    $global:venvActive = $true
 
     python.exe -m pip install --upgrade pip
 
@@ -44,8 +45,9 @@ function CreateVenvEnvironment {
 }
 
 function Activate {     # Use from a Python project root dir, to activate a venv virtual environment
-    if (Test-Path "$PWD\.venv")    {  Invoke-Expression "$PWD\.venv\Scripts\Activate.ps1";   $global:venvActive = $true   }
-    if (Test-Path "$PWD\venv")     {  Invoke-Expression "$PWD\venv\Scripts\Activate.ps1";    $global:venvActive = $true   }
+    if (Test-Path "$PWD\.venv")    {  Invoke-Expression "$PWD\.venv\Scripts\Activate.ps1";  }
+    if (Test-Path "$PWD\venv")     {  Invoke-Expression "$PWD\venv\Scripts\Activate.ps1";   }
+    $global:venvActive = $true
 }
 
 function venvFreeze {
