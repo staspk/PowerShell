@@ -9,12 +9,12 @@ using module .\Kozubenko.IO.psm1
 
 SetGlobal "PROFILE_DIR"  $(ParentDir($PROFILE))
 SetGlobal "GLOBALS"      "$PROFILE_DIR\.globals"
-SetGlobal "cheats"       "$PROFILE_DIR\cheat-notes"
-SetGlobal "appdata"      "$HOME\AppData\Roaming"
-SetGlobal "roaming"      "$HOME\AppData\Roaming"
 SetGlobal "desktop"      "$HOME\Desktop"
 SetGlobal "downloads"    "$HOME\Downloads"
+SetGlobal "appdata"      "$HOME\AppData\Roaming"
+SetGlobal "startup"      "$appdata\Microsoft\Windows\Start Menu\Programs\Startup"
 SetGlobal "yt-dlp"       "$desktop\yt-dlp"
+SetGlobal "cheats"       "$PROFILE_DIR\cheat-notes"
 class KozubenkoProfile {
     static [FunctionRegistry] GetFunctionRegistry() {
         return [FunctionRegistry]::new(
