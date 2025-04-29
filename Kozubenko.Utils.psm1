@@ -20,6 +20,10 @@ function Capitalize($string) {
     $capitalizedStr += $string.Substring(1, $string.Length - 1).ToLower()
     return $capitalizedStr
 }
+function AddWhitespace($string, $amount) {
+    for($i = 0; $i -lt $amount; $i++) {  $string += " "  }
+    return $string
+}
 
 function IsAdmin() {
     $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
