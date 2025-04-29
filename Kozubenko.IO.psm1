@@ -1,4 +1,5 @@
 using module .\classes\FunctionRegistry.psm1
+using module .\Kozubenko.Utils.psm1
 class KozubenkoIO {   
     static [FunctionRegistry] GetFunctionRegistry() {
         return [FunctionRegistry]::new(
@@ -20,6 +21,47 @@ function Path {
 
     foreach ($item in $pathArray) {
         Write-Host $item
+    }
+}
+
+function AllSizes($startFolder = $PWD.Path) {
+    $folderItems = Get-ChildItem $startFolder -Force
+
+    $longestNameLen = 0
+    $folderItemSizes = [System.Collections.Generic.OrderedDictionary[string, string]]::new()
+    foreach ($item in $folderItems) {
+        if ($item.PSIsContainer) {
+            $subItems = Get-ChildItem $item.FullName -Recurse -Force | Where-Object { -not $_.PSIsContainer }
+            $totalSize = ($subItems | Measure-Object -Property Length -Sum).Sum
+        } else {  $totalSize = $item.Length  }
+
+        $folderItemSizes.Add($item.name, "$("{0:N2}" -f ($totalSize / 1MB))MB")
+        if($longestNameLen -lt $item.name.Length) {  $longestNameLen = $item.name.Length  }
+    }
+
+    foreach ($itemName in $folderItemSizes.Keys) {
+        PrintGreen " $(AddWhitespace $itemName ($longestNameLen - $itemName.Length)) " $false
+        PrintGray ":" $false
+        PrintDarkRed " $($folderItemSizes[$itemName])"
+    }
+}
+function FolderSizes($startFolder = $PWD.Path) {
+    $folders = Get-ChildItem $startFolder | Where-Object {$_.PSIsContainer -eq $true}
+
+    $longestNameLen = 0
+    $folderSizes = [System.Collections.Generic.OrderedDictionary[string, string]]::new()
+    foreach ($folder in $folders)
+    {
+        $subFolderItems = Get-ChildItem $folder.FullName -recurse -force | Where-Object {$_.PSIsContainer -eq $false} | Measure-Object -property Length -sum | Select-Object Sum
+        
+        $folderSizes.Add($folder.Name, "$("{0:N2}" -f ($subFolderItems.sum / 1MB))MB")
+        if($longestNameLen -lt $folder.name.Length) {  $longestNameLen = $folder.name.Length  }
+    }
+
+    foreach ($folderName in $folderSizes.Keys) {
+        PrintGreen " $(AddWhitespace $folderName ($longestNameLen - $folderName.Length)) " $false
+        PrintGray ":" $false
+        PrintDarkRed " $($folderSizes[$folderName])"
     }
 }
 
@@ -49,27 +91,6 @@ function DeleteEnvPath($path) {     # example $pathItemToRemove: %USERPROFILE%\A
     }
 
     [System.Environment]::SetEnvironmentVariable("PATH", $newPath, "User")
-}
-
-function AllSizes {
-    $colItems = Get-ChildItem $startFolder -Force
-    foreach ($i in $colItems) {
-        if ($i.PSIsContainer) {
-            $subItems = Get-ChildItem $i.FullName -Recurse -Force | Where-Object { -not $_.PSIsContainer }
-            $totalSize = ($subItems | Measure-Object -Property Length -Sum).Sum
-        } else {
-            $totalSize = $i.Length
-        }
-        PrintGreen "$($i.Name)" $false; PrintGray " --> " $false; PrintDarkRed "$("{0:N2}" -f ($totalSize / 1MB))MB"
-    }
-}
-function FolderSizes {
-    $colItems = Get-ChildItem $startFolder | Where-Object {$_.PSIsContainer -eq $true}
-    foreach ($i in $colItems)
-    {
-        $subFolderItems = Get-ChildItem $i.FullName -recurse -force | Where-Object {$_.PSIsContainer -eq $false} | Measure-Object -property Length -sum | Select-Object Sum
-        PrintGreen "$($i.Name)" $false; PrintGray " --> " $false; PrintDarkRed "$("{0:N2}" -f ($subFolderItems.sum / 1MB))MB"
-    }
 }
 
 function ClearFolder($folder = ".\") {
