@@ -113,7 +113,7 @@ function Bible($book, $chapter) {
 }
 
 <# 
-    uses $BIBLE to construct dynamic functions that all internally call Bible(). e.g: 1John(5) calls Bible(1John, 5)
+    uses above $BIBLE dict to construct dynamic functions that all internally call Bible(). e.g: 1John(5) calls Bible(1John, 5)
 #>
 foreach ($book in $BIBLE.Keys) {
     $scriptBlock = {
@@ -124,9 +124,9 @@ foreach ($book in $BIBLE.Keys) {
         Bible $book @PassthroughArgs                                                  # @ == splatting operator. passes each value in array as separate arg
     }.GetNewClosure()
 
-    try {
-        New-Item -Path "Function:\$book" -Value $scriptBlock -Force -ErrorAction Stop
-    } catch {
-        PrintDarkRed "Kozubenko.Bible: failed to create function: $book. $($_.Exception.Message)"
+    New-Item -Path "Function:\$book" -Value $scriptBlock -Force -ErrorAction Stop
+
+    if($book -eq "Psalms") {
+        New-Item -Path "Function:\Psalm" -Value $scriptBlock -Force -ErrorAction Stop
     }
 }
