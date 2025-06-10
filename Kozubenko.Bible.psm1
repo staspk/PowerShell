@@ -78,38 +78,22 @@ $BIBLE = @{
     "Jude"           = 1
     "Revelation"     = 22
 }
-
-# example use: BIBLE John:10
-# example url: https://www.biblegateway.com/passage/?search=matthew23&version=kjv;nasb;rsv;rusv;nrt
-function BibleDeprecated($string) {
-    $array = $string.Split(":")
-    if($array.Count -ne 2) {  PrintRed "Bible(`$input) => input must follow format: 1John:10"; RETURN;  }
-    $array[0] = Capitalize $array[0]
-
-    $version = "kjv;nasb;rsv;rusv;nrt"
-    $targetUrl = "https://www.biblegateway.com/passage/?search=$($array[0])$($array[1])&version=$version"
-    $outputHtml = File "$roaming\BibleGateway\$($array[0])\$($array[1]).html"
-
-    printred $targetUrl
-    return;
-    
-    $webResponse = Invoke-WebRequest -Uri $targetUrl
-    $htmlContent = $webResponse.Content
-    Set-Content -Path $outputHtml -Value $htmlContent -Encoding UTF8
-
-    open $(ParentDir $outputHtml)
-
-    # Start-Process microsoft-edge:"https://www.biblegateway.com/passage/?search=$($array[0])$($array[1])&version=$version" -WindowStyle maximized
-}
-
 function Bible($book, $chapter) {
     if($book -notin $BIBLE.Keys) {  PrintRed "Book does not exist: $book"; RETURN;  }
     if($chapter -lt 1 -OR $chapter -gt $BIBLE[$book]) {  PrintRed "Chapter does not exist: $($book):$($chapter)"; RETURN;  }
 
     $translations = "kjv;nasb;rsv;rusv;nrt"
+    $translations2 = "nkjv;esv;nrsv;niv;net"
+
+    if($book[0] -eq "1" -OR $book[0] -eq "2" -OR $book[0] -eq "3") {        # adding space to from "1Samuel" & "3John"
+        $book = "$($book[0]) $($book.Substring(1))"
+    }
+
     $targetUrl = "https://www.biblegateway.com/passage/?search=$book%20$chapter&version=$translations"      # %20 == space, e.g: ' '
+    $targetUrl2 = "https://www.biblegateway.com/passage/?search=$book%20$chapter&version=$translations2"
 
     Start-Process microsoft-edge:"$targetUrl" -WindowStyle maximized
+    Start-Process microsoft-edge:"$targetUrl2" -WindowStyle maximized
 }
 
 <# 
