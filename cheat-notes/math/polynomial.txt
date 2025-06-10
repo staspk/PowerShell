@@ -1,0 +1,9 @@
+X^3 + 2Y^2 + 10
+
+rules:
+	All exponents (3 and 2) are non-negative integers
+	only addition multiplication (and exponents, naturally)
+	
+not polynomial:
+	x2.5 + 1
+	4^x
