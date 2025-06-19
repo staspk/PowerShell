@@ -188,8 +188,21 @@ OnOpen
 
 function str_to_list([string]$array, $delimiter = " ") {
     <#
+    .SYNOPSIS
+    PS > str_to_list 'KJV', 'NKJV', 'RSV', 'NRSV', 'NASB' ';'
+    Returns:
+        KJV;NKJV;RSV;NRSV;NASB
+
     .DESCRIPTION
-    Quick list to str conversion. Note: explicit use of '-
+    Convert a list into a string.
+
+    .PARAMETER array
+    Expects a python-like list excluding brackets. Will be coerced into string.
+    Example: 'KJV', 'NKJV', 'RSV', 'NRSV', 'NASB'
+
+    .PARAMETER delimiter
+    The character or string to insert between each element of the final joined output.
+    Default: " "
 
     .EXAMPLE
     str_to_list 'KJV', 'NKJV', 'RSV', 'NRSV', 'NASB' ';'
