@@ -2,3 +2,13 @@ Setup Typescript Project:
 	npm install -g npm@latest						->  get latest stable version
 	npm install -D typescript tsx @types/node
 	npx tsx index.ts								-> npx does what venv does, makes it so you don't pollute your global with typescript/tsx
+	
+standard tsconfig.json:
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "esnext",
+    "types": ["node"],
+    "moduleResolution": "node"
+  }
+}
