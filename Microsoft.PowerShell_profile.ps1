@@ -186,6 +186,20 @@ function OnOpen() {
 }
 OnOpen
 
+function str_to_list([string]$array, $delimiter = " ") {
+    <#
+    .DESCRIPTION
+    Quick list to str conversion. Note: explicit use of '-
+
+    .EXAMPLE
+    str_to_list 'KJV', 'NKJV', 'RSV', 'NRSV', 'NASB' ';'
+    Returns:
+        KJV;NKJV;RSV;NRSV;NASB
+    #>
+    $stringArray = $array -split '\s+'
+    $result = $stringArray -join $delimiter
+    return $result
+}
 
 function NodeRun([string]$server = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\NodeJS\server.js", [string]$client = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\NodeJS\client.js") {
     Clear-Host
