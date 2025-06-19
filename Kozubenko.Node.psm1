@@ -5,17 +5,15 @@ class KozubenkoNode {
             "Kozubenko.Node",
             @(
                 "debug(`$file)                          -->   node --inspect-brk `$file, and opens browser debugger",
-                "setupTsDevEnvironment()               -->   npm i typescript @types/node tsx -D; use: 'npx tsx index.ts'"
+                "setupTsDevEnvironment()               -->   to run after: npx tsx 'index.ts'"
             ));
     }
 }
 
 
-# Note: may have been a coincidence -> may have nothing to do with fixing node intellisense 
 function setupTsDevEnvironment() {
-    npm install typescript --save-dev
-    npm install @types/node --save-dev
-    npm install tsx --save-dev
+    npm install -g npm@latest
+    npm install -D tsx typescript @types/node
 }
 
 # "edge://inspect/#devices"
