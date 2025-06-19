@@ -11,7 +11,9 @@ class KozubenkoGit {
                 "GitLog(`$lines=4)                      -->   afterwards use: 'git show 06cb024'",
                 "GitUncommit()                         -->   redo your last pushed commit: git reset --mixed HEAD~1",
                 "GitPage()                             -->   goes to remote.origin.url in the browser",
-                "SquashCommits(`$commitMsg, `$n)         -->   (n = # of all commits being combined). force push included"
+                "SquashCommits(`$commitMsg, `$n)         -->   (n = # of all commits being combined). force push included",
+                "Rebase(`$commitsBack)                  -->   [dd -> cut line] [P -> paste] [squash -> merges into above commit]",
+                "RebaseFinish()                        -->   git push --force; git stash pop;"
             ));
     }
 }
@@ -75,6 +77,20 @@ function SquashCommits($commitMsg, $n) {
 
     if($need_stash) {
         git stash pop
+    }
+}
+
+function Rebase([int]$commitsBack) {
+    $global:rebaseStarted = $true
+    git stash
+    git rebase -i HEAD~$($commitsBack)
+}
+function RebaseFinish() {
+    if ($global:rebaseStarted -eq $true) {
+        git push --force
+        git stash pop
+
+        $global:rebaseStarted = $false
     }
 }
 
