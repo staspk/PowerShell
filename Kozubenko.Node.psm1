@@ -5,7 +5,7 @@ class KozubenkoNode {
             "Kozubenko.Node",
             @(
                 "debug(`$file)                          -->   node --inspect-brk `$file, and opens browser debugger",
-                "setupTsDevEnvironment()               -->   to run after: npx tsx 'index.ts'"
+                "setupTsDevEnvironment()               -->   after: npx tsx index.ts"
             ));
     }
 }
@@ -18,7 +18,7 @@ function setupTsDevEnvironment() {
 
 # "edge://inspect/#devices"
 # "chrome://inspect/#devices"
-# chrome://inspect
+#  chrome://inspect
 function debug($file) {
     if(-not(Test-Path $file)) {
         PrintDarkRed "Can't find js/ts file to debug: $file"
