@@ -25,9 +25,7 @@ class KozubenkoProfile {
                 "Vs(`$path = 'PWD.Path')                -->   opens .\ or `$path in Visual Studio",
                 "Vsc(`$path = 'PWD.Path')               -->   opens .\ or `$path in Visual Studio Code.",
                 "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++",
-                "UnixToMyTime(`$timestamp)              -->   self-explanatory",
-                "vtt_to_srt(`$file)                     -->   convert subtitles from format .vtt to .srt",
-                "webm_to_mp4(`$file)                    -->   convert webm to mp4 file, crt==18 (visually lossless)"
+                "str_to_list(`$array, `$delimiter = ' ') -->   usage: str_to_list 'KJV', 'NKJV', 'RSV', 'NRSV', 'NASB' ';'"
             ));
     }
 }
@@ -106,86 +104,6 @@ function Vsc($path = $PWD.Path) {
     code $path
 }
 
-function UnixToMyTime($timestamp) {
-    $dateTimeUtc = [System.DateTimeOffset]::FromUnixTimeSeconds($timestamp).DateTime
-
-    $dateTimeLocal = $dateTimeUtc.ToLocalTime()
-
-    PrintCyan $dateTimeLocal
-}
-
-function vtt_to_srt($file) {
-    if (-not(Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
-        PrintRed "ffmpeg library required for function."
-        RETURN;
-    }
-
-    $new_file = ""
-    if($file.Substring($file.Length - 4) -eq ".vtt") {  $new_file = "$($file.Substring(0, $file.Length - 4)).srt"  }
-    else {$new_file = "$file.srt"}
-
-    PrintGreen "output: $new_file"
-
-    ffmpeg -i "$file" -c:s subrip "$new_file" -loglevel quiet
-}
-function webm_to_mp4($file) {
-    if (-not(Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
-        PrintRed "ffmpeg library required for function."
-        RETURN;
-    }
-    
-    $new_file = ""
-    if($file.Substring($file.Length - 5) -eq ".webm") {  $new_file = "$($file.Substring(0, $file.Length - 5)).mp4"  }
-    else {$new_file = "$file.mp4"}
-
-    ffmpeg -i "$file" -c:v libx264 -crf 18 -preset medium "$new_file"
-}
-
-function list() {
-    Clear-Host
-    $global:MyRuntime.LoadInGlobals($null)
-}
-function profile() {
-    vsc $profile
-}
-
-function Find($filename) {
-    $path = $($PWD.Path)
-    Get-ChildItem -Path $path -Filter $filename -Recurse -File -ErrorAction SilentlyContinue
-    # $searchResults | Format-List *
-}
-function Search($string, $all_file_types = $false) {
-    if($all_file_types) {
-        Get-ChildItem -Path . -File -Recurse | Select-String -Pattern $string
-    }
-    else {
-        Get-ChildItem -Path . -Filter *.txt -Recurse | Select-String -Pattern $string
-    }
-}
-
-function OnOpen() {
-    $global:MyRuntime = [MyRuntime]::new($global:GLOBALS);
-    $global:MyRuntime.AddModules(@(
-        # [KozubenkoBible]::GetFunctionRegistry(),
-        [KozubenkoIO]::GetFunctionRegistry(),
-        [KozubenkoProfile]::GetFunctionRegistry(),
-        [KozubenkoGit]::GetFunctionRegistry(),
-        [KozubenkoPython]::GetFunctionRegistry(),
-        [KozubenkoNode]::GetFunctionRegistry()
-    ));
-
-    SetAliases Restart @("re", "res")
-    SetAliases Clear-Host  @("z", "zz", "zzz")
-    SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
-
-    Set-PSReadLineKeyHandler -Key Alt+1           -Description "Print `$cheats files"    -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintRed $_.Name }; ConsoleInsert("$cheats\")  }
-    Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"             -ScriptBlock {  ConsoleDeleteInput  }
-    Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"   -ScriptBlock {  ConsoleMoveToStartofLine  }
-    Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"     -ScriptBlock {  ConsoleMoveToEndofLine  }
-    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"            -ScriptBlock {  ClearTerminal  } 
-}
-OnOpen
-
 function str_to_list([string]$array, $delimiter = " ") {
     <#
     .SYNOPSIS
@@ -213,6 +131,53 @@ function str_to_list([string]$array, $delimiter = " ") {
     $result = $stringArray -join $delimiter
     return $result
 }
+function list() {
+    Clear-Host
+    $global:MyRuntime.LoadInGlobals($null)
+}
+function profile() {
+    vsc $profile
+}
+
+function Find($filename) {
+    $path = $($PWD.Path)
+    Get-ChildItem -Path $path -Filter $filename -Recurse -File -ErrorAction SilentlyContinue
+    # $searchResults | Format-List *
+}
+function Search($string, $all_file_types = $false) {
+    if($all_file_types) {
+        Get-ChildItem -Path . -File -Recurse | Select-String -Pattern $string
+    }
+    else {
+        Get-ChildItem -Path . -Filter *.txt -Recurse | Select-String -Pattern $string
+    }
+}
+
+function OnOpen() {
+    $global:MyRuntime = [MyRuntime]::new($global:GLOBALS);
+    $global:MyRuntime.AddModules(@(
+        # [KozubenkoBible]::GetFunctionRegistry(),
+        # [KozubenkoVideo]::GetFunctionRegistry(),
+        [KozubenkoIO]::GetFunctionRegistry(),
+        [KozubenkoProfile]::GetFunctionRegistry(),
+        [KozubenkoGit]::GetFunctionRegistry(),
+        [KozubenkoPython]::GetFunctionRegistry(),
+        [KozubenkoNode]::GetFunctionRegistry()
+    ));
+
+    SetAliases Restart @("re", "res")
+    SetAliases Clear-Host  @("z", "zz", "zzz")
+    SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
+
+    Set-PSReadLineKeyHandler -Key Alt+1           -Description "Print `$cheats files"    -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintRed $_.Name }; ConsoleInsert("$cheats\")  }
+    Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"             -ScriptBlock {  ConsoleDeleteInput  }
+    Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"   -ScriptBlock {  ConsoleMoveToStartofLine  }
+    Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"     -ScriptBlock {  ConsoleMoveToEndofLine  }
+    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"            -ScriptBlock {  ClearTerminal  } 
+}
+OnOpen
+
+
 
 function NodeRun([string]$server = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\NodeJS\server.js", [string]$client = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\NodeJS\client.js") {
     Clear-Host
