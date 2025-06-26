@@ -96,6 +96,14 @@ function SetGlobal($varName, $value) {
     Set-Variable -Name $varName -Value $value -Scope Global
 }
 
+function UnixToMyTime($timestamp) {
+    $dateTimeUtc = [System.DateTimeOffset]::FromUnixTimeSeconds($timestamp).DateTime
+
+    $dateTimeLocal = $dateTimeUtc.ToLocalTime()
+
+    PrintCyan $dateTimeLocal
+}
+
 function TurnOffSleepSettings([int]$time_in_hours = 0) {
     $screen_sleep = ((powercfg -query @(
     (powercfg -getactivescheme) -replace '^.+ \b([0-9a-f]+-[^ ]+).+', '$1'
