@@ -1,30 +1,32 @@
 using module .\classes\FunctionRegistry.psm1
 using module .\Kozubenko.Utils.psm1
 
+
+
 # Since aliases can't have params, we have to use functions to accomplish this...
+function HandleConsoleState($buffer, $cursor) {  $global:MyRuntime.HandleConsoleState($buffer, $cursor) }    
 function SetStartLocation($path = $PWD.Path)  {  $global:MyRuntime.SetStartLocation($path)  }
 function NewVar($name, $value = $PWD.Path)    {  $global:MyRuntime.NewVar($name, $value)  }
 function DeleteVar($varName)                  {  $global:MyRuntime.DeleteVar($varName)  }
 
+
 class MyRuntime {
-    [String] $PATH_TO_GLOBALS;
+    [string] $_GLOBALS_FILE = "$PSScriptRoot\.globals";
     [System.Collections.Generic.List[FunctionRegistry]] $modules;
 
     [string] $START_LOCATION_KEY = "startLocation";
 
-    MyRuntime([string]$pathToGlobals) {
-        $this.PATH_TO_GLOBALS = $pathToGlobals;
+    MyRuntime() {
         $this.modules = [System.Collections.Generic.List[FunctionRegistry]]::new();
         $this.AddModule([FunctionRegistry]::new(
             "Kozubenko.MyRuntime", @(
                 "SetStartLocation(`$path = `$PWD.Path)",
                 "NewVar(`$name, `$value = `$PWD.Path)",
-                "SetVar(`$name, `$value)",
                 "DeleteVar(`$varName)"))
         );
 
-        if(-not(Test-Path $this.PATH_TO_GLOBALS)) {
-            Set-Content -Path $this.PATH_TO_GLOBALS -Value "$($this.START_LOCATION_KEY)=$env:userprofile"
+        if(-not(Test-Path $this._GLOBALS_FILE)) {
+            Set-Content -Path $this._GLOBALS_FILE -Value "$($this.START_LOCATION_KEY)=$env:userprofile"
         }
         
         $this.LoadInGlobals($null);
@@ -40,21 +42,27 @@ class MyRuntime {
             $this.modules.Add($functionRegistry)
         }
     }
+
+    HandleConsoleState($buffer, $cursor) {
+        PrintGreen("HandleConsoleState($buffer, $cursor)")
+
+        # if() 
+    }
     
-    SetStartLocation($path) {                                   <# GLOBAL PUBLIC FUNCTION #>
+    SetStartLocation($path) {
         $this.SaveToGlobals($this.START_LOCATION_KEY, $path)
         $this.LoadInGlobals($null)
         Set-Location $global:startlocation
     }
 
-    NewVar($name, $value) {                                     <# GLOBAL PUBLIC FUNCTION #>
+    NewVar($name, $value) {
         AssertString $name "name"
         if ($name[0] -eq "$") {  $name = $name.Substring(1, $name.Length - 1 )  }
         $this.SaveToGlobals($name, $value)
         $this.LoadInGlobals($null)
     }
 
-    DeleteVar($varName) {                                       <# GLOBAL PUBLIC FUNCTION #>
+    DeleteVar($varName) {
         Clear-Host;
         if($varName[0] -eq "$") {  $varName = $varName.Substring(1)  }
         $this.LoadInGlobals($varName)
@@ -81,7 +89,7 @@ class MyRuntime {
     # Also does cleanup while loading into memory, e.g. duplicate removal, varToDelete.
     hidden [void] LoadInGlobals($varToDelete) {      
         $variables = @{}                                             # Dict{key==varName, value==varValue}
-        $_globals  = @(Get-Content -Path $this.PATH_TO_GLOBALS)      # "@" added, Get-Content returns string when < 2 lines, making `$lines.AddRange($_globals)` throw an exception
+        $_globals  = @(Get-Content -Path $this._GLOBALS_FILE)        # "@" added, Get-Content returns string when < 2 lines, making `$lines.AddRange($_globals)` throw an exception
         
         if(-not($_globals)) {  PrintRed "Globals Empty";  RETURN;  }
 
@@ -105,19 +113,19 @@ class MyRuntime {
                 }
             }
         }
-        Set-Content -Path $this.PATH_TO_GLOBALS -Value $lines
+        Set-Content -Path $this._GLOBALS_FILE -Value $lines
         Write-Host
     }
 
     hidden [void] SaveToGlobals([string]$varName, $varValue) {
-        $lines = (Get-Content -Path $this.PATH_TO_GLOBALS).Split([Environment]::NewLine)
+        $lines = (Get-Content -Path $this._GLOBALS_FILE).Split([Environment]::NewLine)
         for ($i = 0; $i -lt $lines.Count; $i++) {
             $left = $lines[$i].Split("=")[0]
             if ($left -eq $varName) {
                 $lines[$i] = "$varName=$varValue"
-                Set-Content -Path $this.PATH_TO_GLOBALS -Value $lines;   return;
+                Set-Content -Path $this._GLOBALS_FILE -Value $lines;   return;
             }
         }
-        Add-Content -Path $this.PATH_TO_GLOBALS -Value "$([Environment]::NewLine)$varName=$varValue"; Set-Variable -Name $varName -Value $varValue -Scope Global
+        Add-Content -Path $this._GLOBALS_FILE -Value "$([Environment]::NewLine)$varName=$varValue"; Set-Variable -Name $varName -Value $varValue -Scope Global
     }
 }

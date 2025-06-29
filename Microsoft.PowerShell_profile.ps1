@@ -8,7 +8,6 @@ using module .\Kozubenko.Runtime.psm1
 using module .\Kozubenko.IO.psm1
 
 SetGlobal "PROFILE_DIR"  $(ParentDir($PROFILE))
-SetGlobal "GLOBALS"      "$PROFILE_DIR\.globals"
 SetGlobal "desktop"      "$HOME\Desktop"
 SetGlobal "downloads"    "$HOME\Downloads"
 SetGlobal "appdata"      "$HOME\AppData\Roaming"
@@ -154,7 +153,7 @@ function Search($string, $all_file_types = $false) {
 }
 
 function OnOpen() {
-    $global:MyRuntime = [MyRuntime]::new($global:GLOBALS);
+    $global:MyRuntime = [MyRuntime]::new()
     $global:MyRuntime.AddModules(@(
         # [KozubenkoBible]::GetFunctionRegistry(),
         # [KozubenkoVideo]::GetFunctionRegistry(),
@@ -173,7 +172,19 @@ function OnOpen() {
     Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"             -ScriptBlock {  ConsoleDeleteInput  }
     Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"   -ScriptBlock {  ConsoleMoveToStartofLine  }
     Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"     -ScriptBlock {  ConsoleMoveToEndofLine  }
-    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"            -ScriptBlock {  ClearTerminal  } 
+    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"            -ScriptBlock {  ClearTerminal  }
+
+    # Set-PSReadLineKeyHandler -Key Enter    -Description "Runtime.HandleConsoleState"     -ScriptBlock { $global:MyRuntime.HandleConsoleState([Microsoft.PowerShell.PSConsoleReadLine]::GetBuffer()) } 
+
+    Set-PSReadLineKeyHandler -Key Enter    -Description "Runtime.HandleConsoleState"       -ScriptBlock {
+        $buffer = $null; $cursor = 0;
+        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)
+        
+        if ($buffer -eq "") { $global:MyRuntime.HandleConsoleState($buffer, $cursor) }
+        else {
+             [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+        }
+    }
 }
 OnOpen
 
@@ -190,4 +201,14 @@ function NodeRun([string]$server = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\N
 function StartCoreServer($projectDir = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\TcpServer") {
     Set-Location $projectDir
     dotnet run
+}
+
+
+
+
+function Docstring-Example($Param1) {
+    <#
+    .SYNOPSIS
+    I have an explanation and this is it.
+    #>
 }
