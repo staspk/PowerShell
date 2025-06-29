@@ -5,28 +5,28 @@ using module .\Kozubenko.Utils.psm1
 
 # Since aliases can't have params, we have to use functions to accomplish this...
 function HandleConsoleState($buffer, $cursor) {  $global:MyRuntime.HandleConsoleState($buffer, $cursor) }    
-function SetStartLocation($path = $PWD.Path)  {  $global:MyRuntime.SetStartLocation($path)  }
+function SetStartDirectory($path = $PWD.Path) {  $global:MyRuntime.SetStartDirectory($path)  }
 function NewVar($name, $value = $PWD.Path)    {  $global:MyRuntime.NewVar($name, $value)  }
 function DeleteVar($varName)                  {  $global:MyRuntime.DeleteVar($varName)  }
 
 
 class MyRuntime {
     [string] $_GLOBALS_FILE = "$PSScriptRoot\.globals";
+    [string] $STARTUP_DIR_KEY = "startup_dir";
+    
     [System.Collections.Generic.List[FunctionRegistry]] $modules;
-
-    [string] $START_LOCATION_KEY = "startLocation";
 
     MyRuntime() {
         $this.modules = [System.Collections.Generic.List[FunctionRegistry]]::new();
         $this.AddModule([FunctionRegistry]::new(
             "Kozubenko.MyRuntime", @(
-                "SetStartLocation(`$path = `$PWD.Path)",
+                "SetStartDirectoy(`$path = `$PWD.Path)",
                 "NewVar(`$name, `$value = `$PWD.Path)",
                 "DeleteVar(`$varName)"))
         );
 
         if(-not(Test-Path $this._GLOBALS_FILE)) {
-            Set-Content -Path $this._GLOBALS_FILE -Value "$($this.START_LOCATION_KEY)=$env:userprofile"
+            Set-Content -Path $this._GLOBALS_FILE -Value "$($this.STARTUP_DIR_KEY)=$env:userprofile"
         }
         
         $this.LoadInGlobals($null);
@@ -49,8 +49,8 @@ class MyRuntime {
         # if() 
     }
     
-    SetStartLocation($path) {
-        $this.SaveToGlobals($this.START_LOCATION_KEY, $path)
+    SetStartDirectory($path) {
+        $this.SaveToGlobals($this.STARTUP_DIR_KEY, $path)
         $this.LoadInGlobals($null)
         Set-Location $global:startlocation
     }
@@ -108,7 +108,7 @@ class MyRuntime {
                 $variables.Add($left, $right)
                 Set-Variable -Name $left -Value $right -Scope Global
 
-                if ($left -ne $this.START_LOCATION_KEY) {    # startLocation visible on most startups anyways, no need to be redundant
+                if ($left -ne $this.STARTUP_DIR_KEY) {    # startLocation visible on most startups anyways, no need to be redundant
                     Write-Host "$left" -ForegroundColor White -NoNewline; Write-Host "=$right" -ForegroundColor Gray
                 }
             }
