@@ -29,7 +29,7 @@ class MyRuntime {
             Set-Content -Path $this._GLOBALS_FILE -Value "$($this.STARTUP_DIR_KEY)=$env:userprofile"
         }
         
-        $this.LoadInGlobals($null);
+        $this.LoadInGlobals();
         $this.HandleTerminalStartupLocation();
     }
 
@@ -51,15 +51,15 @@ class MyRuntime {
     
     SetStartDirectory($path) {
         $this.SaveToGlobals($this.STARTUP_DIR_KEY, $path)
-        $this.LoadInGlobals($null)
-        Set-Location $global:startlocation
+        $this.LoadInGlobals()
+        Set-Location $global:startup_dir
     }
 
     NewVar($name, $value) {
         AssertString $name "name"
         if ($name[0] -eq "$") {  $name = $name.Substring(1, $name.Length - 1 )  }
         $this.SaveToGlobals($name, $value)
-        $this.LoadInGlobals($null)
+        $this.LoadInGlobals()
     }
 
     DeleteVar($varName) {
@@ -77,8 +77,8 @@ class MyRuntime {
             $openedTo -ieq "C:\WINDOWS\system32" -or
             $openedTo -ieq "C:\Users\stasp\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"    # Powershell started with .ahk hotkey
         ) {
-            if(IsDirectory $global:startLocation) {  Set-Location $global:startLocation }
-            elseif(IsFile $global:startLocation)  {  Set-Location $(ParentDir $global:startLocation)  }      # QoL, so it's easy set $profile as startupLocation
+            if(IsDirectory $global:startup_dir) {  Set-Location $global:startup_dir }
+            elseif(IsFile $global:startup_dir)  {  Set-Location $(ParentDir $global:startup_dir)  }      # QoL, so it's easy set $profile as startupLocation
             else {
                 PrintRed "`$startLocation path does not exist anymore. Defaulting to userdirectory..."
                 Set-Location $Env:USERPROFILE
@@ -86,7 +86,8 @@ class MyRuntime {
         }
     }
 
-    # Also does cleanup while loading into memory, e.g. duplicate removal, varToDelete.
+    <#  Also does cleanup while loading into memory, e.g. duplicate removal, varToDelete.  #>
+    hidden [void] LoadInGlobals() {  $this.LoadInGlobals($null);  }
     hidden [void] LoadInGlobals($varToDelete) {      
         $variables = @{}                                             # Dict{key==varName, value==varValue}
         $_globals  = @(Get-Content -Path $this._GLOBALS_FILE)        # "@" added, Get-Content returns string when < 2 lines, making `$lines.AddRange($_globals)` throw an exception
@@ -106,6 +107,7 @@ class MyRuntime {
             }
             else {
                 $variables.Add($left, $right)
+
                 Set-Variable -Name $left -Value $right -Scope Global
 
                 if ($left -ne $this.STARTUP_DIR_KEY) {    # startLocation visible on most startups anyways, no need to be redundant
