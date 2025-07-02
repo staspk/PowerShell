@@ -3,15 +3,17 @@ using module .\Kozubenko.Utils.psm1
 
 
 
-# Since aliases can't have params, we have to use functions to accomplish this...
-function HandleConsoleState($buffer, $cursor) {  $global:MyRuntime.HandleConsoleState($buffer, $cursor) }    
+# Since aliases can't have params, we have to use functions to accomplish this...  
 function SetStartDirectory($path = $PWD.Path) {  $global:MyRuntime.SetStartDirectory($path)  }
-function NewVar($name, $value = $PWD.Path)    {  $global:MyRuntime.NewVar($name, $value)  }
-function DeleteVar($varName)                  {  $global:MyRuntime.DeleteVar($varName)  }
+function NewVar($name, $value = $PWD.Path)    {  $global:MyRuntime.NewVar($name, $value)    }
+function DeleteVar($var_name)                 {  $global:MyRuntime.DeleteVar($var_name)    }
+function NewAction([string]$command)          {  $global:MyRuntime.NewAction($command)    }  
 
 
 class MyRuntime {
-    [string] $_GLOBALS_FILE = "$PSScriptRoot\.globals";
+    [string] $_GLOBALS_FILE = "$PSScriptRoot\.globals";     $globals = [ordered]@{};
+    [string] $_ACTIONS_FILE = "$PSScriptRoot\.actions";     $actions = @{};
+
     [string] $STARTUP_DIR_KEY = "startup_dir";
     
     [System.Collections.Generic.List[FunctionRegistry]] $modules;
@@ -25,12 +27,24 @@ class MyRuntime {
                 "DeleteVar(`$varName)"))
         );
 
-        if(-not(Test-Path $this._GLOBALS_FILE)) {
-            Set-Content -Path $this._GLOBALS_FILE -Value "$($this.STARTUP_DIR_KEY)=$env:userprofile"
-        }
-        
-        $this.LoadInGlobals();
+        if(-not([Kozubenko.Utils.List]::CreateList($this._GLOBALS_FILE))) {  [System.IO.File]::WriteAllText($this._GLOBALS_FILE, "$($this.STARTUP_DIR_KEY)=$env:userprofile")  }
+        if(-not(Test-Path $this._ACTIONS_FILE))                           {  [System.IO.File]::WriteAllText($this._ACTIONS_FILE, "")  }
+
+        $this.globals = [MyRuntime]::LoadEnvFileIntoMemory($this._GLOBALS_FILE, $true);
+        $this.actions = [MyRuntime]::LoadEnvFileIntoMemory($this._ACTIONS_FILE);
+
         $this.HandleTerminalStartupLocation();
+        $this.PrintIntroduction();
+    }
+
+    [void] PrintIntroduction() {
+        Clear-Host
+        foreach($key in $this.globals.Keys) {
+            if($key -ne $this.STARTUP_DIR_KEY) {        # no need to be redundant
+                Write-Host $key -ForegroundColor White -NoNewline; Write-Host "=$($this.globals[$key])" -ForegroundColor Gray
+            }
+        }
+        Write-Host
     }
 
     [void] AddModule([FunctionRegistry]$functionRegistry) {
@@ -42,32 +56,52 @@ class MyRuntime {
             $this.modules.Add($functionRegistry)
         }
     }
-
-    HandleConsoleState($buffer, $cursor) {
-        PrintGreen("HandleConsoleState($buffer, $cursor)")
-
-        # if() 
-    }
     
     SetStartDirectory($path) {
-        $this.SaveToGlobals($this.STARTUP_DIR_KEY, $path)
-        $this.LoadInGlobals()
-        Set-Location $global:startup_dir
+        [MyRuntime]::SaveToEnvFile($this._GLOBALS_FILE, $this.STARTUP_DIR_KEY, $path)
+        $this.globals = [MyRuntime]::LoadEnvFileIntoMemory($this._GLOBALS_FILE, $true)
+        $this.PrintIntroduction()
+        Set-Location $($this.globals[$this.STARTUP_DIR_KEY])
     }
 
     NewVar($name, $value) {
-        AssertString $name "name"
+        if(-not($name)) {  PrintRed "MyRuntime.NewVar(name, value): name was falsy. Skipping.";   RETURN;  }
         if ($name[0] -eq "$") {  $name = $name.Substring(1, $name.Length - 1 )  }
-        $this.SaveToGlobals($name, $value)
-        $this.LoadInGlobals()
+        if (Test-Path $value) {  $value = (Resolve-Path $value).Path  }
+        [MyRuntime]::SaveToEnvFile($this._GLOBALS_FILE, $name, $value)
+        $this.globals = [MyRuntime]::LoadEnvFileIntoMemory($this._GLOBALS_FILE, $true, "")
+        $this.PrintIntroduction()
     }
 
-    DeleteVar($varName) {
-        Clear-Host;
-        if($varName[0] -eq "$") {  $varName = $varName.Substring(1)  }
-        $this.LoadInGlobals($varName)
+    DeleteVar($var_name) {
+        if($var_name[0] -eq "$") {  $var_name = $var_name.Substring(1)  }
+        $this.globals = [MyRuntime]::LoadEnvFileIntoMemory($this._GLOBALS_FILE, $true, $var_name)
+        $this.PrintIntroduction()
     }
 
+    NewAction([string]$command) {
+
+    NewAction([string]$path, [string]$command) {
+        if(-not($command) -or -not($path)) {  PrintRed "MyRuntime.NewAction(command, path): path or command falsy. Skipping...";   RETURN;  }
+        [MyRuntime]::SaveToEnvFile($this._ACTIONS_FILE, $path, $command)
+        $this.actions = [MyRuntime]::LoadEnvFileIntoMemory($this._ACTIONS_FILE)
+        PrintGreen "NewAction(" $false; PrintItalics $command DarkGreen; PrintGreen ") created on: `$path: $path"
+    }
+
+    # called from Console, with: "" 
+    HandleDefaultAction() {
+        $path = $PWD.Path
+
+        $buffer = $null; $cursor = 0;
+        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)
+
+        $action = $this.actions[$path]
+        if(-not($action)) {
+            PrintRed "No Default Action Assigned";  RETURN;  }
+
+        [Microsoft.PowerShell.PSConsoleReadLine]::Insert($action)
+        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine() 
+    }
 
     hidden [void] HandleTerminalStartupLocation() {
         $openedTo = $PWD.Path
@@ -77,57 +111,56 @@ class MyRuntime {
             $openedTo -ieq "C:\WINDOWS\system32" -or
             $openedTo -ieq "C:\Users\stasp\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"    # Powershell started with .ahk hotkey
         ) {
-            if(IsDirectory $global:startup_dir) {  Set-Location $global:startup_dir }
-            elseif(IsFile $global:startup_dir)  {  Set-Location $(ParentDir $global:startup_dir)  }      # QoL, so it's easy set $profile as startupLocation
+            $startup_dir = $this.globals[$this.STARTUP_DIR_KEY]
+            if(IsDirectory $startup_dir) {  Set-Location $startup_dir }
+            elseif(IsFile $startup_dir)  {  Set-Location $(ParentDir $startup_dir)  }                        # QoL, so stuff like: 'SetStartupDirectory $profile', is possible
             else {
-                PrintRed "`$startLocation path does not exist anymore. Defaulting to userdirectory..."
+                PrintRed "`$startup_dir path does not exist anymore. Defaulting to userdirectory..."
                 Set-Location $Env:USERPROFILE
             }
         }
     }
 
-    <#  Also does cleanup while loading into memory, e.g. duplicate removal, varToDelete.  #>
-    hidden [void] LoadInGlobals() {  $this.LoadInGlobals($null);  }
-    hidden [void] LoadInGlobals($varToDelete) {      
-        $variables = @{}                                             # Dict{key==varName, value==varValue}
-        $_globals  = @(Get-Content -Path $this._GLOBALS_FILE)        # "@" added, Get-Content returns string when < 2 lines, making `$lines.AddRange($_globals)` throw an exception
-        
-        if(-not($_globals)) {  PrintRed "Globals Empty";  RETURN;  }
+    static [void] SaveToEnvFile([string]$file, [string]$key, [string]$value) {
+        $lines = [Kozubenko.Utils.List]::CreateList($file);
+        if(-not($lines)) {
+            [System.IO.File]::WriteAllText($file, "$key=$value");   RETURN;
+        }
+        for ($i = 0; $i -lt $lines.Count; $i++) {
+            $left = $lines[$i].Split("=")[0]
+            if ($left -eq $key) {
+                $lines[$i] = "$key=$value";
+                [Kozubenko.Utils.List]::OverwriteFile($file, $lines);    RETURN;
+            }
+        }
+        [System.IO.File]::AppendAllText($file, "$([Environment]::NewLine)$key=$value")
+    }
 
-        Clear-Host
-        $lines = [System.Collections.Generic.List[Object]]::new(); $lines.AddRange($_globals)
+    static [System.Collections.Specialized.OrderedDictionary] LoadEnvFileIntoMemory([string]$file)                         {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $null);           }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file):"
+    static [System.Collections.Specialized.OrderedDictionary] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope)    {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $global_scope, $null);    }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$global_scope):"
+    static [System.Collections.Specialized.OrderedDictionary] LoadEnvFileIntoMemory([string]$file, [string]$key_to_delete) {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $key_to_delete);  }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$key_to_delete):"
+    static [System.Collections.Specialized.OrderedDictionary] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope, [string]$key_to_delete) {
+        # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$global_scope, `$key_to_delete): "
+        if (-not(Test-Path $file)) {
+            PrintRed "LoadEnvFileIntoMemory(" $false; PrintDarkRed "`e[3m$file`e[0m" $false; PrintRed "): Skipping Function, Not A Real Path.";
+        }
+        $variables = [ordered]@{}
+        $lines = [Kozubenko.Utils.List]::CreateList($file)
         for ($i = 0; $i -lt $lines.Count; $i++) {
             $left  = $lines[$i].Split("=")[0]
             $right = $lines[$i].Split("=")[1]
-            if ($left -eq "" -or $right -eq "" -or $left -eq $varToDelete -or $variables.ContainsKey($left)) {    # is duplicate if $variables.containsKey($left)
+            if (-not($left) -or -not($right) -or $left -eq $key_to_delete -or $variables.Keys -contains $left) {
                 $lines.RemoveAt($i)
                 if ($i -ne 0) {
                     $i--
                 }
             }
             else {
-                $variables.Add($left, $right)
-
-                Set-Variable -Name $left -Value $right -Scope Global
-
-                if ($left -ne $this.STARTUP_DIR_KEY) {    # startLocation visible on most startups anyways, no need to be redundant
-                    Write-Host "$left" -ForegroundColor White -NoNewline; Write-Host "=$right" -ForegroundColor Gray
-                }
+                $variables[$left] = $right
+                if($global_scope) {  Set-Variable -Name $left -Value $right -Scope Global  }
             }
         }
-        Set-Content -Path $this._GLOBALS_FILE -Value $lines
-        Write-Host
-    }
-
-    hidden [void] SaveToGlobals([string]$varName, $varValue) {
-        $lines = (Get-Content -Path $this._GLOBALS_FILE).Split([Environment]::NewLine)
-        for ($i = 0; $i -lt $lines.Count; $i++) {
-            $left = $lines[$i].Split("=")[0]
-            if ($left -eq $varName) {
-                $lines[$i] = "$varName=$varValue"
-                Set-Content -Path $this._GLOBALS_FILE -Value $lines;   return;
-            }
-        }
-        Add-Content -Path $this._GLOBALS_FILE -Value "$([Environment]::NewLine)$varName=$varValue"; Set-Variable -Name $varName -Value $varValue -Scope Global
+        [Kozubenko.Utils.List]::OverwriteFile($file, $lines)
+        return $variables;
     }
 }

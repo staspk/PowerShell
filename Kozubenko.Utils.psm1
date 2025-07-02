@@ -1,7 +1,48 @@
 using module .\classes\FunctionRegistry.psm1
 
 $WhiteRed = $PSStyle.Foreground.FromRgb(255, 196, 201);
-$LiteRed = $PSStyle.Foreground.FromRgb(223, 96, 107);
+$LiteRed  = $PSStyle.Foreground.FromRgb(223, 96, 107);
+
+
+class List {
+    <#
+    .SYNOPSIS
+    Utility to create an easily mutable list from a file (each item represents a line). Returns $null if Test-Path($file)->FALSE or if the file only consists of new-lines (thus, an empty list).
+    
+    PS > $lines = [Kozubenko.Utils.List]::CreateList($FILE)
+    Returns:
+        [System.Collections.Generic.List[string]] || $null
+    #>
+    static [System.Collections.Generic.List[string]] CreateList([string]$file) {
+        if(-not(Test-Path $file)) {  return $null;  }
+        $array = [string[]]@(Get-Content -Path $file)   # Using '@()' coerces an array type, even when Get-Content returns [string], when < 2lines
+        $at_least_one_line_truthy = $false;
+        for ($i = 0; $i -lt $array.Length; $i++) {
+            if(-not([string]::IsNullOrEmpty($array[$i]))) {  $at_least_one_line_truthy = $true; break;  }
+        }
+        if(-not($at_least_one_line_truthy)) {  return $null;  }
+        $lines = [System.Collections.Generic.List[string]]::new();
+        $lines.AddRange($array);
+        return $lines;
+    }
+
+    <#
+    .SYNOPSIS
+    Overwrite a file with a list.
+    
+    PS > [Kozubenko.Utils.List]::OverwriteFile($file, $lines)
+    #>
+    static [void] OverwriteFile([string]$file, [System.Collections.Generic.List[string]]$list) {
+        $string = ""
+        for ($i = 0; $i -lt $list.Count; $i++) {
+            if($i -eq 0) {  $string += $list[$i]  }
+            else {
+                $string += $([Environment]::NewLine) + $list[$i]
+            }
+        }
+        [System.IO.File]::WriteAllText($file, $string)
+    }
+}
 
 
 function AssertString($string, $stringVarName) {
@@ -11,6 +52,7 @@ function AssertString($string, $stringVarName) {
     if([string]::IsNullOrEmpty($string)) {
         throw [System.Management.Automation.RuntimeException]::new("$stringVarName is Null or Empty")
     }
+    return $true
 }
 
 function Capitalize($string) {
@@ -59,19 +101,18 @@ function TestPathSilently($path) {
     }
 }
 function IsFile($path) {
-    AssertString $path "path"
-
     if (Test-Path -Path $path -PathType Leaf) {  return $true;  }
     else {
-        return $false
+        return $false;
     }
+
 }
 function IsDirectory($path) {
-    AssertString $path "path"
+    if(-not($path)) {  PrintRed "Skipping IsDirectory(`$path). `$path is falsy. `$path: $path"  }
 
     if (Test-Path -Path $path -PathType Container) {  return $true  }
     else {
-        return $false
+       return $false
     }
 }
 
@@ -150,21 +191,19 @@ function RestoreClassicContextMenu([bool]$reverse = $false) {
 }
 
 function ClearTerminal {
-    if(ConsoleInputTextLength gt 0) {
-        ConsoleDeleteInput
-    }
+    ConsoleDeleteInput
     Clear-Host
     ConsoleAcceptLine
     ConsoleDeletePreviousLine
 }
-function ConsoleInputTextLength() {
+function GetConsoleBufferState() {
     $buffer = $null
     $cursor = 0
     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)
     return @($buffer, $cursor)
 }
-function ConsoleInsert($text) {  [Microsoft.PowerShell.PSConsoleReadLine]::Insert($text)  }
-function ConsoleAcceptLine() {  [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()  }
+function ConsoleInsert($text)   {  [Microsoft.PowerShell.PSConsoleReadLine]::Insert($text)  }
+function ConsoleAcceptLine()    {  [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()   }
 function ConsoleMoveToStartofLine {  [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition(0)  }
 function ConsoleMoveToEndofLine {
     $buffer = $null
@@ -173,7 +212,7 @@ function ConsoleMoveToEndofLine {
     [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($buffer.Length)
 }
 function ConsoleDeleteInput {
-    if ((ConsoleInputTextLength)[1] -gt 0) {
+    if ((GetConsoleBufferState)[1] -gt 0) {
         [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()
     }
 }
@@ -184,7 +223,9 @@ function ConsoleDeletePreviousLine {
 }
 
 
-function Print($text, $newLine = $true)         {  if($newLine) { Write-Host $text }         else {  Write-Host $text - -NoNewline  }  }
+function PrintItalics($text, $color = $null)    {  if($color) {  Write-Host "`e[3m$text`e[0m" -NoNewline -ForegroundColor $color  } else {  Write-Host "`e[3m$text`e[0m" -NoNewline  } }
+
+function Print($text, $newLine = $true)         {  if($newLine) { Write-Host $text }         else {  Write-Host $text -NoNewline  }  }
 function PrintWhiteRed($text, $newLine = $true) {  if($newLine) { Write-Host ${WhiteRed}$text }     else { Write-Host ${WhiteRed}$text -NoNewline }  }
 function PrintLiteRed($text, $newLine = $true)  {  if($newLine) { Write-Host ${LiteRed}$text  }      else { Write-Host ${LiteRed}$text -NoNewline }  }
 function PrintRed($text, $newLine = $true)      {  if($newLine) { Write-Host $text -ForegroundColor Red }      else { Write-Host $text -ForegroundColor Red -NoNewline }        }
