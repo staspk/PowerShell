@@ -83,8 +83,8 @@ function Open($path = $PWD.Path) {
     }
     else {  explorer.exe $path  }
 }
-function Vs($path = $PWD.Path) {
-    if ($path -eq "..") {  $path = "$PWD.Path\.."  }
+function Vs($path = $PWD.Path) {`
+    if ($path -eq "..") {  $path = "$PWD\.."  }
     if (-not(Test-Path $path)) {  PrintRed "`$path is not a valid path. `$path == $path";  RETURN;  }
     if (IsFile($path)) {  $path = ParentDir($path)  }
     
@@ -96,10 +96,9 @@ function Vs($path = $PWD.Path) {
     }
 }
 function Vsc($path = $PWD.Path) {
-    if ($path -eq "..") {  $path = "$PWD.Path\.."  }
+    if ($path -eq "..") {  $path = "$PWD\.."  }
     if (-not(Test-Path $path)) {  PrintRed "`$path is not a valid path. `$path == $path";  RETURN;  }
-    if (IsFile($path)) {  $path = ParentDir($path)  }
-    
+    if (IsFile $path) {  $path = ParentDir($path)  }
     code $path
 }
 
@@ -153,6 +152,8 @@ function Search($string, $all_file_types = $false) {
 }
 
 function OnOpen() {
+    Write-Host "`e]0;PowerShell $($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor).$($PSVersionTable.PSVersion.Patch)`a"
+    
     $global:MyRuntime = [MyRuntime]::new()
     $global:MyRuntime.AddModules(@(
         # [KozubenkoBible]::GetFunctionRegistry(),
@@ -168,22 +169,22 @@ function OnOpen() {
     SetAliases Clear-Host  @("z", "zz", "zzz")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
 
-    Set-PSReadLineKeyHandler -Key Alt+1           -Description "Print `$cheats files"    -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintRed $_.Name }; ConsoleInsert("$cheats\")  }
-    Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"             -ScriptBlock {  ConsoleDeleteInput  }
-    Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"   -ScriptBlock {  ConsoleMoveToStartofLine  }
-    Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"     -ScriptBlock {  ConsoleMoveToEndofLine  }
-    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"            -ScriptBlock {  ClearTerminal  }
-
-    # Set-PSReadLineKeyHandler -Key Enter    -Description "Runtime.HandleConsoleState"     -ScriptBlock { $global:MyRuntime.HandleConsoleState([Microsoft.PowerShell.PSConsoleReadLine]::GetBuffer()) } 
-
-    Set-PSReadLineKeyHandler -Key Enter    -Description "Runtime.HandleConsoleState"       -ScriptBlock {
+    Set-PSReadLineKeyHandler -Key Alt+1           -Description "Print `$cheats files"   -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintRed $_.Name }; ConsoleInsert("$cheats\")  }
+    Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"             -ScriptBlock {  ConsoleDeleteInput       }
+    Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"    -ScriptBlock {  ConsoleMoveToStartofLine }
+    Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"       -ScriptBlock {   ConsoleMoveToEndofLine  }
+    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"               -ScriptBlock {   ClearTerminal           }
+    Set-PSReadLineKeyHandler -Key Enter           -Description "Runtime.HandleConsoleInput"  -ScriptBlock {
         $buffer = $null; $cursor = 0;
-        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)
-        
-        if ($buffer -eq "") { $global:MyRuntime.HandleConsoleState($buffer, $cursor) }
-        else {
-             [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
+        switch ($buffer) {
+        "" {
+            $global:MyRuntime.HandleDefaultAction(); break;
         }
+        ".." {
+            ConsoleDeleteInput; ConsoleAcceptLine; Set-Location ".."; break;
+        }
+        default {  [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()  }}
     }
 }
 OnOpen
