@@ -178,10 +178,14 @@ function OnOpen() {
         $buffer = $null; $cursor = 0;
         [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
 
-        if($buffer.StartsWith("..")) {
-            ConsoleDeleteInput; ConsoleInsert "cd $buffer"; ConsoleAcceptLine;
-            return;
+        $var_name; $var_value;
+        if ($buffer[0] -eq '$') {
+            $var_name = $buffer.Substring(1, $buffer.Length - 1 );
+            $var_value = $($ExecutionContext.SessionState.PSVariable.Get("$var_name").Value);
         }
+
+        if($buffer.StartsWith(".."))                            {  BackwardDeleteInput; ConsoleInsert "cd $buffer";          ConsoleAcceptLine; RETURN;  }
+        if($buffer.StartsWith('$') -and (Test-Path $var_value)) {  BackwardDeleteInput; ConsoleInsert "open `"$var_value`""; ConsoleAcceptLine; RETURN;  }
 
         switch ($buffer) {
         "" {

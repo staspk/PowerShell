@@ -216,6 +216,9 @@ function ConsoleDeleteInput {
         [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()
     }
 }
+function BackwardDeleteInput {
+    [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()
+}
 function ConsoleDeletePreviousLine {
     [console]::SetCursorPosition(0, [console]::CursorTop - 1)
     Write-Host (" " * [console]::WindowWidth)
