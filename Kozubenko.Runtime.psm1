@@ -7,7 +7,8 @@ using module .\Kozubenko.Utils.psm1
 function SetStartDirectory($path = $PWD.Path) {  $global:MyRuntime.SetStartDirectory($path)  }
 function NewVar($name, $value = $PWD.Path)    {  $global:MyRuntime.NewVar($name, $value)    }
 function DeleteVar($var_name)                 {  $global:MyRuntime.DeleteVar($var_name)    }
-function NewAction([string]$command)          {  $global:MyRuntime.NewAction($command)    }  
+function NewAction([string]$command)          {  $path = $PWD.Path; $global:MyRuntime.NewAction($path, $command)  }
+function See()                                {  $path = $PWD.Path; $global:MyRuntime.See($path)  }
 
 
 class MyRuntime {
@@ -69,7 +70,7 @@ class MyRuntime {
         if ($name[0] -eq "$") {  $name = $name.Substring(1, $name.Length - 1 )  }
         if (Test-Path $value) {  $value = (Resolve-Path $value).Path  }
         [MyRuntime]::SaveToEnvFile($this._GLOBALS_FILE, $name, $value)
-        $this.globals = [MyRuntime]::LoadEnvFileIntoMemory($this._GLOBALS_FILE, $true, "")
+        $this.globals = [MyRuntime]::LoadEnvFileIntoMemory($this._GLOBALS_FILE, $true)
         $this.PrintIntroduction()
     }
 
@@ -79,7 +80,9 @@ class MyRuntime {
         $this.PrintIntroduction()
     }
 
-    NewAction([string]$command) {
+    See([string]$path) {
+        PrintDarkRed "Not Implemented"
+    }
 
     NewAction([string]$path, [string]$command) {
         if(-not($command) -or -not($path)) {  PrintRed "MyRuntime.NewAction(command, path): path or command falsy. Skipping...";   RETURN;  }
