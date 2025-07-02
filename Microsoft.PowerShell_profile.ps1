@@ -177,12 +177,15 @@ function OnOpen() {
     Set-PSReadLineKeyHandler -Key Enter           -Description "Runtime.HandleConsoleInput"  -ScriptBlock {
         $buffer = $null; $cursor = 0;
         [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
+
+        if($buffer.StartsWith("..")) {
+            ConsoleDeleteInput; ConsoleInsert "cd $buffer"; ConsoleAcceptLine;
+            return;
+        }
+
         switch ($buffer) {
         "" {
             $global:MyRuntime.HandleDefaultAction(); break;
-        }
-        ".." {
-            ConsoleDeleteInput; ConsoleAcceptLine; Set-Location ".."; break;
         }
         default {  [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()  }}
     }
