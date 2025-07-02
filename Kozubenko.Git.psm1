@@ -50,14 +50,13 @@ function GitPage($path = $PWD.Path) {
         } else { return $false }
     }
 
-    if(TryOpenGithub $path) { RETURN }
-    
-    while(Test-Path "$path\..") {
-        $path = (Resolve-Path "$path\..").Path
-        if(TryOpenGithub $path) { RETURN }  
+    if(TryOpenGithub $path) {  RETURN;  }
+    while($true) {
+        $path = [System.IO.Path]::GetDirectoryName($path)
+        PrintRed "path: $path"
+        if(-not($path)) {  PrintRed "No .git config file found with `$path: $path, or with any ancestor"; RETURN;  }
+        if(TryOpenGithub $path) {  RETURN;  }
     }
-
-    PrintRed "No .git config file found with `$path: $path, or with any ancestor";
 }
 
 function SquashCommits($commitMsg, $n) {
