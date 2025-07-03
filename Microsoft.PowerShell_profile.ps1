@@ -5,7 +5,7 @@ using module .\Kozubenko.Git.psm1
 using module .\Kozubenko.Python.psm1
 using module .\Kozubenko.Node.psm1
 using module .\Kozubenko.Runtime.psm1
-using module .\Kozubenko.IO.psm1
+using module .\Kozubenko.OS.psm1
 
 SetGlobal "PROFILE_DIR"  $(ParentDir($PROFILE))
 SetGlobal "desktop"      "$HOME\Desktop"
@@ -158,7 +158,7 @@ function OnOpen() {
     $global:MyRuntime.AddModules(@(
         # [KozubenkoBible]::GetFunctionRegistry(),
         # [KozubenkoVideo]::GetFunctionRegistry(),
-        [KozubenkoIO]::GetFunctionRegistry(),
+        [KozubenkoOS]::GetFunctionRegistry(),
         [KozubenkoProfile]::GetFunctionRegistry(),
         [KozubenkoGit]::GetFunctionRegistry(),
         [KozubenkoPython]::GetFunctionRegistry(),
@@ -180,7 +180,7 @@ function OnOpen() {
 
         $var_name; $var_value;
         if ($buffer[0] -eq '$') {
-            $var_name = $buffer.Substring(1, $buffer.Length - 1 );
+            $var_name = $buffer.Substring(1, $buffer.Length - 1);
             $var_value = $($ExecutionContext.SessionState.PSVariable.Get("$var_name").Value);
         }
 
