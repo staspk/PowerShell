@@ -99,10 +99,9 @@ class MyRuntime {
         [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)
 
         $action = $this.actions[$path]
-        if(-not($action)) {
-            PrintRed "No Default Action Assigned";  RETURN;  }
-
-        [Microsoft.PowerShell.PSConsoleReadLine]::Insert($action)
+        if($action) {  [Microsoft.PowerShell.PSConsoleReadLine]::Insert($action)  }
+        else        {  [Microsoft.PowerShell.PSConsoleReadLine]::Insert("open")  }
+        
         [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine() 
     }
 
