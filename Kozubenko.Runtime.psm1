@@ -91,7 +91,7 @@ class MyRuntime {
         PrintGreen "NewAction(" $false; PrintItalics $command DarkGreen; PrintGreen ") created on: `$path: $path"
     }
 
-    # called from Console, with: "" 
+    # called from Console, with: ""
     HandleDefaultAction() {
         $path = $PWD.Path
 
@@ -99,10 +99,13 @@ class MyRuntime {
         [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)
 
         $action = $this.actions[$path]
-        if($action) {  [Microsoft.PowerShell.PSConsoleReadLine]::Insert($action)  }
-        else        {  [Microsoft.PowerShell.PSConsoleReadLine]::Insert("open")  }
+        if($action) {
+            [Microsoft.PowerShell.PSConsoleReadLine]::Insert($action)
+        } else {
+            [Microsoft.PowerShell.PSConsoleReadLine]::Insert("open $action")
+        }
         
-        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine() 
+        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
     }
 
     hidden [void] HandleTerminalStartupLocation() {
