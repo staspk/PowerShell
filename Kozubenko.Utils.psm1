@@ -44,6 +44,27 @@ class List {
     }
 }
 
+class Timer {
+    <# 
+        $sw = [System.Diagnostics.Stopwatch]::StartNew()
+        ># YOUR OPERTATION #<
+        $sw.Stop(); Write-Host $sw.Elapsed.TotalMilliseconds -ForegroundColor Red
+    #>
+    static [double]$startTime = $null;
+
+    static Start() {
+        [Timer]::startTime = [System.Diagnostics.Stopwatch]::GetTimestamp()
+        [Timer]::sw = [System.Diagnostics.Stopwatch]::StartNew()
+    }
+
+    static Stop() {
+        if(-not([Timer]::startTime)) {  Write-Host "Timer.Stop() called before Timer.Start()" -ForegroundColor DarkRed; RETURN;  }
+
+        $elapsedTicks = [System.Diagnostics.Stopwatch]::GetTimestamp() - [Timer]::startTime
+        $ms = $elapsedTicks * 1000 / [System.Diagnostics.Stopwatch]::Frequency
+        Write-Host ("{0:N3} ms" -f $ms) -ForegroundColor Red
+    }
+}
 
 function AssertString($string, $stringVarName) {
     if(-not($stringVarName)) {
