@@ -25,7 +25,8 @@ class MyRuntime {
             "Kozubenko.MyRuntime", @(
                 "SetStartDirectoy(`$path = `$PWD.Path)",
                 "NewVar(`$name, `$value = `$PWD.Path)",
-                "DeleteVar(`$varName)"))
+                "DeleteVar(`$varName)",
+                "NewAction([string]`$command)"))
         );
 
         if(-not([Kozubenko.Utils.List]::CreateList($this._GLOBALS_FILE))) {  [System.IO.File]::WriteAllText($this._GLOBALS_FILE, "$($this.STARTUP_DIR_KEY)=$env:userprofile")  }
