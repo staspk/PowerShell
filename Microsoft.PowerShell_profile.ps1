@@ -137,28 +137,6 @@ function profile() {
     vsc $profile
 }
 
-function Find($filename) {
-    <#
-    .SYNOPSIS
-    Recursively searches for files by name from $PWD
-    #>
-    $path = $($PWD.Path)
-    Get-ChildItem -Path $path -Filter $filename -Recurse -File -ErrorAction SilentlyContinue
-    # $searchResults | Format-List *  # this is a very wordy version
-}
-function Search($string, $txt_file_only = $true) {
-    <#
-    .SYNOPSIS
-    Recursively searches file contents for a specific string pattern.
-    #>
-    if($txt_file_only) {
-        Get-ChildItem -Path . -Filter *.txt -Recurse | Select-String -Pattern $string
-    }
-    else {
-        Get-ChildItem -Path . -File -Recurse | Select-String -Pattern $string
-    }
-}
-
 function OnOpen() {
     Write-Host "`e]0;PowerShell $($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor).$($PSVersionTable.PSVersion.Patch)`a"
     

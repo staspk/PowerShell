@@ -9,7 +9,9 @@ class KozubenkoOS {
                 "FolderSizes()                         -->   lists folders in current directory with their sizes (not on disk)",
                 "AddToEnvPath(`$path)                   -->   add to Windows user Env PATH. also: DeleteEnvPath(`$path), Path (lists)",
                 "ClearFolder(`$folder = '.\')           -->   recursively deletes contents of directory", 
-                "LockFolder(`$folder)                   -->   remove write access rules for 'Everyone'"
+                "LockFolder(`$folder)                   -->   remove write access rules for 'Everyone'",
+                "Find(`$filename)                       -->   find files",
+                "Search(`$string, `$.txt_only = `$true)   -->   find strings in files"
             ));
     }
 }
@@ -117,4 +119,26 @@ function LockFolder($folder) {
     $acl.AddAccessRule($denyWriteRule)
     Set-Acl -Path $folder -AclObject $acl
     Write-Host "Write permissions for '$UserOrGroup' have been locked on folder: $folder"
+}
+
+function Find($filename) {
+    <#
+    .SYNOPSIS
+    Recursively searches for files by name from $PWD
+    #>
+    $path = $($PWD.Path)
+    Get-ChildItem -Path $path -Filter $filename -Recurse -File -ErrorAction SilentlyContinue
+    # $searchResults | Format-List *  # this is a very wordy version
+}
+function Search($string, $txt_file_only = $true) {
+    <#
+    .SYNOPSIS
+    Recursively searches file contents for a specific string pattern.
+    #>
+    if($txt_file_only) {
+        Get-ChildItem -Path . -Filter *.txt -Recurse | Select-String -Pattern $string
+    }
+    else {
+        Get-ChildItem -Path . -File -Recurse | Select-String -Pattern $string
+    }
 }
