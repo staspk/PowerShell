@@ -170,11 +170,11 @@ function OnOpen() {
             $var_value = $($ExecutionContext.SessionState.PSVariable.Get("$var_name").Value);
         }
 
-        if($buffer.StartsWith(".."))                               {  BackwardDeleteInput; ConsoleInsert "cd $buffer";              ConsoleAcceptLine; RETURN;  }
-        if($buffer.StartsWith("./"))                               {  BackwardDeleteInput; ConsoleInsert "cd $buffer";              ConsoleAcceptLine; RETURN;  }
-        if($buffer.StartsWith(".\"))                               {  BackwardDeleteInput; ConsoleInsert "cd $buffer";              ConsoleAcceptLine; RETURN;  }
-        if($buffer.StartsWith('$') -and (Test-Path $var_value))    {  BackwardDeleteInput; ConsoleInsert "open `"$var_value`"";     ConsoleAcceptLine; RETURN;  }
-        if($buffer.StartsWith('see$') -and (Test-Path $var_value)) {  BackwardDeleteInput; ConsoleInsert "$($buffer.Substring(3))"; ConsoleAcceptLine; RETURN;  }
+        if($buffer.StartsWith(".."))                                     {  BackwardDeleteInput; ConsoleInsert "cd $buffer";              ConsoleAcceptLine; RETURN;  }
+        if($buffer.StartsWith("./") -and -not($buffer.EndsWith('.ps1'))) {  BackwardDeleteInput; ConsoleInsert "cd $buffer";              ConsoleAcceptLine; RETURN;  }
+        if($buffer.StartsWith(".\") -and -not($buffer.EndsWith('.ps1'))) {  BackwardDeleteInput; ConsoleInsert "cd $buffer";              ConsoleAcceptLine; RETURN;  }
+        if($buffer.StartsWith('$') -and (Test-Path $var_value))          {  BackwardDeleteInput; ConsoleInsert "open `"$var_value`"";     ConsoleAcceptLine; RETURN;  }
+        if($buffer.StartsWith('see$') -and (Test-Path $var_value))       {  BackwardDeleteInput; ConsoleInsert "$($buffer.Substring(3))"; ConsoleAcceptLine; RETURN;  }
 
         switch ($buffer) {
         "" {
