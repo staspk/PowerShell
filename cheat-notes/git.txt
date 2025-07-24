@@ -1,11 +1,14 @@
+git fsck --lost-found					=>  Recover/restore dangling objects (trees/commits). Local Grace Period: 2 weeks. Github Remote: up to 30 days.
+
 git remote prune origin					=>	Deletes / stops tracking branches locally that have been deleted on remote.
 git branch -r							=>	This Git command will show you remote branches. 
 git branch --merged						=>  Lists branches that have been merged into the current branch on remote.
 
 git log --oneline -4					=>	See list of commits
+git log --oneline --graph --decorate    =>  See the entire thing.
 git show cbb0c31						=>  Prints out changes in that commit
 
-git reset --mixed HEAD~1 				=>	"Oops, messed up that last commit. Let's try that one again."
+git reset --mixed HEAD~1 				=>	"I want to re-do my last push" ie: reverts back before the last commit/push. Does not alter remote.
 
 
 "I need to merge the last n commits" => {
@@ -36,7 +39,7 @@ RECURSIVE LOCAL UPDATE OF ALL SUBMODULES FROM REMOTE:
 	force is destructive of local changes (but should be your default go-to)
 
 PUSH CHANGES UP:
-	go down to the submodule, and do a pull request, probably the ideal way
+	go down to the submodule, do a pull request in a separate branch, ideally
 
 TRUE DELETE OF SUBMODULES:
 	1. delete .gitmodules

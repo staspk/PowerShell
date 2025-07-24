@@ -17,3 +17,10 @@ For Typescript projects:
 	npx tsc example.ts						=>  npx uses local copy of typescript --save-dev to transpile example.ts
 
 
+<<<<<<< Updated upstream
+=======
+standard process.argv: [C:\Program Files\nodejs\node.exe, C:\Users\stasp\Desktop\Bible-Vault\node\index.ts]
+
+
+pm2 ls => check if pm2 working right
+>>>>>>> Stashed changes

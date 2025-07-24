@@ -4,7 +4,87 @@ $WhiteRed = $PSStyle.Foreground.FromRgb(255, 196, 201);
 $LiteRed = $PSStyle.Foreground.FromRgb(223, 96, 107);
 
 
-function AssertString($string, $stringVarName) {
+class List {
+    <#
+    .SYNOPSIS
+    Creates an easily mutable list from a file (each item represents a line).
+    
+    If(-not($list))
+        => guarantees: $file does not have at least one line with a truthy string; ie: $string.Length > 0 and a line can't be only whitespace / [Environment]::NewLine.
+
+    Note: , you know you have a list containing at least 1 line.
+
+    PS > $lines = [Kozubenko.Utils.List]::CreateList($FILE)
+    Returns:
+        [System.Collections.Generic.List[string]]
+    #>
+    static [System.Collections.Generic.List[string]] CreateList([string]$file) {
+        if(-not(Test-Path $file)) {  return $null  }
+        # if(-not(Test-Path $file)) {  return [System.Collections.Generic.List[string]]::new()  }
+        
+        $array = [string[]]@(Get-Content -Path $file)   # Using '@()' coerces Get-Content into an Array<string>, even when: $file has < 2 lines
+        $has_at_least_one_line = $false;
+
+        for ($i = 0; $i -lt $array.Length; $i++) {
+            if(-not([string]::IsNullOrWhiteSpace($array[$i]))) {  $has_at_least_one_line = $true; break;  }
+        }
+
+        if(-not($has_at_least_one_line)) {  return $null  }
+        # if(-not($has_at_least_one_line)) {  return [System.Collections.Generic.List[string]]::new()  }
+
+        $lines = [System.Collections.Generic.List[string]]::new();
+        $lines.AddRange($array);
+        return $lines;
+    }
+
+    <#
+    .SYNOPSIS
+    Overwrites a file with a list. 
+
+    PS > [Kozubenko.Utils.List]::OverwriteFile($file, $lines)
+    Result:
+        Creates/overwrites $file with "", if $lines.Count = 0
+    #>
+    static [void] OverwriteFile([string]$file, [System.Collections.Generic.List[string]]$list) {
+        $string = ""
+        for ($i = 0; $i -lt $list.Count; $i++) {
+            if($i -eq 0) {  $string += $list[$i]  }
+            else {
+                $string += $([Environment]::NewLine) + $list[$i]
+            }
+        }
+        [System.IO.File]::WriteAllText($file, $string)
+    }
+}
+
+function File([string[]] $paths) {
+    <# 
+    .SYNOPSIS
+    Returns combined path. Parent directory guaranteed to exist after call, file not guaranteed.
+
+    Will throw if:
+        - $paths.Count < 2
+
+    PS > $lines = [Kozubenko.Utils.List]::CreateList($FILE)
+    Returns:
+        [string] || throws
+    #>
+    if ($paths.Count -lt 2) {
+        throw "File(`$paths): `$paths.Count must be > 1"
+    }
+
+    $result = $paths[0]
+    for ($i = 1; $i -lt $paths.Count; $i++) {
+        $result = Join-Path -Path $result -ChildPath $paths[$i]
+    }
+
+    $parent_dir = [System.IO.Path]::GetDirectoryName($result)
+    mkdir $parent_dir -Force | Out-Null
+
+    return $result
+}
+
+function AssertString($stringVarName, $string) {
     if(-not($stringVarName)) {
         throw [System.Management.Automation.RuntimeException]::new("AssertString second paramter required: `$stringVarName")
     }
@@ -13,26 +93,22 @@ function AssertString($string, $stringVarName) {
     }
 }
 
+
 function IsAdmin() {
     $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     return $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
+
+function ParentDir($path) {
+    return [System.IO.Path]::GetDirectoryName($path)
+}
 function ResolvePath($path) {
-    if (-not(Test-Path $path)) {  Write-Host "`$path is not a valid path. `$path == $path" -ForegroundColor Red;  RETURN;  }
+    if (-not(Test-Path $path)) {  Write-Host "`$path does not exist. `$path: $path" -ForegroundColor Red;  RETURN;  }
 
     $path = (Resolve-Path $path).Path
 
     return $path
-}
-
-function TestPathSilently($path) { 
-    $exists = Test-Path $path -ErrorAction SilentlyContinue
-    
-    if (-not($exists)) {  return $null  }
-    else {
-        return $path
-    }
 }
 function IsFile($path) {
     if ([string]::IsNullOrEmpty($path) -OR -not(Test-Path $path -ErrorAction SilentlyContinue)) {
@@ -56,16 +132,15 @@ function IsDirectory($path) {
         return $false
     }
 }
-function ParentDir($path) {
-    if(-not(Test-Path $path)) {  Write-Host "Skipping ParentDir(`$path) since `$path does not exist: $path" -ForegroundColor Red;  RETURN;  }
-    return [System.IO.Path]::GetDirectoryName($path)
+function TestPath($path) { 
+    $exists = Test-Path $path -ErrorAction SilentlyContinue
+    
+    if (-not($exists)) {  return $null  }
+    else {
+        return $path
+    }
 }
 
-function WriteErrorExit([string]$errorMsg) {
-    Write-Host $errorMsg -ForegroundColor DarkRed
-    Write-Host "Exiting Script..." -ForegroundColor DarkRed
-    exit
-}
 
 function SetAliases($function, [Array]$aliases) {   # Throws exception if you try to set an alias on a keyword you already set an alias on
     if ($function -eq $null -or $aliases -eq $null) {  RETURN  }
@@ -75,12 +150,11 @@ function SetAliases($function, [Array]$aliases) {   # Throws exception if you tr
     }
 }
 function SetGlobal($varName, $value) {
-    if($varName[0] -eq "$") {
-        $varName = $varName.Substring(1, $name.Length - 1 )
-    }
+    if($varName[0] -eq "$") {  $varName = $varName.Substring(1)  }
         
     Set-Variable -Name $varName -Value $value -Scope Global
 }
+
 
 function TurnOffSleepSettings([int]$time_in_hours = 0) {
     $screen_sleep = ((powercfg -query @(
@@ -127,15 +201,16 @@ function RestoreClassicContextMenu([bool]$reverse = $false) {
     Stop-Process -Name explorer -Force -ErrorAction Ignore
 }
 
+
 function ClearTerminal {
-    if(ConsoleInputTextLength gt 0) {
+    if(GetConsoleBufferState gt 0) {
         ConsoleDeleteInput
     }
     Clear-Host
     ConsoleAcceptLine
     ConsoleDeletePreviousLine
 }
-function ConsoleInputTextLength() {
+function GetConsoleBufferState() {
     $buffer = $null
     $cursor = 0
     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)
@@ -151,7 +226,7 @@ function ConsoleMoveToEndofLine {
     [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($buffer.Length)
 }
 function ConsoleDeleteInput {
-    if ((ConsoleInputTextLength)[1] -gt 0) {
+    if ((GetConsoleBufferState)[1] -gt 0) {
         [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()
     }
 }
@@ -162,6 +237,19 @@ function ConsoleDeletePreviousLine {
 }
 
 
+function Capitalize($string) {
+    $capitalizedStr = $string.Substring(0, 1).ToUpper()
+    $capitalizedStr += $string.Substring(1, $string.Length - 1).ToLower()
+    return $capitalizedStr
+}
+function AddWhitespace($string, $amount) {
+    for($i = 0; $i -lt $amount; $i++) {  $string += " "  }
+    return $string
+}
+
+function TerminalTitleBar($text) {  Write-Host "`e]0;$text`a"  -NoNewline }
+
+function PrintItalics($text, $color = $null)    {  if($color) {  Write-Host "`e[3m$text`e[0m" -NoNewline -ForegroundColor $color  } else {  Write-Host "`e[3m$text`e[0m" -NoNewline  } }
 function Print($text, $newLine = $true)         {  if($newLine) { Write-Host $text }         else {  Write-Host $text - -NoNewline  }  }
 function PrintWhiteRed($text, $newLine = $true) {  if($newLine) { Write-Host ${WhiteRed}$text }     else { Write-Host ${WhiteRed}$text -NoNewline }  }
 function PrintLiteRed($text, $newLine = $true)  {  if($newLine) { Write-Host ${LiteRed}$text  }      else { Write-Host ${LiteRed}$text -NoNewline }  }
@@ -175,5 +263,3 @@ function PrintDarkGreen($text, $newLine = $true){  if($newLine) { Write-Host $te
 function PrintDarkGray($text, $newLine = $true) {  if($newLine) { Write-Host $text -ForegroundColor DarkGray }    else { Write-Host $text -ForegroundColor DarkGray -NoNewline }      }
 function PrintGray($text, $newLine = $true)     {  if($newLine) { Write-Host $text -ForegroundColor Gray }      else { Write-Host $text -ForegroundColor Gray -NoNewline }       }
 function PrintWhite($text, $newLine = $true)    {  if($newLine) { Write-Host $text -ForegroundColor White }    else { Write-Host $text -ForegroundColor White -NoNewline }      }
-
-
