@@ -189,6 +189,7 @@ function ConsoleDeletePreviousLine {
 }
 
 
+function PrintItalics($text, $color = $null)    {  if($color) {  Write-Host "`e[3m$text`e[0m" -NoNewline -ForegroundColor $color  } else {  Write-Host "`e[3m$text`e[0m" -NoNewline  } }
 function Print($text, $newLine = $true)         {  if($newLine) { Write-Host $text }         else {  Write-Host $text - -NoNewline  }  }
 function PrintWhiteRed($text, $newLine = $true) {  if($newLine) { Write-Host ${WhiteRed}$text }     else { Write-Host ${WhiteRed}$text -NoNewline }  }
 function PrintLiteRed($text, $newLine = $true)  {  if($newLine) { Write-Host ${LiteRed}$text  }      else { Write-Host ${LiteRed}$text -NoNewline }  }
