@@ -4,6 +4,60 @@ $WhiteRed = $PSStyle.Foreground.FromRgb(255, 196, 201);
 $LiteRed = $PSStyle.Foreground.FromRgb(223, 96, 107);
 
 
+class List {
+    <#
+    .SYNOPSIS
+    Creates an easily mutable list from a file (each item represents a line).
+    
+    Returns $null if:
+        - Test-Path($file)->FALSE
+        - $file does not have at least one line with a string; ie: not null, not empty, not whitespace , not only consisting of new-lines.
+
+    Note: You can safely -not($files)
+
+    PS > $lines = [Kozubenko.Utils.List]::CreateList($FILE)
+    Returns:
+        [System.Collections.Generic.List[string]] || $null
+    #>
+    static [System.Collections.Generic.List[string]] CreateList([string]$file) {
+        if(-not(Test-Path $file)) {  return $null;  }
+        
+        $array = [string[]]@(Get-Content -Path $file)   # Using '@()' coerces to array type, even when Get-Content returns [string], when < 2lines
+        $has_at_least_one_line = $false;
+
+        for ($i = 0; $i -lt $array.Length; $i++) {
+            if(-not([string]::IsNullOrWhiteSpace($array[$i]))) {  $has_at_least_one_line = $true; break;  }
+        }
+
+        if(-not($has_at_least_one_line)) {  return $null;  }
+
+        $lines = [System.Collections.Generic.List[string]]::new();
+        $lines.AddRange($array);
+        return $lines;
+
+        $array = [string[]]@(Get-Content -Path $file)   # Using '@()' coerces an array type, even when Get-Content returns [string], when < 2lines
+        $lines = [System.Collections.Generic.List[string]]::new(); $lines.AddRange($array);
+        return $lines;
+    }
+
+    <#
+    .SYNOPSIS
+    Overwrite a file with a list. Caller should test-path($file) before passing in as param.
+
+    PS > [Kozubenko.Utils.List]::OverwriteFile($file, $lines)
+    #>
+    static [void] OverwriteFile([string]$file, [System.Collections.Generic.List[string]]$list) {
+        $string = ""
+        for ($i = 0; $i -lt $list.Count; $i++) {
+            if($i -eq 0) {  $string += $list[$i]  }
+            else {
+                $string += $([Environment]::NewLine) + $list[$i]
+            }
+        }
+        [System.IO.File]::WriteAllText($file, $string)
+    }
+}
+
 function File([string[]] $paths) {
     <# 
     .SYNOPSIS
