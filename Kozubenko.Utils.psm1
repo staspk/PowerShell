@@ -4,7 +4,34 @@ $WhiteRed = $PSStyle.Foreground.FromRgb(255, 196, 201);
 $LiteRed = $PSStyle.Foreground.FromRgb(223, 96, 107);
 
 
-function AssertString($string, $stringVarName) {
+function File([string[]] $paths) {
+    <# 
+    .SYNOPSIS
+    Returns combined path. Parent directory guaranteed to exist after call, file not guaranteed.
+
+    Will throw if:
+        - $paths.Count < 2
+
+    PS > $lines = [Kozubenko.Utils.List]::CreateList($FILE)
+    Returns:
+        [string] || throws
+    #>
+    if ($paths.Count -lt 2) {
+        throw "File(`$paths): `$paths.Count must be > 1"
+    }
+
+    $result = $paths[0]
+    for ($i = 1; $i -lt $paths.Count; $i++) {
+        $result = Join-Path -Path $result -ChildPath $paths[$i]
+    }
+
+    $parent_dir = [System.IO.Path]::GetDirectoryName($result)
+    mkdir $parent_dir -Force | Out-Null
+
+    return $result
+}
+
+function AssertString($stringVarName, $string) {
     if(-not($stringVarName)) {
         throw [System.Management.Automation.RuntimeException]::new("AssertString second paramter required: `$stringVarName")
     }
@@ -128,14 +155,14 @@ function RestoreClassicContextMenu([bool]$reverse = $false) {
 }
 
 function ClearTerminal {
-    if(ConsoleInputTextLength gt 0) {
+    if(GetConsoleBufferState gt 0) {
         ConsoleDeleteInput
     }
     Clear-Host
     ConsoleAcceptLine
     ConsoleDeletePreviousLine
 }
-function ConsoleInputTextLength() {
+function GetConsoleBufferState() {
     $buffer = $null
     $cursor = 0
     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)
@@ -151,7 +178,7 @@ function ConsoleMoveToEndofLine {
     [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition($buffer.Length)
 }
 function ConsoleDeleteInput {
-    if ((ConsoleInputTextLength)[1] -gt 0) {
+    if ((GetConsoleBufferState)[1] -gt 0) {
         [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()
     }
 }
@@ -175,5 +202,3 @@ function PrintDarkGreen($text, $newLine = $true){  if($newLine) { Write-Host $te
 function PrintDarkGray($text, $newLine = $true) {  if($newLine) { Write-Host $text -ForegroundColor DarkGray }    else { Write-Host $text -ForegroundColor DarkGray -NoNewline }      }
 function PrintGray($text, $newLine = $true)     {  if($newLine) { Write-Host $text -ForegroundColor Gray }      else { Write-Host $text -ForegroundColor Gray -NoNewline }       }
 function PrintWhite($text, $newLine = $true)    {  if($newLine) { Write-Host $text -ForegroundColor White }    else { Write-Host $text -ForegroundColor White -NoNewline }      }
-
-
