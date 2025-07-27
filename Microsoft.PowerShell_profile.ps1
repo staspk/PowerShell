@@ -1,5 +1,6 @@
 using module .\classes\FunctionRegistry.psm1
 using module .\Kozubenko.Utils.psm1
+using module .\Kozubenko.Bible.psm1
 using module .\Kozubenko.Git.psm1
 using module .\Kozubenko.Python.psm1
 using module .\Kozubenko.Node.psm1
@@ -7,46 +8,44 @@ using module .\Kozubenko.Runtime.psm1
 using module .\Kozubenko.IO.psm1
 
 SetGlobal "PROFILE_DIR"  $(ParentDir($PROFILE))
-SetGlobal "GLOBALS"      "$PROFILE_DIR\.globals"
-SetGlobal "cheats"       "$PROFILE_DIR\cheat-notes"
-SetGlobal "roaming"      "$HOME\AppData\Roaming"
 SetGlobal "desktop"      "$HOME\Desktop"
 SetGlobal "downloads"    "$HOME\Downloads"
+SetGlobal "appdata"      "$HOME\AppData\Roaming"
+SetGlobal "startup"      "$appdata\Microsoft\Windows\Start Menu\Programs\Startup"
+SetGlobal "yt-dlp"       "$desktop\yt-dlp"
+SetGlobal "cheats"       "$PROFILE_DIR\cheat-notes"
+SetGlobal "notes"        "$PROFILE_DIR\cheat-notes"
 class KozubenkoProfile {
     static [FunctionRegistry] GetFunctionRegistry() {
         return [FunctionRegistry]::new(
             "Kozubenko.Profile",
             @(
-                "Restart()                             -->   restarts Terminal. alias: re",    
                 "Open(`$path = 'PWD.Path')              -->   opens .\ or `$path in File Explorer",
                 "Vs(`$path = 'PWD.Path')                -->   opens .\ or `$path in Visual Studio",
                 "Vsc(`$path = 'PWD.Path')               -->   opens .\ or `$path in Visual Studio Code.",
                 "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++",
-                "Bible(`$passage)                       -->   `$passage == 'John:10'; opens in BibleGateway in 5 translations",
-                "UnixToMyTime(`$timestamp)              -->   self-explanatory",
-                "vtt_to_srt(`$file)                     -->   convert subtitles from format .vtt to .srt",
-                "webm_to_mp4(`$file)                    -->   convert webm to mp4 file, crt==18 (visually lossless)"
+                "str_to_list(`$array, `$delimiter = ' ') -->   usage: str_to_list 'KJV', 'NKJV', 'RSV', 'NRSV', 'NASB' ';'"
             ));
     }
 }
 function Help($moduleName = $null) {
     $PrintModuleToConsoleScript = {
         param([FunctionRegistry]$module)
-        
+
         PrintRed $module.moduleName
             foreach($func in $module.functions) {
                 $funcName = $func.Split("(")[0]
                 $insideParentheses = $($func.Split("(")[1]).Split(")")[0]
-    
+
                 PrintLiteRed "   $funcName" $false
                 PrintLiteRed "(" $false
                 PrintDarkGray "`e[3m$insideParentheses" $false
                 PrintLiteRed ")" $false
-    
+
                 if($module.moduleName -ne "Kozubenko.MyRuntime") {      # hard coded fix. Kozubenko.MyRuntime does not have anything to the right side of -->
                     $rightOfParenthesesLeftFromArrow = $($func.Split(")")[1]).Split("-->")[0];
                     $funcExplanation = $func.Split("-->")[1];
-    
+
                     PrintLiteRed "$rightOfParenthesesLeftFromArrow -->" $false
                     PrintWhiteRed "$funcExplanation" $false
                 }
@@ -71,7 +70,7 @@ function Help($moduleName = $null) {
 }
 
 function Open($path = $PWD.Path) {
-    if (-not(Test-Path $path)) { PrintRed "`$path is not a valid path. `$path == $path";  RETURN; }
+    if (-not(Test-Path $path)) { PrintRed "`$path does not exist. `$path: $path";  RETURN; }
 
     $path = (Resolve-Path $path).Path
 
@@ -85,7 +84,6 @@ function Open($path = $PWD.Path) {
     else {  explorer.exe $path  }
 }
 function Vs($path = $PWD.Path) {
-    if ($path -eq "..") {  $path = "$PWD.Path\.."  }
     if (-not(Test-Path $path)) {  PrintRed "`$path is not a valid path. `$path == $path";  RETURN;  }
     if (IsFile($path)) {  $path = ParentDir($path)  }
     
@@ -97,70 +95,68 @@ function Vs($path = $PWD.Path) {
     }
 }
 function Vsc($path = $PWD.Path) {
-    if ($path -eq "..") {  $path = "$PWD.Path\.."  }
     if (-not(Test-Path $path)) {  PrintRed "`$path is not a valid path. `$path == $path";  RETURN;  }
     if (IsFile($path)) {  $path = ParentDir($path)  }
     
     code $path
 }
-function Bible($string) {       # BIBLE John:10
-    $array = $string.Split(":")
-    
-    if($array.Count -ne 2) {
-        PrintRed "Bible(`$input) => input must follow format: Matthew:10"
-        RETURN
-    }
 
-    $version = "kjv;nasb;rsv;rusv;nrt"
+function str_to_list([string]$array, $delimiter = " ") {
+    <#
+    .SYNOPSIS
+    PS > str_to_list 'KJV', 'NKJV', 'RSV', 'NRSV', 'NASB' ';'
+    Returns:
+        KJV;NKJV;RSV;NRSV;NASB
 
-    Start-Process microsoft-edge:"https://www.biblegateway.com/passage/?search=$($array[0])$($array[1])&version=$version" -WindowStyle maximized
+    .DESCRIPTION
+    Convert a list into a string.
+
+    .PARAMETER array
+    Expects a python-like list excluding brackets. Will be coerced into string.
+    Example: 'KJV', 'NKJV', 'RSV', 'NRSV', 'NASB'
+
+    .PARAMETER delimiter
+    The character or string to insert between each element of the final joined output.
+    Default: " "
+
+    .EXAMPLE
+    str_to_list 'KJV', 'NKJV', 'RSV', 'NRSV', 'NASB' ';'
+    Returns:
+        KJV;NKJV;RSV;NRSV;NASB
+    #>
+    $stringArray = $array -split '\s+'
+    $result = $stringArray -join $delimiter
+    return $result
 }
-function UnixToMyTime($timestamp) {
-    $dateTimeUtc = [System.DateTimeOffset]::FromUnixTimeSeconds($timestamp).DateTime
-
-    $dateTimeLocal = $dateTimeUtc.ToLocalTime()
-
-    PrintCyan $dateTimeLocal
-}
-
-function vtt_to_srt($file) {
-    if (-not(Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
-        PrintRed "ffmpeg library required for function."
-        RETURN;
-    }
-
-    $new_file = ""
-    if($file.Substring($file.Length - 4) -eq ".vtt") {  $new_file = "$($file.Substring(0, $file.Length - 4)).srt"  }
-    else {$new_file = "$file.srt"}
-
-    PrintGreen "output: $new_file"
-
-    ffmpeg -i "$file" -c:s subrip "$new_file" -loglevel quiet
-}
-function webm_to_mp4($file) {
-    if (-not(Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
-        PrintRed "ffmpeg library required for function."
-        RETURN;
-    }
-    
-    $new_file = ""
-    if($file.Substring($file.Length - 5) -eq ".webm") {  $new_file = "$($file.Substring(0, $file.Length - 5)).mp4"  }
-    else {$new_file = "$file.mp4"}
-
-    ffmpeg -i "$file" -c:v libx264 -crf 18 -preset medium "$new_file"
-}
-
 function list() {
     Clear-Host
-    $global:MyRuntime.LoadInGlobals($null)
+    $global:MyRuntime.PrintIntroduction()
 }
 function profile() {
-    vsc $profile
+    vsc $global:PROFILE_DIR
+}
+
+function Find($filename) {
+    $path = $($PWD.Path)
+    Get-ChildItem -Path $path -Filter $filename -Recurse -File -ErrorAction SilentlyContinue
+    # $searchResults | Format-List *
+}
+function Search($string, $all_file_types = $false) {
+    if($all_file_types) {
+        Get-ChildItem -Path . -File -Recurse | Select-String -Pattern $string
+    }
+    else {
+        Get-ChildItem -Path . -Filter *.txt -Recurse | Select-String -Pattern $string
+    }
 }
 
 function OnOpen() {
-    $global:MyRuntime = [MyRuntime]::new($global:GLOBALS);
+    Write-Host "`e]0;PowerShell $($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor).$($PSVersionTable.PSVersion.Patch)`a"
+
+    $global:MyRuntime = [MyRuntime]::new()
     $global:MyRuntime.AddModules(@(
+        # [KozubenkoBible]::GetFunctionRegistry(),
+        # [KozubenkoVideo]::GetFunctionRegistry(),
         [KozubenkoIO]::GetFunctionRegistry(),
         [KozubenkoProfile]::GetFunctionRegistry(),
         [KozubenkoGit]::GetFunctionRegistry(),
@@ -172,11 +168,30 @@ function OnOpen() {
     SetAliases Clear-Host  @("z", "zz", "zzz")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
 
-    Set-PSReadLineKeyHandler -Key Alt+1           -Description "Print `$cheats files"    -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintRed $_.Name }; ConsoleInsert("$cheats\")  }
-    Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"             -ScriptBlock {  ConsoleDeleteInput  }
-    Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"   -ScriptBlock {  ConsoleMoveToStartofLine  }
-    Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"     -ScriptBlock {  ConsoleMoveToEndofLine  }
-    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"            -ScriptBlock {  ClearTerminal  } 
+    Set-PSReadLineKeyHandler -Key Alt+1           -Description "Print `$cheats files"        -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintRed $_.Name }; ConsoleInsert("$cheats\")  }
+    Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"                 -ScriptBlock {  ConsoleDeleteInput  }
+    Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"       -ScriptBlock {  ConsoleMoveToStartofLine  }
+    Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"         -ScriptBlock {  ConsoleMoveToEndofLine  }
+    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"                -ScriptBlock {  ClearTerminal  } 
+    Set-PSReadLineKeyHandler -Key DownArrow       -Description "Runtime.HandleDownArrow"  -ScriptBlock {
+        $buffer = $null; $cursor = 0;
+        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
+
+        PrintRed "Not Implemented Yet"
+    }
+    Set-PSReadLineKeyHandler -Key Enter       -Description "Runtime.HandleDefaultAction()"  -ScriptBlock {
+        $buffer = $null; $cursor = 0;
+        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
+
+        if($buffer.StartsWith("..")) {
+            ConsoleDeleteInput; ConsoleInsert "cd $buffer"; ConsoleAcceptLine;
+            return;
+        }
+
+        if($buffer -eq "") {
+            $global:MyRuntime.HandleDefaultAction(); RETURN;
+        }
+    }
 }
 OnOpen
 
@@ -192,4 +207,12 @@ function NodeRun([string]$server = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\N
 function StartCoreServer($projectDir = "C:\Users\stasp\Desktop\C#\Shared.Kozubenko\TcpServer") {
     Set-Location $projectDir
     dotnet run
+}
+
+
+function Docstring-Example($param1) {
+    <#
+    .SYNOPSIS
+    I have an explanation and this is it.
+    #>
 }
