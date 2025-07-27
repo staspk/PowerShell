@@ -238,6 +238,18 @@ function ConsoleDeletePreviousLine {
 }
 
 
+function Capitalize($string) {
+    AssertString "string" $string
+
+    $capitalizedStr = $string.Substring(0, 1).ToUpper()
+    $capitalizedStr += $string.Substring(1, $string.Length - 1).ToLower()
+    return $capitalizedStr
+}
+function AddWhitespace($string, $amount) {
+    for($i = 0; $i -lt $amount; $i++) {  $string += " "  }
+    return $string
+}
+
 function PrintItalics($text, $color = $null)    {  if($color) {  Write-Host "`e[3m$text`e[0m" -NoNewline -ForegroundColor $color  } else {  Write-Host "`e[3m$text`e[0m" -NoNewline  } }
 function Print($text, $newLine = $true)         {  if($newLine) { Write-Host $text }         else {  Write-Host $text - -NoNewline  }  }
 function PrintWhiteRed($text, $newLine = $true) {  if($newLine) { Write-Host ${WhiteRed}$text }     else { Write-Host ${WhiteRed}$text -NoNewline }  }
