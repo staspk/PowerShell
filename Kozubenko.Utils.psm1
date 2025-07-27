@@ -11,9 +11,9 @@ class List {
     
     Returns $null if:
         - Test-Path($file)->FALSE
-        - $file does not have at least one line with a string; ie: not null, not empty, not whitespace , not only consisting of new-lines.
+        - $file does not have at least one line with a truthy string; ie: $string.Length > 0 and a line can't be only whitespace / [Environment]::NewLine.
 
-    Note: You can safely -not($files)
+    Note: if(-not($list)) returns $false, you know you have a list containing at least 1 line.
 
     PS > $lines = [Kozubenko.Utils.List]::CreateList($FILE)
     Returns:
@@ -94,26 +94,22 @@ function AssertString($stringVarName, $string) {
     }
 }
 
+
 function IsAdmin() {
     $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     return $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
+
+function ParentDir($path) {
+    return [System.IO.Path]::GetDirectoryName($path)
+}
 function ResolvePath($path) {
-    if (-not(Test-Path $path)) {  Write-Host "`$path is not a valid path. `$path == $path" -ForegroundColor Red;  RETURN;  }
+    if (-not(Test-Path $path)) {  Write-Host "`$path does not exist. `$path: $path" -ForegroundColor Red;  RETURN;  }
 
     $path = (Resolve-Path $path).Path
 
     return $path
-}
-
-function TestPathSilently($path) { 
-    $exists = Test-Path $path -ErrorAction SilentlyContinue
-    
-    if (-not($exists)) {  return $null  }
-    else {
-        return $path
-    }
 }
 function IsFile($path) {
     if ([string]::IsNullOrEmpty($path) -OR -not(Test-Path $path -ErrorAction SilentlyContinue)) {
@@ -137,15 +133,15 @@ function IsDirectory($path) {
         return $false
     }
 }
-function ParentDir($path) {
-    return [System.IO.Path]::GetDirectoryName($path)
+function TestPath($path) { 
+    $exists = Test-Path $path -ErrorAction SilentlyContinue
+    
+    if (-not($exists)) {  return $null  }
+    else {
+        return $path
+    }
 }
 
-function WriteErrorExit([string]$errorMsg) {
-    Write-Host $errorMsg -ForegroundColor DarkRed
-    Write-Host "Exiting Script..." -ForegroundColor DarkRed
-    exit
-}
 
 function SetAliases($function, [Array]$aliases) {   # Throws exception if you try to set an alias on a keyword you already set an alias on
     if ($function -eq $null -or $aliases -eq $null) {  RETURN  }
@@ -155,12 +151,11 @@ function SetAliases($function, [Array]$aliases) {   # Throws exception if you tr
     }
 }
 function SetGlobal($varName, $value) {
-    if($varName[0] -eq "$") {
-        $varName = $varName.Substring(1, $name.Length - 1 )
-    }
+    if($varName[0] -eq "$") {  $varName = $varName.Substring(1)  }
         
     Set-Variable -Name $varName -Value $value -Scope Global
 }
+
 
 function TurnOffSleepSettings([int]$time_in_hours = 0) {
     $screen_sleep = ((powercfg -query @(
@@ -206,6 +201,7 @@ function RestoreClassicContextMenu([bool]$reverse = $false) {
 	}
     Stop-Process -Name explorer -Force -ErrorAction Ignore
 }
+
 
 function ClearTerminal {
     if(GetConsoleBufferState gt 0) {
