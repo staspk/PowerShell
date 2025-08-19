@@ -4,12 +4,10 @@ $LiteGreen = $PSStyle.Foreground.FromRgb(96, 223, 107);
 
 
 
-
-
 class List {
     <#
     .SYNOPSIS
-    Creates an easily mutable list from a file (each item represents a line).
+    Creates an easily mutable list from a file (each item represents a line). 
     
     Note: implementation coerces Get-Content return value to string[]. See differences in runtime return values by debugging:
         .\tests\Get-Content.Test.ps1
@@ -50,30 +48,6 @@ class List {
     }
 }
 
-function ResolvePath([string]$path, [switch]$Pwsh_Implementation) {     # Unfinished Function. Will implement when/if i actually need it. Overwritten below. 
-    <# 
-    .SYNOPSIS
-    Returns an resolved, absolute path.
-
-    Path does not have to exist with the default, .NET implementation. However, .NET does not know how to resolve special pwsh values like:
-        TestDrive:\ [Pester temp drive] :: USE THE .NET equivalent: $TestDrive
-        Env:\
-        Registry
-        other PSDrive's
-    
-    Default Implementation: uses .NET's [System.IO.Path]::GetFullPath($path)
-        - Test-Path($path) can be True/False
-        - .NET does not how to resolve TestDrive:
-
-    PS > $lines = ResolvePath )
-    Returns:
-        [string] || throws
-    #>
-    if($Pwsh_Implementation) {
-        
-    }
-    return [System.IO.Path]::GetFullPath($path)
-}
 
 function Directory([Parameter(ValueFromRemainingArguments)] [string[]] $paths) {
     <# 
@@ -128,18 +102,36 @@ function File([Parameter(ValueFromRemainingArguments)] [string[]] $paths) {
     return [System.IO.Path]::GetFullPath($result)
 }
 
+function ResolvePath([string]$path, [switch]$Pwsh_Implementation) {     # Rough Draft for Function. Will implement when/if I actually need it. Overwritten below. 
+    <# 
+    .SYNOPSIS
+    Returns an resolved, absolute path.
+
+    Path does not have to exist with the default, .NET implementation. However, .NET does not know how to resolve special pwsh values like:
+        TestDrive:\ [Pester temp drive] :: USE THE .NET equivalent: $TestDrive
+        Env:\
+        Registry
+        other PSDrive's
+    
+    Default Implementation: uses .NET's [System.IO.Path]::GetFullPath($path)
+        - Test-Path($path) can be True/False
+        - .NET does not how to resolve TestDrive:
+
+    PS > $lines = ResolvePath )
+    Returns:
+        [string] || throws
+    #>
+    if($Pwsh_Implementation) {
+        
+    }
+    return [System.IO.Path]::GetFullPath($path)
+}
+
+
 function GetType($var) {
     try {  return $var.GetType().Name  }
     catch {
         return "null"
-    }
-}
-function AssertString($stringVarName, $string) {
-    if(-not($stringVarName)) {
-        throw [System.Management.Automation.RuntimeException]::new("AssertString second paramter required: `$stringVarName")
-    }
-    if([string]::IsNullOrEmpty($string)) {
-        throw [System.Management.Automation.RuntimeException]::new("$stringVarName is Null or Empty")
     }
 }
 
