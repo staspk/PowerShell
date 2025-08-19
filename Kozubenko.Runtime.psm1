@@ -10,13 +10,22 @@ function Help([string]$moduleName = "")       {  $global:MyRuntime.Help($moduleN
 
 
 class MyRuntime {
-    [string] $_GLOBALS_FILE = "$PSScriptRoot\.globals";     $globals = [ordered]@{};
-    [string] $_COMMANDS_FILE = "$PSScriptRoot\.commands";   $commands = @{};
+    [string] $RUNTIME_ROOT_DIR = [System.IO.Path]::GetDirectoryName($PROFILE);
+
+    [string] $_GLOBALS_FILE  = "$($this.RUNTIME_ROOT_DIR)\.globals";    [ordered] $globals = [ordered]@{};
+    [string] $_COMMANDS_FILE = "$($this.RUNTIME_ROOT_DIR)\.commands";    [ordered] $commands = @{};
 
     [string] $STARTUP_DIR_KEY = "startup_dir";
     [System.Collections.Generic.List[FunctionRegistry]] $modules = [System.Collections.Generic.List[FunctionRegistry]]::new();
 
-    MyRuntime() {
+    MyRuntime() {  $this.Init()  }
+    MyRuntime($ALT_ROOT_DIR) {
+        $this._GLOBALS_FILE  = "$ALT_ROOT_DIR\.globals"
+        $this._COMMANDS_FILE = "$ALT_ROOT_DIR\.commands"
+        $this.Init()
+    }
+
+    hidden [void] Init() {
         $this.AddModule([FunctionRegistry]::new("Kozubenko.MyRuntime", @(
             "SetStartDirectory(`$path = `$PWD.Path)",
             "NewVar(`$key, `$value = `$PWD.Path)",
@@ -60,16 +69,6 @@ class MyRuntime {
             }
         }
     }
-
-    [void] AddModule([FunctionRegistry]$functionRegistry) {
-        $this.modules.Add($functionRegistry)
-    }
-
-    [void] AddModules([Array]$functionRegistrys) {
-        foreach ($funcReg in $functionRegistrys) {
-            $this.AddModule($funcReg)
-        }
-    }
     
     SetStartDirectory($path) {
         [MyRuntime]::SaveToEnvFile($this._GLOBALS_FILE, $this.STARTUP_DIR_KEY, $path)
@@ -79,7 +78,7 @@ class MyRuntime {
     }
 
     NewVar($key, $value) {
-        if([string]::IsNullOrWhiteSpace($key)) {  PrintRed "MyRuntime.NewVar(name, value): name is null or is whitespace. Skipping.`n";   RETURN;  }
+        if([string]::IsNullOrWhiteSpace($key)) {  PrintRed "MyRuntime.NewVar(key, value): key cannot be null/whitespace. Skipping Function...`n";   RETURN;  }
         if ($key[0] -eq "$") {  $key = $key.Substring(1)  }
         [MyRuntime]::SaveToEnvFile($this._GLOBALS_FILE, $key, $value)
         $this.globals = [MyRuntime]::LoadEnvFileIntoMemory($this._GLOBALS_FILE, $true)
@@ -92,15 +91,28 @@ class MyRuntime {
         $this.PrintIntroduction()
     }
 
-    NewCommand($path, [string]$command) {
-        if(-not($command) -or -not($path)) {  PrintRed "MyRuntime.NewAction(command, path): command/path was falsy. Skipping.`n";   RETURN;  }
+    NewCommand($path, [object]$command) {
+        if([string]::IsNullOrWhiteSpace($path) -or [string]::IsNullOrWhiteSpace($command)) {  PrintRed "MyRuntime.NewAction(path, command): command/path cannot be null/whitespace. Skipping Function...`n";   RETURN;  }
+        
+        PrintGreen "NewCommand(" -NewLine
+        PrintGreen "   `$path: "; PrintItalics "$path`n" DarkGreen
+        PrintGreen "   `$command: "; PrintItalics "$command`n" DarkGreen
+        PrintGreen ")" -NewLine
+
+        PrintLiteRed "type(`$command): "; PrintRed $(GetType $command) -NewLine
+
+        if ($this.commands.Keys -contains $path) {
+            PrintYellow "Command already exists at path."; PrintLiteRed "type(`$this.commands[`$path]: "; PrintRed $(GetType $this.commands[$path]) -NewLine
+        }
+        
         [MyRuntime]::SaveToEnvFile($this._COMMANDS_FILE, $path, $command)
         $this.commands = [MyRuntime]::LoadEnvFileIntoMemory($this._COMMANDS_FILE)
-        PrintGreen "NewCommand("; PrintItalics $command DarkGreen; PrintGreen ") created on `$path: $path`n"
+
+        Write-Host
     }
 
     # called from Console, by pressing Enter on empty buffer: ""
-    RunDefaultCommand() {
+    [void] RunDefaultCommand() {
         $path = $PWD.Path
 
         $buffer = $null; $cursor = 0;
@@ -113,6 +125,21 @@ class MyRuntime {
             [Microsoft.PowerShell.PSConsoleReadLine]::Insert("open " + $buffer)  }
         
         [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+    }
+
+    [bool] CycleCommands() {
+        $path = $PWD.Path
+
+        $buffer = $null; $cursor = 0;
+        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
+
+        $_commands = $this.commands[$path]
+
+        if(-not($_commands)) { return $false }
+        
+
+
+        return $false
     }
 
     hidden [void] HandleTerminalStartupLocation() {  $this.HandleTerminalStartupLocation($false)  }
@@ -137,8 +164,23 @@ class MyRuntime {
         }
     }
 
+    # static [void] SaveToEnvFile([string]$file, [System.Collections.IDictionary]$dict) {
+    #     if(-not($dict -is [hashtable]) -and -not($dict -is [System.Collections.Specialized.OrderedDictionary])) {
+    #         throw "SaveToEnvFile(): `$dict is neither a hashtable or dictionary"
+    #     }
+
+    #     foreach ($entry in $dict.GetEnumerator()) {
+    #         "$($entry.Key) = $($entry.Value)"
+    #     }
+    # }
+
     static [void] SaveToEnvFile([string]$file, [string]$key, [string]$value) {
+        # PrintYellow "In SaveToEnvFile(): `$file: "; PrintItalics "$file`n" Yellow
         $lines = [Kozubenko.Utils.List]::FromFile($file)
+
+        if(-not($lines)) {
+            [Kozubenko.Utils.List]::OverwriteFile($file, "$key=$value"); RETURN;
+        }
 
         for ($i = 0; $i -lt $lines.Count; $i++) {
             $left = $lines[$i].Split("=")[0]
@@ -150,10 +192,10 @@ class MyRuntime {
         [System.IO.File]::AppendAllText($file, "$([Environment]::NewLine)$key=$value")
     }
 
-    static [System.Collections.Specialized.OrderedDictionary] LoadEnvFileIntoMemory([string]$file)                         {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $null);           }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file):`n"
-    static [System.Collections.Specialized.OrderedDictionary] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope)    {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $global_scope, $null);    }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$global_scope):`n"
-    static [System.Collections.Specialized.OrderedDictionary] LoadEnvFileIntoMemory([string]$file, [string]$key_to_delete) {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $key_to_delete);  }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$key_to_delete):`n"
-    static [System.Collections.Specialized.OrderedDictionary] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope, [string]$key_to_delete) {
+    static [ordered] LoadEnvFileIntoMemory([string]$file)                         {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $null);           }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file):`n"
+    static [ordered] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope)    {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $global_scope, $null);    }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$global_scope):`n"
+    static [ordered] LoadEnvFileIntoMemory([string]$file, [string]$key_to_delete) {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $key_to_delete);  }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$key_to_delete):`n"
+    static [ordered] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope, [string]$key_to_delete) {
         # PrintCyan "Entering: LoadEnvFileIntoMemory(`n  `$file: $file,`n  `$global_scope: $global_scope,`n  `$key_to_delete: $key_to_delete`n): "
         $variables = [ordered]@{}
         $lines = [Kozubenko.Utils.List]::FromFile($file)
@@ -181,5 +223,16 @@ class MyRuntime {
         }
         [Kozubenko.Utils.List]::OverwriteFile($file, $lines)
         return $variables
+    }
+
+
+    [void] AddModule([FunctionRegistry]$functionRegistry) {
+        $this.modules.Add($functionRegistry)
+    }
+
+    [void] AddModules([Array]$functionRegistrys) {
+        foreach ($funcReg in $functionRegistrys) {
+            $this.AddModule($funcReg)
+        }
     }
 }
