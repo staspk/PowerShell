@@ -65,7 +65,7 @@ This may work, needs testing:
     $exitCode = $LASTEXITCODE
 #>
 function SquashCommits($commitMsg, $n) {
-    AssertString "commitMsg" $commitMsg 
+    if([string]::IsNullOrWhiteSpace($commitMsg)) {  PrintRed "SquashCommits(): cannot continue because`$commitMsg is null/whitespace."; RETURN;  }
     if($n -lt 2) {  PrintRed "SquashCommits(`$commitMsg, `$n): Requirement not met: `$n > 1`n"; RETURN;  }
 
     $need_stash = (git status --porcelain)
