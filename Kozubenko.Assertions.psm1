@@ -121,3 +121,12 @@ function AssertTruthyFalsyAsymmetry($obj, [string]$obj_name = "", [switch]$Retur
 
     if($ReturnResultAsBoolean.IsPresent) {  return $test_result  }  return
 }
+
+function AssertString($stringVarName, $string) {
+    if(-not($stringVarName)) {
+        throw [System.Management.Automation.RuntimeException]::new("AssertString second paramter required: `$stringVarName")
+    }
+    if([string]::IsNullOrEmpty($string)) {
+        throw [System.Management.Automation.RuntimeException]::new("$stringVarName is Null or Empty")
+    }
+}
