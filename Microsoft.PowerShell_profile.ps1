@@ -8,7 +8,7 @@ using module .\Kozubenko.Bible.psm1
 using module .\Kozubenko.Runtime.psm1
 
 
-SetGlobal "PROFILE_DIR"  $(ParentDir($PROFILE))
+SetGlobal "PROFILE_DIR"  $(ParentDir $PROFILE)
 SetGlobal "desktop"      "$HOME\Desktop"
 SetGlobal "downloads"    "$HOME\Downloads"
 SetGlobal "appdata"      "$HOME\AppData\Roaming"
@@ -61,14 +61,12 @@ function Vsc($path = $PWD.Path) {
     code $path
 }
 
-function list() {
-    Clear-Host
-    $global:MyRuntime.PrintIntroduction()
-}
 function profile() {
     vsc $global:PROFILE_DIR
 }
-
+function shortcuts() {
+    Get-PSReadLineKeyHandler
+}
 
 function OnOpen() {
     TerminalTitleBar "PowerShell $($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor).$($PSVersionTable.PSVersion.Patch)"
@@ -88,18 +86,13 @@ function OnOpen() {
     SetAliases Clear-Host  @("z", "zz", "zzz")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
 
-    Set-PSReadLineKeyHandler -Key Alt+1           -Description "Print `$cheats files"        -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintRed $_.Name }; ConsoleInsert("$cheats\")  }
-    Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"                 -ScriptBlock {  ConsoleDeleteInput  }
-    Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"       -ScriptBlock {  ConsoleMoveToStartofLine  }
-    Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"         -ScriptBlock {  ConsoleMoveToEndofLine  }
-    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"                -ScriptBlock {  ClearTerminal  } 
-    # Set-PSReadLineKeyHandler -Key DownArrow       -Description "Runtime.HandleDownArrow"  -ScriptBlock {
-    #     $buffer = $null; $cursor = 0;
-    #     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
-
-    #     PrintRed "Not Implemented Yet"
-    # }
-    Set-PSReadLineKeyHandler -Key Enter       -Description "Runtime.RunDefaultCommand()"  -ScriptBlock {
+    Set-PSReadLineKeyHandler -Key Alt+1           -Description "List cheat-notes"              -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintLiteRed $_.Name -NewLine }; ConsoleInsert("$cheats\")  }
+    Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"                   -ScriptBlock {  ConsoleDeleteInput  }
+    Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"         -ScriptBlock {  ConsoleMoveToStartofLine  }
+    Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"           -ScriptBlock {  ConsoleMoveToEndofLine  }
+    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"                  -ScriptBlock {  ClearTerminal  } 
+    Set-PSReadLineKeyHandler -Key DownArrow       -Description "Runtime.CycleCommands()"       -ScriptBlock {  if(-not($global:MyRuntime.CycleCommands())) { [Microsoft.PowerShell.PSConsoleReadLine]::NextHistory() }  }
+    Set-PSReadLineKeyHandler -Key Enter           -Description "Runtime.RunDefaultCommand()"   -ScriptBlock {
         $buffer = $null; $cursor = 0;
         [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
 
