@@ -135,6 +135,18 @@ function GetType($var) {
     }
 }
 
+function ConvertArrayToString([Array]$array) {
+    if(-not($array -is [array])) {  throw "ConvertArrayToString param is not an array. is: $(GetType $array)"  }
+
+    $string = ""
+    for ($i = 0; $i -lt $array.Count; $i++) {
+        $string += $array[$i]
+        if($i -lt $array.Count - 1) {
+            $string += ","
+        }
+    }
+    return $string
+}
 
 function IsAdmin() {
     $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
