@@ -2,7 +2,12 @@ $WhiteRed = $PSStyle.Foreground.FromRgb(255, 196, 201);
 $LiteRed  = $PSStyle.Foreground.FromRgb(223, 96, 107);
 $LiteGreen = $PSStyle.Foreground.FromRgb(96, 223, 107);
 
-
+<# 
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    # Operation #
+    PrintRed "$([math]::Round($sw.Elapsed.TotalMilliseconds, 3))ms" -NewLine
+    $sw.Restart()
+#>
 
 class List {
     <#
@@ -134,6 +139,27 @@ function GetType($var) {
         return "null"
     }
 }
+function ArrayAsDebugString($array_name, $array) {
+    <# 
+    .SYNOPSIS
+    Returns array as a string.
+
+    ArrayAsDebugString "itemsArray" @("item1", "item2", "item3")
+    Returns:
+        "itemsArray:[
+           item1
+           item2
+           item3
+        ]"
+    #>
+    if([string]::IsNullOrWhiteSpace($array_name) -OR -not($array -is [array])) {  throw "conditions not met for ArrayAsDebugString"  }
+    $str = "$($array_name):[`n"
+    foreach ($item in $array) {
+        $str += "   $item`n"
+    }
+    $str += "]"
+    return $str
+}
 
 function ConvertArrayToString([Array]$array) {
     if(-not($array -is [array])) {  throw "ConvertArrayToString param is not an array. is: $(GetType $array)"  }
@@ -158,6 +184,12 @@ function ParentDir($path) {
     return [System.IO.Path]::GetDirectoryName($path)
 }
 function ResolvePath($path) {
+    # $pwdItem = Get-Item $PWD
+    # if ($pwdItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
+    #     "PWD is a symlink/junction"
+    # } else {
+    #     return [System.IO.Path]::GetFullPath($path)
+    # }
     return [System.IO.Path]::GetFullPath($path)
 }
 function IsFile($path) {
