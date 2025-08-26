@@ -5,18 +5,27 @@ using module .\Kozubenko.Utils.psm1
 function SetStartDirectory($path = $PWD.Path) {  $global:MyRuntime.SetStartDirectory($path)  }
 function NewVar($key, $value = $PWD.Path)     {  $global:MyRuntime.NewVar($key, $value)  }
 function DeleteVar($key)                      {  $global:MyRuntime.DeleteVar($key)  }
-function NewCommand([string]$command)         {  $path = $PWD.Path; $global:MyRuntime.NewCommand($path, $command)  }
+function NewCommand([string]$command)         {  $global:MyRuntime.NewCommand($PWD.Path, $command)  }
 function Help([string]$moduleName = "")       {  $global:MyRuntime.Help($moduleName)  }
 
 
 class MyRuntime {
-    [string] $_GLOBALS_FILE = "$PSScriptRoot\.globals";     $globals = [ordered]@{};
-    [string] $_COMMANDS_FILE = "$PSScriptRoot\.commands";   $commands = @{};
+    [string] $RUNTIME_ROOT_DIR = [System.IO.Path]::GetDirectoryName($PROFILE);
+
+    [string] $_GLOBALS_FILE  = "$($this.RUNTIME_ROOT_DIR)\.globals";     [ordered] $globals = [ordered]@{};
+    [string] $_COMMANDS_FILE = "$($this.RUNTIME_ROOT_DIR)\.commands";    [ordered] $commands = @{};
 
     [string] $STARTUP_DIR_KEY = "startup_dir";
     [System.Collections.Generic.List[FunctionRegistry]] $modules = [System.Collections.Generic.List[FunctionRegistry]]::new();
 
-    MyRuntime() {
+    MyRuntime() {  $this.Init()  }
+    MyRuntime($ALT_ROOT_DIR) {
+        $this._GLOBALS_FILE  = "$ALT_ROOT_DIR\.globals"
+        $this._COMMANDS_FILE = "$ALT_ROOT_DIR\.commands"
+        $this.Init()
+    }
+
+    hidden [void] Init() {
         $this.AddModule([FunctionRegistry]::new("Kozubenko.MyRuntime", @(
             "SetStartDirectory(`$path = `$PWD.Path)",
             "NewVar(`$key, `$value = `$PWD.Path)",
@@ -60,16 +69,6 @@ class MyRuntime {
             }
         }
     }
-
-    [void] AddModule([FunctionRegistry]$functionRegistry) {
-        $this.modules.Add($functionRegistry)
-    }
-
-    [void] AddModules([Array]$functionRegistrys) {
-        foreach ($funcReg in $functionRegistrys) {
-            $this.AddModule($funcReg)
-        }
-    }
     
     SetStartDirectory($path) {
         [MyRuntime]::SaveToEnvFile($this._GLOBALS_FILE, $this.STARTUP_DIR_KEY, $path)
@@ -79,7 +78,7 @@ class MyRuntime {
     }
 
     NewVar($key, $value) {
-        if([string]::IsNullOrWhiteSpace($key)) {  PrintRed "MyRuntime.NewVar(name, value): name is null or is whitespace. Skipping.`n";   RETURN;  }
+        if([string]::IsNullOrWhiteSpace($key)) {  PrintRed "MyRuntime.NewVar(key, value): key cannot be null/whitespace. Skipping Function...`n";   RETURN;  }
         if ($key[0] -eq "$") {  $key = $key.Substring(1)  }
         [MyRuntime]::SaveToEnvFile($this._GLOBALS_FILE, $key, $value)
         $this.globals = [MyRuntime]::LoadEnvFileIntoMemory($this._GLOBALS_FILE, $true)
@@ -93,14 +92,24 @@ class MyRuntime {
     }
 
     NewCommand($path, [string]$command) {
-        if(-not($command) -or -not($path)) {  PrintRed "MyRuntime.NewAction(command, path): command/path was falsy. Skipping.`n";   RETURN;  }
-        [MyRuntime]::SaveToEnvFile($this._COMMANDS_FILE, $path, $command)
-        $this.commands = [MyRuntime]::LoadEnvFileIntoMemory($this._COMMANDS_FILE)
-        PrintGreen "NewCommand("; PrintItalics $command DarkGreen; PrintGreen ") created on `$path: $path`n"
+        if([string]::IsNullOrWhiteSpace($path) -or [string]::IsNullOrWhiteSpace($command)) {  PrintRed "MyRuntime.NewAction(path, command): command/path cannot be null/whitespace. Skipping Function...`n";   RETURN;  }
+        
+        PrintGreen "NewCommand(" -NewLine
+        PrintGreen "   `$path: "; PrintItalics "$path`n" DarkGreen
+        PrintGreen "   `$command: "; PrintItalics "$command`n" DarkGreen
+        PrintGreen ")" -NewLine
+
+        if($this.commands[$path] -eq $null) {
+            $this.commands.Add($path, $command)
+        } else {
+            $this.commands[$path] = @($this.commands[$path]; $command)
+        }
+        
+        [MyRuntime]::SaveToEnvFile($this._COMMANDS_FILE, $this.commands)
     }
 
     # called from Console, by pressing Enter on empty buffer: ""
-    RunDefaultCommand() {
+    [void] RunDefaultCommand() {
         $path = $PWD.Path
 
         $buffer = $null; $cursor = 0;
@@ -113,6 +122,70 @@ class MyRuntime {
             [Microsoft.PowerShell.PSConsoleReadLine]::Insert("open " + $buffer)  }
         
         [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+    }
+
+    <#  If buffer is one of the last 1000 commands, cycles through PsConsoleReadLine's history. Otherwise, cycles through commands set by NewCommand  #>
+    [void] CycleCommands() {
+        $path = $PWD.Path; $buffer = $null; $cursor = 0;
+        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
+
+        # no input on buffer and we have command(s) for current path. Insert command to buffer...
+        if(-not($buffer) -and $this.commands[$path]) {
+            if($this.commands[$path] -is [string]) {
+                [Microsoft.PowerShell.PSConsoleReadLine]::Insert($this.commands[$path]); RETURN;
+            }
+            if($this.commands[$path] -is [array]) {
+                [Microsoft.PowerShell.PSConsoleReadLine]::Insert($this.commands[$path][0]); RETURN;
+            }
+        }
+
+        $history = Get-Content (Get-PSReadlineOption).HistorySavePath -Tail 1000
+        for ($i = $history.Count-1; $i -gt -1; $i--) {
+            if($buffer.Split("`n")[0] -eq $history[$i]) {
+                [Microsoft.PowerShell.PSConsoleReadLine]::NextHistory(); RETURN;
+            }
+        }
+
+        # buffer has a line, but not a Line from PsConsoleReadLine History [UpArrow]
+        if($this.commands[$path] -is [string] -and $buffer -eq $this.commands[$path]) {  RETURN;  }     # Do Nothing. Buffer contains the only command for this path.
+        if($this.commands[$path] -is [array]) {
+            $array = $this.commands[$path]
+            for ($i = 0; $i -lt $array.Count - 1; $i++) {
+                if($buffer -eq $array[$i]) {
+                    [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()
+                    [Microsoft.PowerShell.PSConsoleReadLine]::Insert($array[$i+1]); RETURN;
+                }
+            }
+            
+        }
+
+        # We are on the last line of a multi-line command
+        [Microsoft.PowerShell.PSConsoleReadLine]::NextHistory();
+    }
+
+    <#  Overridden to add cycling functionality to commands set by NewCommand. Otherwise, goes about normal behavior of UpArrow  #>
+    [void] OverridePreviousHistory() {
+        $path = $PWD.Path; $buffer = $null; $cursor = 0;
+        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
+
+        if($this.commands[$path] -is [string]) {
+            if($buffer -eq $this.commands[$path]) {
+                [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput(); RETURN;
+            }
+        }
+        if($this.commands[$path] -is [array]) {
+            $array = $this.commands[$path]
+            for ($i = $array.Count-1; $i -gt -1; $i--) {
+                if($buffer -eq $array[$i]) {
+                    [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput();
+                    if($i -ne 0) {
+                        [Microsoft.PowerShell.PSConsoleReadLine]::Insert($array[$i-1]); RETURN;
+                    }
+                }
+            }
+        }
+
+        [Microsoft.PowerShell.PSConsoleReadLine]::PreviousHistory()
     }
 
     hidden [void] HandleTerminalStartupLocation() {  $this.HandleTerminalStartupLocation($false)  }
@@ -137,8 +210,27 @@ class MyRuntime {
         }
     }
 
+    static [void] SaveToEnvFile([string]$file, [System.Collections.IDictionary]$dict) {
+        $lines = [System.Collections.Generic.List[string]]::new()
+        foreach ($key in $dict.Keys) {
+            $line = ""
+            $value = $dict[$key]
+            if($value -is [array])  {
+                $value = ConvertArrayToString $value
+            }
+            $line += "$key=$value"
+            $lines.Add($line)
+        }
+        [Kozubenko.Utils.List]::OverwriteFile($file, $lines)
+    }
+
     static [void] SaveToEnvFile([string]$file, [string]$key, [string]$value) {
+        # PrintYellow "In SaveToEnvFile(): `$file: "; PrintItalics "$file`n" Yellow
         $lines = [Kozubenko.Utils.List]::FromFile($file)
+
+        if(-not($lines)) {
+            [Kozubenko.Utils.List]::OverwriteFile($file, "$key=$value"); RETURN;
+        }
 
         for ($i = 0; $i -lt $lines.Count; $i++) {
             $left = $lines[$i].Split("=")[0]
@@ -150,10 +242,10 @@ class MyRuntime {
         [System.IO.File]::AppendAllText($file, "$([Environment]::NewLine)$key=$value")
     }
 
-    static [System.Collections.Specialized.OrderedDictionary] LoadEnvFileIntoMemory([string]$file)                         {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $null);           }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file):`n"
-    static [System.Collections.Specialized.OrderedDictionary] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope)    {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $global_scope, $null);    }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$global_scope):`n"
-    static [System.Collections.Specialized.OrderedDictionary] LoadEnvFileIntoMemory([string]$file, [string]$key_to_delete) {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $key_to_delete);  }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$key_to_delete):`n"
-    static [System.Collections.Specialized.OrderedDictionary] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope, [string]$key_to_delete) {
+    static [ordered] LoadEnvFileIntoMemory([string]$file)                         {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $null);           }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file):`n"
+    static [ordered] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope)    {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $global_scope, $null);    }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$global_scope):`n"
+    static [ordered] LoadEnvFileIntoMemory([string]$file, [string]$key_to_delete) {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $key_to_delete);  }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$key_to_delete):`n"
+    static [ordered] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope, [string]$key_to_delete) {
         # PrintCyan "Entering: LoadEnvFileIntoMemory(`n  `$file: $file,`n  `$global_scope: $global_scope,`n  `$key_to_delete: $key_to_delete`n): "
         $variables = [ordered]@{}
         $lines = [Kozubenko.Utils.List]::FromFile($file)
@@ -163,6 +255,10 @@ class MyRuntime {
         for ($i = 0; $i -lt $lines.Count; $i++) {
             $left  = $lines[$i].Split("=")[0]
             $right = $lines[$i].Split("=")[1]
+
+            if($right.Contains(",")) {
+                $right = $right.Split(",")
+            }
 
             if ([string]::IsNullOrWhiteSpace($left) -OR     # malformed key
                 [string]::IsNullOrWhiteSpace($right) -OR    # malformed value
@@ -181,5 +277,16 @@ class MyRuntime {
         }
         [Kozubenko.Utils.List]::OverwriteFile($file, $lines)
         return $variables
+    }
+
+
+    [void] AddModule([FunctionRegistry]$functionRegistry) {
+        $this.modules.Add($functionRegistry)
+    }
+
+    [void] AddModules([Array]$functionRegistrys) {
+        foreach ($funcReg in $functionRegistrys) {
+            $this.AddModule($funcReg)
+        }
     }
 }

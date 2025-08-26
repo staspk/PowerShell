@@ -2,14 +2,17 @@ $WhiteRed = $PSStyle.Foreground.FromRgb(255, 196, 201);
 $LiteRed  = $PSStyle.Foreground.FromRgb(223, 96, 107);
 $LiteGreen = $PSStyle.Foreground.FromRgb(96, 223, 107);
 
-
-
-
+<# 
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    # Operation #
+    PrintRed "$([math]::Round($sw.Elapsed.TotalMilliseconds, 3))ms" -NewLine
+    $sw.Restart()
+#>
 
 class List {
     <#
     .SYNOPSIS
-    Creates an easily mutable list from a file (each item represents a line).
+    Creates an easily mutable list from a file (each item represents a line). 
     
     Note: implementation coerces Get-Content return value to string[]. See differences in runtime return values by debugging:
         .\tests\Get-Content.Test.ps1
@@ -50,30 +53,6 @@ class List {
     }
 }
 
-function ResolvePath([string]$path, [switch]$Pwsh_Implementation) {     # Unfinished Function. Will implement when/if i actually need it. Overwritten below. 
-    <# 
-    .SYNOPSIS
-    Returns an resolved, absolute path.
-
-    Path does not have to exist with the default, .NET implementation. However, .NET does not know how to resolve special pwsh values like:
-        TestDrive:\ [Pester temp drive] :: USE THE .NET equivalent: $TestDrive
-        Env:\
-        Registry
-        other PSDrive's
-    
-    Default Implementation: uses .NET's [System.IO.Path]::GetFullPath($path)
-        - Test-Path($path) can be True/False
-        - .NET does not how to resolve TestDrive:
-
-    PS > $lines = ResolvePath )
-    Returns:
-        [string] || throws
-    #>
-    if($Pwsh_Implementation) {
-        
-    }
-    return [System.IO.Path]::GetFullPath($path)
-}
 
 function Directory([Parameter(ValueFromRemainingArguments)] [string[]] $paths) {
     <# 
@@ -128,21 +107,72 @@ function File([Parameter(ValueFromRemainingArguments)] [string[]] $paths) {
     return [System.IO.Path]::GetFullPath($result)
 }
 
+function ResolvePath([string]$path, [switch]$Pwsh_Implementation) {     # Rough Draft for Function. Will implement when/if I actually need it. Overwritten below. 
+    <# 
+    .SYNOPSIS
+    Returns an resolved, absolute path.
+
+    Path does not have to exist with the default, .NET implementation. However, .NET does not know how to resolve special pwsh values like:
+        TestDrive:\ [Pester temp drive] :: USE THE .NET equivalent: $TestDrive
+        Env:\
+        Registry
+        other PSDrive's
+    
+    Default Implementation: uses .NET's [System.IO.Path]::GetFullPath($path)
+        - Test-Path($path) can be True/False
+        - .NET does not how to resolve TestDrive:
+
+    PS > $lines = ResolvePath )
+    Returns:
+        [string] || throws
+    #>
+    if($Pwsh_Implementation) {
+        
+    }
+    return [System.IO.Path]::GetFullPath($path)
+}
+
+
 function GetType($var) {
     try {  return $var.GetType().Name  }
     catch {
         return "null"
     }
 }
-function AssertString($stringVarName, $string) {
-    if(-not($stringVarName)) {
-        throw [System.Management.Automation.RuntimeException]::new("AssertString second paramter required: `$stringVarName")
+function ArrayAsDebugString($array_name, $array) {
+    <# 
+    .SYNOPSIS
+    Returns array as a string.
+
+    ArrayAsDebugString "itemsArray" @("item1", "item2", "item3")
+    Returns:
+        "itemsArray:[
+           item1
+           item2
+           item3
+        ]"
+    #>
+    if([string]::IsNullOrWhiteSpace($array_name) -OR -not($array -is [array])) {  throw "conditions not met for ArrayAsDebugString"  }
+    $str = "$($array_name):[`n"
+    foreach ($item in $array) {
+        $str += "   $item`n"
     }
-    if([string]::IsNullOrEmpty($string)) {
-        throw [System.Management.Automation.RuntimeException]::new("$stringVarName is Null or Empty")
-    }
+    $str += "]"
+    return $str
 }
 
+function ConvertArrayToString([Array]$array) {
+    if(-not($array -is [array])) {  throw "ConvertArrayToString param is not an array. is: $(GetType $array)"  }
+
+    $string = ""
+    for ($i = 0; $i -lt $array.Count; $i++) {
+        $string += $array[$i]
+        if($i -lt $array.Count - 1) {
+            $string += ","
+        }
+    }
+    return $string
+}
 
 function IsAdmin() {
     $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
@@ -154,6 +184,12 @@ function ParentDir($path) {
     return [System.IO.Path]::GetDirectoryName($path)
 }
 function ResolvePath($path) {
+    # $pwdItem = Get-Item $PWD
+    # if ($pwdItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
+    #     "PWD is a symlink/junction"
+    # } else {
+    #     return [System.IO.Path]::GetFullPath($path)
+    # }
     return [System.IO.Path]::GetFullPath($path)
 }
 function IsFile($path) {
