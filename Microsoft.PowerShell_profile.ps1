@@ -86,13 +86,14 @@ function OnOpen() {
     SetAliases Clear-Host  @("z", "zz", "zzz")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
 
-    Set-PSReadLineKeyHandler -Key Alt+1           -Description "List cheat-notes"              -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintLiteRed $_.Name -NewLine }; ConsoleInsert("$cheats\")  }
-    Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"                   -ScriptBlock {  ConsoleDeleteInput  }
-    Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"         -ScriptBlock {  ConsoleMoveToStartofLine  }
-    Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"           -ScriptBlock {  ConsoleMoveToEndofLine  }
-    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"                  -ScriptBlock {  ClearTerminal  } 
-    Set-PSReadLineKeyHandler -Key DownArrow       -Description "Runtime.CycleCommands()"       -ScriptBlock {  if(-not($global:MyRuntime.CycleCommands())) { [Microsoft.PowerShell.PSConsoleReadLine]::NextHistory() }  }
-    Set-PSReadLineKeyHandler -Key Enter           -Description "Runtime.RunDefaultCommand()"   -ScriptBlock {
+    Set-PSReadLineKeyHandler -Key Alt+1           -Description "List cheat-notes"                   -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintLiteRed $_.Name -NewLine }; ConsoleInsert("$cheats\")  }
+    Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"                        -ScriptBlock {  ConsoleDeleteInput  }
+    Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"              -ScriptBlock {  ConsoleMoveToStartofLine  }
+    Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"                -ScriptBlock {  ConsoleMoveToEndofLine  }
+    Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"                       -ScriptBlock {  ClearTerminal  }
+    Set-PSReadLineKeyHandler -Key UpArrow         -Description "Runtime.OverridePreviousHistory()"  -ScriptBlock {  $global:MyRuntime.OverridePreviousHistory()  }
+    Set-PSReadLineKeyHandler -Key DownArrow       -Description "Runtime.CycleCommands()"            -ScriptBlock {  $global:MyRuntime.CycleCommands()  }
+    Set-PSReadLineKeyHandler -Key Enter           -Description "Runtime.RunDefaultCommand()"        -ScriptBlock {
         $buffer = $null; $cursor = 0;
         [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
 
