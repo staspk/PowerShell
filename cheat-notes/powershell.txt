@@ -1,23 +1,29 @@
-Use $ErrorActionPreference = "Stop" in function if you need to a Try-Catch to work correctly.
-Is automatically scoped to the function it is used in. Outside of func, $ErrorActionPreference will still be set to default == 'Continue'
+$ErrorActionPreference = "Stop"					=>	Get Try-Catch to work for non-terminating errors. Auto-scoped to function it is used in.
 
-# Iterate through class static property values
-foreach( $prop in ([ProfilePaths] | Get-Member -MemberType Property -Static).Name ) {
-	[ProfilePaths]::$prop
-}
+where.exe node 									=>	prints PATH
 
-Get-PSReadLineKeyHandler 					=> Shows a list of shortcuts
-(Get-PSReadlineOption).HistorySavePath  	=> Shows path to file that saves History of commands
+$PROFILE | Select-Object *						=>	e.g. Get Note Properties
+(Get-Command Set-Location).Definition			=>	e.g. Get Function Headers
+$profile.gettype()								=>	e.g. GetType()
+Get-Help set-alias -full						=>	The Ultimate Info Dump
 
-Test-ModuleManifest Kozubenko.Utils.psm1
+FunctionCall 2>&1 4>&1 5>&1 6>&1 > $null		=>	Suppresses all output. 6>&1 suppresses write-host
+	class MockedRuntime : MyRuntime {			=>	A possibly overkill method of suppressing Write-Host output for Pester
+		MockedRuntime($ALT_ROOT_DIR) : base($ALT_ROOT_DIR) { }
 
-$PROFILE | Select-Object *					=> e.g. Get Note Properties
-(Get-Command Set-Location).Definition		=> e.g. Get Function Headers
-$profile.gettype()							=> e.g. GetType()
-Get-Help set-alias -full					=> The Ultimate Info Dump
+		NewCommand($path, [object]$command) {
+			([MyRuntime]$this).NewCommand($path, $command) 2>&1 4>&1 5>&1 6>&1 > $null
+		}
+	}
 
-where.exe node => prints PATH for sofware (node in this case)
+Invoke-WebRequest https://www.autohotkey.com/download/ahk-v2.exe -Debug		=>	Steps through and gives you all the info
 
-[Microsoft.PowerShell.PSConsoleReadLine].GetMethod("AcceptLine")
+[Microsoft.PowerShell.PSConsoleReadLine].GetMethod("AcceptLine")			=>	Metadata for methods
 
-Invoke-WebRequest https://www.autohotkey.com/download/ahk-v2.exe -Debug		=> Steps through and gives you all the info
+
+
+NOTES FROM TESTING:
+@($one_array; $str_or_array)					=>	safe method of combining arrays, with string or array
+$value = $dict["non_existent_key]				=>	safe. $value will simply equal $null
+
+[void] ClassFunctionSignature([System.Collections.IDictionary]$dict)	=>	Throws if $dict not a [hashtable] or [ordered]. Sanity Checks built into the language.
