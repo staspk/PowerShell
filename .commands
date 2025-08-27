@@ -1,2 +1,4 @@
 C:\Users\stasp\Desktop\OS-Setup=./saveWindowsSettingsAndGithubPush.ps1
 C:\Users\stasp\Desktop\OS-Setup\Windows11\.vscode=npx vsce package
+C:\Users\stasp\Desktop\Bible-Vault=./start-server.ps1,npx tsx .\node\_vite-frontend\index.test.ts
+C:\Users\stasp\Desktop\Bible-Vault\node\_vite-frontend=npm run dev
