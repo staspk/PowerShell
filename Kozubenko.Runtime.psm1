@@ -18,6 +18,9 @@ class MyRuntime {
     [string] $STARTUP_DIR_KEY = "startup_dir";
     [System.Collections.Generic.List[FunctionRegistry]] $modules = [System.Collections.Generic.List[FunctionRegistry]]::new();
 
+    [string] $last_path = "";   # used in tandem with $history_depth
+    [int] $history_depth = 0;   # Positive: PsConsoleReadLine History. Negative: Commands Stack. Only Use Increment_HistoryDepth / Decrement_HistoryDepth to set.
+
     MyRuntime() {  $this.Init()  }
     MyRuntime($ALT_ROOT_DIR) {
         $this._GLOBALS_FILE  = "$ALT_ROOT_DIR\.globals"
@@ -124,68 +127,40 @@ class MyRuntime {
         [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
     }
 
-    <#  If buffer is one of the last 1000 commands, cycles through PsConsoleReadLine's history. Otherwise, cycles through commands set by NewCommand  #>
-    [void] CycleCommands() {
-        $path = $PWD.Path; $buffer = $null; $cursor = 0;
-        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
-
-        # no input on buffer and we have command(s) for current path. Insert command to buffer...
-        if(-not($buffer) -and $this.commands[$path]) {
-            if($this.commands[$path] -is [string]) {
-                [Microsoft.PowerShell.PSConsoleReadLine]::Insert($this.commands[$path]); RETURN;
-            }
-            if($this.commands[$path] -is [array]) {
-                [Microsoft.PowerShell.PSConsoleReadLine]::Insert($this.commands[$path][0]); RETURN;
-            }
+    [void] OverridePreviousHistory() {
+        if($this.last_path -ne $PWD.Path) {
+            $this.last_path = $PWD.Path
+            $this.history_depth = 0
         }
 
-        $history = Get-Content (Get-PSReadlineOption).HistorySavePath -Tail 1000
-        for ($i = $history.Count-1; $i -gt -1; $i--) {
-            if($buffer.Split("`n")[0] -eq $history[$i]) {
-                [Microsoft.PowerShell.PSConsoleReadLine]::NextHistory(); RETURN;
-            }
-        }
+        $this.history_depth += 1
 
-        # buffer has a line, but not a Line from PsConsoleReadLine History [UpArrow]
-        if($this.commands[$path] -is [string] -and $buffer -eq $this.commands[$path]) {  RETURN;  }     # Do Nothing. Buffer contains the only command for this path.
-        if($this.commands[$path] -is [array]) {
-            $array = $this.commands[$path]
-            for ($i = 0; $i -lt $array.Count - 1; $i++) {
-                if($buffer -eq $array[$i]) {
-                    [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()
-                    [Microsoft.PowerShell.PSConsoleReadLine]::Insert($array[$i+1]); RETURN;
-                }
+        if($this.history_depth -lt 1) {
+            [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()
+            if($this.history_depth -ne 0) {
+                [Microsoft.PowerShell.PSConsoleReadLine]::Insert(@($this.commands[$PWD.Path])[-1-$this.history_depth])
             }
-            
+        } else {
+            [Microsoft.PowerShell.PSConsoleReadLine]::PreviousHistory()
         }
-
-        # We are on the last line of a multi-line command
-        [Microsoft.PowerShell.PSConsoleReadLine]::NextHistory();
     }
 
-    <#  Overridden to add cycling functionality to commands set by NewCommand. Otherwise, goes about normal behavior of UpArrow  #>
-    [void] OverridePreviousHistory() {
-        $path = $PWD.Path; $buffer = $null; $cursor = 0;
-        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
-
-        if($this.commands[$path] -is [string]) {
-            if($buffer -eq $this.commands[$path]) {
-                [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput(); RETURN;
-            }
+    [void] CycleCommands() {
+        if($this.last_path -ne $PWD.Path) {
+            $this.last_path = $PWD.Path
+            $this.history_depth = 0
         }
-        if($this.commands[$path] -is [array]) {
-            $array = $this.commands[$path]
-            for ($i = $array.Count-1; $i -gt -1; $i--) {
-                if($buffer -eq $array[$i]) {
-                    [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput();
-                    if($i -ne 0) {
-                        [Microsoft.PowerShell.PSConsoleReadLine]::Insert($array[$i-1]); RETURN;
-                    }
-                }
-            }
+        
+        if(@(SafeCoerceToArray $this.commands[$PWD.Path]).Count -gt $((-1)*($this.history_depth))) {
+            $this.history_depth -= 1
         }
 
-        [Microsoft.PowerShell.PSConsoleReadLine]::PreviousHistory()
+        if($this.history_depth -lt 0) {
+            [Microsoft.PowerShell.PSConsoleReadLine]::BackwardDeleteInput()
+            [Microsoft.PowerShell.PSConsoleReadLine]::Insert(@($this.commands[$PWD.Path])[-1-$this.history_depth] ?? "")
+        } else {
+            [Microsoft.PowerShell.PSConsoleReadLine]::NextHistory()
+        }
     }
 
     hidden [void] HandleTerminalStartupLocation() {  $this.HandleTerminalStartupLocation($false)  }
@@ -278,7 +253,6 @@ class MyRuntime {
         [Kozubenko.Utils.List]::OverwriteFile($file, $lines)
         return $variables
     }
-
 
     [void] AddModule([FunctionRegistry]$functionRegistry) {
         $this.modules.Add($functionRegistry)
