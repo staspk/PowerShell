@@ -162,6 +162,10 @@ function ArrayAsDebugString($array_name, $array) {
 }
 
 function ConvertArrayToString([Array]$array) {
+    <#
+    .SYNOPSIS
+    Converts @("one", "two", "three") -> "one,two,three"
+    #>
     if(-not($array -is [array])) {  throw "ConvertArrayToString param is not an array. is: $(GetType $array)"  }
 
     $string = ""
@@ -172,6 +176,17 @@ function ConvertArrayToString([Array]$array) {
         }
     }
     return $string
+}
+function SafeCoerceToArray($obj) {
+    <#
+    .SYNOPSIS
+    Adds correct null-handling to PowerShell's @().
+
+    $obj successfully tested as: Union<null,string,array>.
+    #>
+    if($null -eq $obj)   {  return @()  }
+    if($obj -is [array]) {  return $obj  }
+    return @($obj)
 }
 
 function IsAdmin() {
