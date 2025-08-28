@@ -97,6 +97,8 @@ function OnOpen() {
         $buffer = $null; $cursor = 0;
         [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
 
+        $global:MyRuntime.history_depth = 0
+
         if($buffer.StartsWith("..")) {
             ConsoleDeleteInput; ConsoleInsert "cd $buffer"; ConsoleAcceptLine;
             return;
