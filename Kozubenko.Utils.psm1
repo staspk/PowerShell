@@ -40,6 +40,7 @@ class List {
     PS > [Kozubenko.Utils.List]::OverwriteFile($file, $lines)
     Result:
         Creates/overwrites $file with "", if $lines.Count = 0
+        throws: System.IO.IOException [if file is locked/being used by another process]
     #>
     static [void] OverwriteFile([string]$path, [System.Collections.Generic.List[string]]$list) {
         $string = ""
