@@ -8,6 +8,8 @@ using module .\Kozubenko.Bible.psm1
 using module .\Kozubenko.Runtime.psm1
 
 
+$global:stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
 SetGlobal "PROFILE_DIR"  $(ParentDir $PROFILE)
 SetGlobal "desktop"      "$HOME\Desktop"
 SetGlobal "downloads"    "$HOME\Downloads"
@@ -24,7 +26,10 @@ class KozubenkoProfile {
                 "Open(`$path = 'PWD.Path')              -->   opens .\ or `$path in File Explorer",
                 "Vs(`$path = 'PWD.Path')                -->   opens .\ or `$path in Visual Studio",
                 "Vsc(`$path = 'PWD.Path')               -->   opens .\ or `$path in Visual Studio Code.",
-                "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++"
+                "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++",
+                "loadTime()                             -->   print profile loadTime in ms (excludes imports)",
+                "profile()                              -->   vsc `$(ParentDir `$PROFILE)",
+                "shortcuts()                            -->   see keyboard shortcuts"
             ));
     }
 }
@@ -61,6 +66,9 @@ function Vsc($path = $PWD.Path) {
     code $path
 }
 
+function loadTime() {
+    PrintRed "$($global:stopwatch.Elapsed.TotalMilliseconds.ToString("F3"))ms"
+}
 function profile() {
     vsc $global:PROFILE_DIR
 }
@@ -68,11 +76,13 @@ function shortcuts() {
     Get-PSReadLineKeyHandler
 }
 
+
 function OnOpen() {
     TerminalTitleBar "PowerShell $($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor).$($PSVersionTable.PSVersion.Patch)"
 
     $global:MyRuntime = [MyRuntime]::new()
     $global:MyRuntime.AddModules(@(
+        [MyRuntime_FunctionRegistry]::Get(),
         # [KozubenkoBible]::GetFunctionRegistry(),
         # [KozubenkoVideo]::GetFunctionRegistry(),
         [KozubenkoOS]::GetFunctionRegistry(),
@@ -110,7 +120,10 @@ function OnOpen() {
         ConsoleAcceptLine
     }
 }
+# $sw = [System.Diagnostics.Stopwatch]::StartNew()
 OnOpen
+
+$global:stopwatch.Stop()
 
 
 
