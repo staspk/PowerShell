@@ -1,7 +1,14 @@
 using module .\classes\FunctionRegistry.psm1
 using module .\Kozubenko.Utils.psm1
 
-# Since aliases can't have params, we use functions to accomplish alias functionality...
+
+<# 
+    FUNCTION ALIASES
+    These functions act as parameterized alias/entry-points to MyRuntime instance methods...
+
+    $global:MyRuntime MUST be instantiated onto $global:MyRuntime, ie:
+    $global:MyRuntime = [MyRuntime]::new()
+#>
 function SetStartDirectory($path = $PWD.Path) {  $global:MyRuntime.SetStartDirectory($path)  }
 function NewVar($key, $value = $PWD.Path)     {  $global:MyRuntime.NewVar($key, $value)  }
 function DeleteVar($key)                      {  $global:MyRuntime.DeleteVar($key)  }
@@ -9,6 +16,28 @@ function NewCommand([string]$command)         {  $global:MyRuntime.NewCommand($P
 function Help([string]$moduleName = "")       {  $global:MyRuntime.Help($moduleName)  }
 
 
+class MyRuntime_FunctionRegistry {
+    static [FunctionRegistry] GET() {
+        return [FunctionRegistry]::new(
+            "Kozubenko.MyRuntime",
+            @(
+                "SetStartDirectory(`$path = `$PWD.Path)  -->  Set default path Terminal will open to (if opened without specific dir)",
+                "NewVar(`$key, `$value = `$PWD.Path)     -->  Create new key/value pair in .globals",
+                "DeleteVar(`$key)                        -->  Delete existing key/value pair in .globals",
+                "NewCommand([string]`$command)           -->  Save command[value] for current path[key] in .commands. Cycle through commands with DownArrow.",
+                "Help([string]`$moduleName)              -->  Print FunctionRegistry for all Modules. Target [match] with `$moduleName."
+            ))
+    }
+}
+
+
+<# 
+.SYNOPSIS
+    [MyRuntime]::new()               => Constructor will Init instance with root directory: "$PROFILE\.."
+    [MyRuntime]::new($ALT_ROOT_DIR)  => Constructor will Init instance to alt chosen directory (eg: for testing purposes)
+
+    $global:MyRuntime must be reserved for MyRuntime instance, see FUNCTION ALIASES above.
+#>
 class MyRuntime {
     [string] $RUNTIME_ROOT_DIR = [System.IO.Path]::GetDirectoryName($PROFILE);
 
@@ -29,13 +58,6 @@ class MyRuntime {
     }
 
     hidden [void] Init() {
-        $this.AddModule([FunctionRegistry]::new("Kozubenko.MyRuntime", @(
-            "SetStartDirectory(`$path = `$PWD.Path)",
-            "NewVar(`$key, `$value = `$PWD.Path)",
-            "DeleteVar(`$key)",
-            "NewCommand([string]`$command)"))
-        );
-
         if(-not(Test-Path $this._GLOBALS_FILE))  {  Set-Content -Path $this._GLOBALS_FILE -Value "$($this.STARTUP_DIR_KEY)=$($Env:userprofile)"  }
         if(-not(Test-Path $this._COMMANDS_FILE)) {  New-Item -Path $this._COMMANDS_FILE -ItemType File -Force | Out-Null  }
 
@@ -95,7 +117,7 @@ class MyRuntime {
     }
 
     NewCommand($path, [string]$command) {
-        if([string]::IsNullOrWhiteSpace($path) -or [string]::IsNullOrWhiteSpace($command)) {  PrintRed "MyRuntime.NewAction(path, command): command/path cannot be null/whitespace. Skipping Function...`n";   RETURN;  }
+        if([string]::IsNullOrWhiteSpace($path) -or [string]::IsNullOrWhiteSpace($command)) {  PrintRed "MyRuntime.NewCommand(path, command): command/path cannot be null/whitespace. Skipping Function...`n";   RETURN;  }
         
         PrintGreen "NewCommand(" -NewLine
         PrintGreen "   `$path: "; PrintItalics "$path`n" DarkGreen
@@ -226,7 +248,7 @@ class MyRuntime {
         $lines = [Kozubenko.Utils.List]::FromFile($file)
         
         if(-not($lines)) {  return $variables  }
-        
+
         for ($i = 0; $i -lt $lines.Count; $i++) {
             $left  = $lines[$i].Split("=")[0]
             $right = $lines[$i].Split("=")[1]
@@ -254,13 +276,9 @@ class MyRuntime {
         return $variables
     }
 
-    [void] AddModule([FunctionRegistry]$functionRegistry) {
-        $this.modules.Add($functionRegistry)
-    }
-
     [void] AddModules([Array]$functionRegistrys) {
-        foreach ($funcReg in $functionRegistrys) {
-            $this.AddModule($funcReg)
+        foreach ($functionRegistry in $functionRegistrys) {
+            $this.modules.Add($functionRegistry)
         }
     }
 }
