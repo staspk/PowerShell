@@ -41,7 +41,7 @@ class MyRuntime_FunctionRegistry {
 class MyRuntime {
     [string] $RUNTIME_ROOT_DIR = [System.IO.Path]::GetDirectoryName($PROFILE);
 
-    [string] $_GLOBALS_FILE  = "$($this.RUNTIME_ROOT_DIR)\.globals";    [ordered] $globals = [ordered]@{};
+    [string] $_GLOBALS_FILE  = "$($this.RUNTIME_ROOT_DIR)\.globals";     [ordered] $globals = [ordered]@{};
     [string] $_COMMANDS_FILE = "$($this.RUNTIME_ROOT_DIR)\.commands";    [ordered] $commands = @{};
 
     [string] $STARTUP_DIR_KEY = "startup_dir";
@@ -49,6 +49,8 @@ class MyRuntime {
 
     [string] $last_path = "";   # used in tandem with $history_depth
     [int] $history_depth = 0;   # Positive: PsConsoleReadLine History. Negative: Commands Stack.
+
+    static $mutex = [System.Threading.Mutex]::new($false, "PowerShell.Kozubenko.MyRuntime")
 
     MyRuntime() {  $this.Init()  }
     MyRuntime($ALT_ROOT_DIR) {
@@ -245,15 +247,18 @@ class MyRuntime {
     static [ordered] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope, [string]$key_to_delete) {
         # PrintCyan "Entering: LoadEnvFileIntoMemory(`n  `$file: $file,`n  `$global_scope: $global_scope,`n  `$key_to_delete: $key_to_delete`n): "
         $variables = [ordered]@{}
+
+        [MyRuntime]::mutex.WaitOne() | Out-Null
+
         $lines = [Kozubenko.Utils.List]::FromFile($file)
         
-        if(-not($lines)) {  return $variables  }
+        if(-not($lines)) {  [MyRuntime]::mutex.ReleaseMutex(); return $variables  }
 
         for ($i = 0; $i -lt $lines.Count; $i++) {
             $left  = $lines[$i].Split("=")[0]
             $right = $lines[$i].Split("=")[1]
 
-            if($right.Contains(",")) {
+            if($right.Contains(",")) {                      # Support for string arrays as values
                 $right = $right.Split(",")
             }
 
@@ -272,7 +277,11 @@ class MyRuntime {
                 if ($global_scope) {  Set-Variable -Name $left -Value $right -Scope Global  }
             }
         }
+
         [Kozubenko.Utils.List]::OverwriteFile($file, $lines)
+
+        [MyRuntime]::mutex.ReleaseMutex();
+        
         return $variables
     }
 
