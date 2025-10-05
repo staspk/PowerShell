@@ -18,6 +18,8 @@ SetGlobal "startup"      "$appdata\Microsoft\Windows\Start Menu\Programs\Startup
 SetGlobal "yt-dlp"       "$desktop\yt-dlp"
 SetGlobal "cheats"       "$PROFILE_DIR\cheat-notes"
 SetGlobal "notes"        "$PROFILE_DIR\cheat-notes"
+SetGlobal "pwsh_history_file" $((Get-PSReadLineOption).HistorySavePath)
+
 class KozubenkoProfile {
     static [FunctionRegistry] GetFunctionRegistry() {
         return [FunctionRegistry]::new(
