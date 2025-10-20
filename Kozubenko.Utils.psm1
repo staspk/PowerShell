@@ -309,9 +309,19 @@ function ClearTerminal {
     ConsoleDeletePreviousLine
 }
 function GetConsoleBufferState() {
+    <# 
+    .SYNOPSIS
+    Utility function for `[Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)`.
+    If `$buffer` is "", will return `$null` instead (this allows ?? use).
+
+    PS > $buffer, $cursor = GetConsoleBufferState
+    Returns:
+        @([String|Null], [Int32])
+    #>
     $buffer = $null
     $cursor = 0
     [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)
+    if($buffer -eq "") { $buffer = $null }
     return @($buffer, $cursor)
 }
 function ConsoleInsert($text) {  [Microsoft.PowerShell.PSConsoleReadLine]::Insert($text)  }
