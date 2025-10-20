@@ -4,19 +4,16 @@ using module .\Kozubenko.Utils.psm1
 
 <# 
     FUNCTION ALIASES
-    These functions act as parameterized alias/entry-points to MyRuntime instance methods...
-
-    $global:MyRuntime MUST be instantiated onto $global:MyRuntime, ie:
-    $global:MyRuntime = [MyRuntime]::new()
+    These functions act as parameterized aliases to MyRuntime instance methods...
 #>
-function SetStartDirectory($path = $PWD.Path) {  $global:MyRuntime.SetStartDirectory($path)  }
-function NewVar($key, $value = $PWD.Path)     {  $global:MyRuntime.NewVar($key, $value)  }
-function DeleteVar($key)                      {  $global:MyRuntime.DeleteVar($key)  }
-function NewCommand([string]$command)         {  $global:MyRuntime.NewCommand($PWD.Path, $command)  }
-function Help([string]$moduleName = "")       {  $global:MyRuntime.Help($moduleName)  }
+function SetStartDirectory($path = $PWD.Path) {  [MyRuntime]::Instance.SetStartDirectory($path)  }
+function NewVar($key, $value = $PWD.Path)     {  [MyRuntime]::Instance.NewVar($key, $value)  }
+function DeleteVar($key)                      {  [MyRuntime]::Instance.DeleteVar($key)  }
+function NewCommand([string]$command)         {  [MyRuntime]::Instance.NewCommand($PWD.Path, $command)  }
+function Help([string]$moduleName = "")       {  [MyRuntime]::Instance.Help($moduleName)  }
 
 Remove-Item Alias:h
-function H   ([string]$moduleName = "")       {  $global:MyRuntime.Help($moduleName)  }
+function H   ([string]$moduleName = "")       {  [MyRuntime]::Instance.Help($moduleName)  }
 
 
 class MyRuntime_FunctionRegistry {
@@ -38,8 +35,6 @@ class MyRuntime_FunctionRegistry {
 .SYNOPSIS
     [MyRuntime]::new()               => Constructor will Init instance with root directory: "$PROFILE\.."
     [MyRuntime]::new($ALT_ROOT_DIR)  => Constructor will Init instance to alt chosen directory (eg: for testing purposes)
-
-    $global:MyRuntime must be reserved for MyRuntime instance, see FUNCTION ALIASES above.
 #>
 class MyRuntime {
     [string] $RUNTIME_ROOT_DIR = [System.IO.Path]::GetDirectoryName($PROFILE);
@@ -54,6 +49,7 @@ class MyRuntime {
     [int] $history_depth = 0;   # Positive: PsConsoleReadLine History. Negative: Commands Stack.
 
     static $mutex = [System.Threading.Mutex]::new($false, "PowerShell.Kozubenko.MyRuntime")
+    static [MyRuntime] $Instance;
 
     MyRuntime() {  $this.Init()  }
     MyRuntime($ALT_ROOT_DIR) {
@@ -71,6 +67,7 @@ class MyRuntime {
 
         $this.HandleTerminalStartupLocation()
         $this.PrintIntroduction()
+        [MyRuntime]::Instance = $this;
     }
 
     [void] PrintIntroduction() {
