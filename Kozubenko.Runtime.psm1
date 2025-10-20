@@ -15,6 +15,9 @@ function DeleteVar($key)                      {  $global:MyRuntime.DeleteVar($ke
 function NewCommand([string]$command)         {  $global:MyRuntime.NewCommand($PWD.Path, $command)  }
 function Help([string]$moduleName = "")       {  $global:MyRuntime.Help($moduleName)  }
 
+Remove-Item Alias:h
+function H   ([string]$moduleName = "")       {  $global:MyRuntime.Help($moduleName)  }
+
 
 class MyRuntime_FunctionRegistry {
     static [FunctionRegistry] GET() {
@@ -25,7 +28,7 @@ class MyRuntime_FunctionRegistry {
                 "NewVar(`$key, `$value = `$PWD.Path)     -->  Create new key/value pair in .globals",
                 "DeleteVar(`$key)                        -->  Delete existing key/value pair in .globals",
                 "NewCommand([string]`$command)           -->  Save command[value] for current path[key] in .commands. Cycle through commands with DownArrow.",
-                "Help([string]`$moduleName)              -->  Print FunctionRegistry for all Modules. Target [match] with `$moduleName."
+                "Help([string]`$moduleName)              -->  Print FunctionRegistry for all Modules. Target [match] with `$moduleName. Alias: H"
             ))
     }
 }
