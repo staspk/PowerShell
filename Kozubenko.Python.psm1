@@ -4,26 +4,39 @@ class KozubenkoPython {
         return [FunctionRegistry]::new(
             "Kozubenko.Python",
             @(
-                "SetupBasicPythonProject()            -->   setups .venv alongside basic necessities"
-                "CreateVenvEnvironment()              -->   py -m venv .venv",
+                "InitPythonEnv()                      -->   what you need after git-cloning a python project",
+                "SetupBoilerplatePythonProject()      -->   setups .venv + python boilerplate project + kozubenko-py utils",
                 "Activate()                           -->   .\.venv\Scripts\Activate.ps1",
-                "venvFreeze()                         -->   pip freeze > requirements.txt",
-                "venvInstallRequirements()            -->   py -m pip install -r requirements.txt",
-                "KillPythonProcesses()                -->   kills all python processes"
+                "KillPythonProcesses()                -->   kills all python processes",
+                "venvFreeze()                         -->   pip freeze > requirements.txt"
             ));
     }
 }
 
 
-$global:venvActive = $false
-
 $BOILERPLATE_PYTHON_PROJECT = "$profile\..\boilerplate\python_minimum_vscode_setup"
 
-function SetupBasicPythonProject($path = $PWD.Path) {
-    if (-not(Test-Path $path)) {
-        PrintDarkRed "`please give valid `$path`n"
-        RETURN;
+
+function Activate {     # Use from a Python project root dir, to activate a venv virtual environment
+    if (Test-Path "$PWD\.venv")    {
+        Invoke-Expression "$PWD\.venv\Scripts\Activate.ps1";  return $true
     }
+    return $false
+}
+
+function InitPythonEnv {
+    py -m venv .venv
+    if (Activate) {
+        python.exe -m pip install --upgrade pip;
+
+        if (Test-Path "$($PWD.Path)$([System.IO.Path]::DirectorySeparatorChar)requirements.txt") {
+            py -m pip install -r requirements.txt
+        }
+    }
+}
+
+function SetupBoilerplatePythonProject() {
+    $path = $PWD.Path
 
     py -m venv .venv
 
@@ -36,36 +49,8 @@ function SetupBasicPythonProject($path = $PWD.Path) {
     Clear-Host
 }
 
-
-function CreateVenvEnvironment {
-    py -m venv .venv
-    Activate
-    python.exe -m pip install --upgrade pip;
-}
-
-function Activate {     # Use from a Python project root dir, to activate a venv virtual environment
-    if (Test-Path "$PWD\.venv")    {  Invoke-Expression "$PWD\.venv\Scripts\Activate.ps1";   $global:venvActive = $true   }
-    if (Test-Path "$PWD\venv")     {  Invoke-Expression "$PWD\venv\Scripts\Activate.ps1";    $global:venvActive = $true   }
-}
-
 function venvFreeze {
-    if ($global:venvActive -and (Test-Path "$PWD\.venv" -or Test-Path "$PWD\venv")) {
-        pip freeze > requirements.txt
-        PrintCyan "Frozen: $PWD\requirements.txt`n"
-    }
-    else {
-        PrintRed "`$venvActive == False`n"
-        PrintRed "`$venvActive == False`n"
-    }
-}
-function venvInstallRequirements {
-    if ($global:venvActive -and (Test-Path "$PWD\.venv" -or Test-Path "$PWD\venv")) {
-        py -m pip install -r requirements.txt
-        PrintCyan "requirements.txt installed`n"
-    }
-    else {
-        PrintRed "`$venvActive == False`n"
-    }
+    pip freeze > requirements.txt
 }
 
 function KillPythonProcesses {
