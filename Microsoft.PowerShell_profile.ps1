@@ -102,23 +102,27 @@ function OnOpen() {
     Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"                        -ScriptBlock {  ConsoleDeleteInput  }
     Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"              -ScriptBlock {  ConsoleMoveToStartofLine  }
     Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"                -ScriptBlock {  ConsoleMoveToEndofLine  }
+    Set-PSReadLineKeyHandler -Key Alt+z           -Description "Cd .."                              -ScriptBlock {  Set-Location ..; ConsoleAcceptLine  }  
     Set-PSReadLineKeyHandler -Key Ctrl+z          -Description "Clear Screen"                       -ScriptBlock {  ClearTerminal  }
-    Set-PSReadLineKeyHandler -Key Ctrl+.          -Description "Opens `$PWD in File Explorer"       -ScriptBlock {  explorer.exe $PWD  }
+    Set-PSReadLineKeyHandler -Key Ctrl+.          -Description "Opens `$PWD in File Explorer"       -ScriptBlock {
+        $buffer, $cursor = GetConsoleBufferState
+        $path_to_open = $buffer ?? $PWD
+
+        if (-not(Test-Path $path_to_open)) {  PrintRed "`$buffer is not a valid path. `$path_to_open: '$path_to_open'" -NewLine;  RETURN;  }
+
+        if (IsFile $path_to_open) {  $path_to_open = ParentDir $path_to_open  }
+        explorer.exe $path_to_open
+    }
     Set-PSReadLineKeyHandler -Key UpArrow         -Description "Runtime.OverridePreviousHistory()"  -ScriptBlock {  $global:MyRuntime.OverridePreviousHistory()  }
     Set-PSReadLineKeyHandler -Key DownArrow       -Description "Runtime.CycleCommands()"            -ScriptBlock {  $global:MyRuntime.CycleCommands()  }
     Set-PSReadLineKeyHandler -Key Enter           -Description "Runtime.RunDefaultCommand()"        -ScriptBlock {
-        $buffer = $null; $cursor = 0;
-        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor);
+        $buffer, $cursor = GetConsoleBufferState
 
         $global:MyRuntime.history_depth = 0
 
-        if($buffer.StartsWith("..")) {
-            ConsoleDeleteInput; ConsoleInsert "cd $buffer"; ConsoleAcceptLine;
-            return;
-        }
+        if($buffer -eq "") {  $global:MyRuntime.RunDefaultCommand();  RETURN;  }
 
-        if($buffer -eq "") {
-            $global:MyRuntime.RunDefaultCommand(); RETURN;  }
+        elseif($buffer.StartsWith("..")) {  Set-Location ..;  RETURN;  }
 
         ConsoleAcceptLine
     }
