@@ -122,7 +122,7 @@ function OnOpen() {
 
         if($buffer -eq "") {  $global:MyRuntime.RunDefaultCommand();  RETURN;  }
 
-        elseif($buffer.StartsWith("..")) {  Set-Location ..;  RETURN;  }
+        elseif($buffer.StartsWith("..")) {  Set-Location ..; ConsoleDeleteInput; ConsoleAcceptLine;  RETURN;  }
 
         ConsoleAcceptLine
     }
