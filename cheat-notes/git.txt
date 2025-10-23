@@ -9,6 +9,7 @@ git log --oneline --graph --decorate    =>  See the entire thing.
 git show cbb0c31						=>  Prints out changes in that commit
 
 git reset --mixed HEAD~1 				=>	"I want to re-do my last push" ie: reverts back before the last commit/push. Does not alter remote.
+git reset --hard backup/before-change   =>  "I want to overwrite main with my backup"
 
 
 "I need to merge the last n commits" => {
@@ -32,7 +33,7 @@ ADD SUBMODULE:
 	1. git submodule add <repository-url> <path-to-submodule>
 		e.g: git submodule add https://github.com/staspk/PowerShell.git ./Windows11/.powershell/PowerShell
 	2. make "branch = main" explicit for each submodule in .gitmodules
-	3. git submodule update --init --recursive --remote --force
+	3. git submodule update --init --recursive --remote [--force ?]
 
 RECURSIVE LOCAL UPDATE OF ALL SUBMODULES FROM REMOTE:
 	git submodule update --recursive --remote --force
