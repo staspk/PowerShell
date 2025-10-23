@@ -1,20 +1,22 @@
+using module .\Kozubenko.Utils.psm1
 using module .\classes\FunctionRegistry.psm1
 class KozubenkoPython {   
     static [FunctionRegistry] GetFunctionRegistry() {
         return [FunctionRegistry]::new(
             "Kozubenko.Python",
             @(
-                "InitPythonEnv()                      -->   what you need after git-cloning a python project",
-                "SetupBoilerplatePythonProject()      -->   setups .venv + python boilerplate project + kozubenko-py utils",
-                "Activate()                           -->   .\.venv\Scripts\Activate.ps1",
-                "KillPythonProcesses()                -->   kills all python processes",
-                "venvFreeze()                         -->   pip freeze > requirements.txt"
+                "InitPythonEnv()           -->   what you need after git-cloning a python project",
+                "PythonBoilerplate()       -->   python QoL boilerplate + kozubenko-py utils",
+                "Activate()                -->   .\.venv\Scripts\Activate.ps1",
+                "KillPythonProcesses()     -->   kills all python processes",
+                "venvFreeze()              -->   pip freeze > requirements.txt"
             ));
     }
 }
 
 
-$BOILERPLATE_PYTHON_PROJECT = "$profile\..\boilerplate\python_minimum_vscode_setup"
+$BOILERPLATE_PYTHON_PROJECT = "$profile\..\boilerplate\python_vscode_setup"
+if(-not(Test-Path $BOILERPLATE_PYTHON_PROJECT)) {  PrintRed "`$BOILERPLATE_PYTHON_PROJECT Directory Not Found!";  Start-Sleep 1;  }
 
 
 function Activate {     # Use from a Python project root dir, to activate a venv virtual environment
@@ -35,18 +37,8 @@ function InitPythonEnv {
     }
 }
 
-function SetupBoilerplatePythonProject() {
-    $path = $PWD.Path
-
-    py -m venv .venv
-
-    .venv\Scripts\Activate.ps1
-
-    python.exe -m pip install --upgrade pip
-
-    Copy-Item -Path "$BOILERPLATE_PYTHON_PROJECT\*" -Destination $path -Recurse
-
-    Clear-Host
+function PythonBoilerplate() {
+    Copy-Item -Path "$BOILERPLATE_PYTHON_PROJECT\*" -Destination $PWD -Recurse
 }
 
 function venvFreeze {
