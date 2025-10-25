@@ -25,7 +25,7 @@ class KozubenkoProfile {
         return [FunctionRegistry]::new(
             "Kozubenko.Profile",
             @(
-                "Open(`$path = 'PWD.Path')              -->   opens .\ or `$path in File Explorer",
+                "Open(`$path = 'PWD.Path')              -->   opens .\ or `$path in File Explorer. Alias: O",
                 "Vs(`$path = 'PWD.Path')                -->   opens .\ or `$path in Visual Studio",
                 "Vsc(`$path = 'PWD.Path')               -->   opens .\ or `$path in Visual Studio Code.",
                 "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++",
@@ -49,7 +49,8 @@ function Open($path = $PWD.Path) {
         }
     }
     else {  explorer.exe $path  }
-}
+}   <# ALIAS: #>    function O($path = $PWD.Path) {  Open($path)  }
+
 function Vs($path = $PWD.Path) {
     if (-not(Test-Path $path)) {  PrintRed "`$path is not a valid path. `$path == $path`n";  RETURN;  }
     if (IsFile($path)) {  $path = ParentDir($path)  }
@@ -94,6 +95,7 @@ function OnOpen() {
         [KozubenkoNode]::GetFunctionRegistry()
     ));
 
+    SetAliases Open @("o")
     SetAliases Restart @("re", "res")
     SetAliases Clear-Host  @("z", "zz", "zzz")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
