@@ -1,8 +1,12 @@
+wsl -d {name}			=>	Launch distro with it's {name}
+wsl -l/--list			=>	List distro's {name}
+exit					=>	Logout of the distro back into Windows Terminal
+wsl --shutdown			=>  Shut down all distros
 
-From Search or File-Explorer (access fs):
-\\wsl$\Ubuntu-24.04
+wsl -l -v/--verbose		=> "Have all distros been shut down?"
 
-From Ubuntu into windows desktop:
-cd /mnt/c/users/stasp/Desktop
 
-\\wsl$\Ubuntu-24.04\home\stan
+HOW TO INSTALL A NEW DISTRO {
+	wsl --list --online												=>	See list of distros available
+	wsl --install -d Ubuntu-24.04 --name Ubuntu-24-{project}		=>	Install the desired distro
+}
