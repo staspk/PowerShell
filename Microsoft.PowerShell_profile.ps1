@@ -80,9 +80,17 @@ function shortcuts() {
 }
 
 
-function OnOpen() {
+function OnOpen($debug_mode = $false) {
+    <#
+    .SYNOPSIS
+        $debug mode - truthy value passed in signifies to MyRuntime to not clear console after init.
+    #>
+
     TerminalTitleBar "PowerShell $($PSVersionTable.PSVersion.Major).$($PSVersionTable.PSVersion.Minor).$($PSVersionTable.PSVersion.Patch)"
 
+    if($debug_mode) {
+        [MyRuntime]::ON_INIT_CLEAR_CONSOLE__FLAG = $false
+    }
     $global:MyRuntime = [MyRuntime]::new()
     $global:MyRuntime.AddModules(@(
         [MyRuntime_FunctionRegistry]::Get(),
@@ -129,9 +137,8 @@ function OnOpen() {
         ConsoleAcceptLine
     }
 }
-# $sw = [System.Diagnostics.Stopwatch]::StartNew()
-OnOpen
 
+OnOpen
 $global:stopwatch.Stop()
 
 
