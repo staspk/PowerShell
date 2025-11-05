@@ -12,7 +12,9 @@ class KozubenkoGit {
                 "GitUncommit()                        -->   redo your last pushed commit: git reset --mixed HEAD~1",
                 "SquashCommits(`$commitMsg, `$n)      -->   (n = # of all commits being combined). force push included",
                 "Rebase(`$commitsBack)                -->   [dd -> cut line] [P -> paste] [squash -> merges into above commit]",
-                "RecursiveSubmoduleUpdate(`$force)    -->   git submodule update --init --recursive --remote [--force]"
+                "RecursiveSubmoduleUpdate(`$force)    -->   git submodule update --init --recursive --remote [--force]",
+
+                "I want to push new local branch to Github     -->   git push -u origin <branch-name>"
             ));
     }
 }
