@@ -1,0 +1,12 @@
+Search: "Manage app execution aliases" -> {
+    Was sent here by the new Python Install Manager on 11/4/2025,
+        with the implication I can be flexible with console aliases like "py" (an apparently "old" alias, but my go-to on windows because of Python Launcher)
+    But there are only on/off sliders?
+    Promise was wonderful, actual experience terrible so far.
+
+    Conclusion:
+        uninstalled Python Install Manager
+        used old direct version installer (but that will be deprecated as of Python3.15)
+
+        Am I going to need to learn this?
+}
