@@ -22,8 +22,8 @@ class MyRuntime_FunctionRegistry {
             "Kozubenko.MyRuntime",
             @(
                 "SetStartDirectory(`$path = `$PWD.Path)  -->  Set default path Terminal will open to (if opened without specific dir)",
-                "NewVar(`$key, `$value = `$PWD.Path)     -->  Create new key/value pair in .globals",
-                "DeleteVar(`$key)                        -->  Delete existing key/value pair in .globals",
+                "NewVar(`$key, `$value = `$PWD.Path)     -->  Create new key/value pair in .paths",
+                "DeleteVar(`$key)                        -->  Delete existing key/value pair in .paths",
                 "NewCommand([string]`$command)           -->  Save command[value] for current path[key] in .commands. Cycle through commands with DownArrow.",
                 "Help([string]`$moduleName)              -->  Print FunctionRegistry for all Modules. Target [match] with `$moduleName. Alias: H"
             ))
@@ -31,16 +31,18 @@ class MyRuntime_FunctionRegistry {
 }
 
 
-<# 
-.SYNOPSIS
-    [MyRuntime]::new()               => Constructor will Init instance with root directory: "$PROFILE\.."
-    [MyRuntime]::new($ALT_ROOT_DIR)  => Constructor will Init instance to alt chosen directory (eg: for testing purposes)
+<#
+.CONSTRUCTORS
+[MyRuntime]::new()               => Constructor will Init instance with root directory: "$PROFILE\.."
+[MyRuntime]::new($ALT_ROOT_DIR)  => Constructor will Init instance to alt chosen directory (eg: for testing purposes)
+
+    MyRuntime 1.0.1
 #>
 class MyRuntime {
     [string] $RUNTIME_ROOT_DIR = [System.IO.Path]::GetDirectoryName($PROFILE);
 
-    [string] $_GLOBALS_FILE  = "$($this.RUNTIME_ROOT_DIR)\.globals";     [ordered] $globals = [ordered]@{};
-    [string] $_COMMANDS_FILE = "$($this.RUNTIME_ROOT_DIR)\.commands";    [ordered] $commands = @{};
+    [string] $_PATHS_FILE  = "$($this.RUNTIME_ROOT_DIR)\.paths";         [ordered]$paths = [ordered]@{};
+    [string] $_COMMANDS_FILE = "$($this.RUNTIME_ROOT_DIR)\.commands";    [ordered]$commands = @{};
 
     [string] $STARTUP_DIR_KEY = "startup_dir";
     [System.Collections.Generic.List[FunctionRegistry]] $modules = [System.Collections.Generic.List[FunctionRegistry]]::new();
@@ -51,30 +53,32 @@ class MyRuntime {
     static $mutex = [System.Threading.Mutex]::new($false, "PowerShell.Kozubenko.MyRuntime")
     static [MyRuntime] $Instance;
 
+    static [bool] $ON_INIT_CLEAR_CONSOLE__FLAG = $true;
+
     MyRuntime() {  $this.Init()  }
     MyRuntime($ALT_ROOT_DIR) {
-        $this._GLOBALS_FILE  = "$ALT_ROOT_DIR\.globals"
+        $this._PATHS_FILE  = "$ALT_ROOT_DIR\.paths"
         $this._COMMANDS_FILE = "$ALT_ROOT_DIR\.commands"
         $this.Init()
     }
 
     hidden [void] Init() {
-        if(-not(Test-Path $this._GLOBALS_FILE))  {  Set-Content -Path $this._GLOBALS_FILE -Value "$($this.STARTUP_DIR_KEY)=$($Env:userprofile)"  }
+        if(-not(Test-Path $this._PATHS_FILE))  {  Set-Content -Path $this._PATHS_FILE -Value "$($this.STARTUP_DIR_KEY)=$($Env:userprofile)"  }
         if(-not(Test-Path $this._COMMANDS_FILE)) {  New-Item -Path $this._COMMANDS_FILE -ItemType File -Force | Out-Null  }
 
-        $this.globals  = [MyRuntime]::LoadEnvFileIntoMemory($this._GLOBALS_FILE, $true)
+        $this.paths  = [MyRuntime]::LoadEnvFileIntoMemory($this._PATHS_FILE, $true)
         $this.commands = [MyRuntime]::LoadEnvFileIntoMemory($this._COMMANDS_FILE)
 
         $this.HandleTerminalStartupLocation()
-        $this.PrintIntroduction()
+        $this.PrintIntroduction([MyRuntime]::ON_INIT_CLEAR_CONSOLE__FLAG)
         [MyRuntime]::Instance = $this;
     }
 
-    [void] PrintIntroduction() {
-        Clear-Host
-        foreach($key in $this.globals.Keys) {
+    [void] PrintIntroduction($clear_host) {
+        if($clear_host) {  Clear-Host  }
+        foreach($key in $this.paths.Keys) {
             if($key -ne $this.STARTUP_DIR_KEY) {        # no need to be redundant
-                Write-Host $key -ForegroundColor White -NoNewline; Write-Host "=$($this.globals[$key])" -ForegroundColor Gray
+                Write-Host $key -ForegroundColor White -NoNewline; Write-Host "=$($this.paths[$key])" -ForegroundColor Gray
             }
         }
         Write-Host
@@ -98,8 +102,8 @@ class MyRuntime {
     }
     
     SetStartDirectory($path) {
-        [MyRuntime]::SaveToEnvFile($this._GLOBALS_FILE, $this.STARTUP_DIR_KEY, $path)
-        $this.globals = [MyRuntime]::LoadEnvFileIntoMemory($this._GLOBALS_FILE, $true)
+        [MyRuntime]::SaveToEnvFile($this._PATHS_FILE, $this.STARTUP_DIR_KEY, $path)
+        $this.paths = [MyRuntime]::LoadEnvFileIntoMemory($this._PATHS_FILE, $true)
         $this.PrintIntroduction()
         $this.HandleTerminalStartupLocation($true);
     }
@@ -107,14 +111,14 @@ class MyRuntime {
     NewVar($key, $value) {
         if([string]::IsNullOrWhiteSpace($key)) {  PrintRed "MyRuntime.NewVar(key, value): key cannot be null/whitespace. Skipping Function...`n";   RETURN;  }
         if ($key[0] -eq "$") {  $key = $key.Substring(1)  }
-        [MyRuntime]::SaveToEnvFile($this._GLOBALS_FILE, $key, $value)
-        $this.globals = [MyRuntime]::LoadEnvFileIntoMemory($this._GLOBALS_FILE, $true)
+        [MyRuntime]::SaveToEnvFile($this._PATHS_FILE, $key, $value)
+        $this.paths = [MyRuntime]::LoadEnvFileIntoMemory($this._PATHS_FILE, $true)
         $this.PrintIntroduction()
     }
 
     DeleteVar($key) {
         if($key[0] -eq "$") {  $key = $key.Substring(1)  }
-        $this.globals = [MyRuntime]::LoadEnvFileIntoMemory($this._GLOBALS_FILE, $true, $key)
+        $this.paths = [MyRuntime]::LoadEnvFileIntoMemory($this._PATHS_FILE, $true, $key)
         $this.PrintIntroduction()
     }
 
@@ -190,7 +194,7 @@ class MyRuntime {
     hidden [void] HandleTerminalStartupLocation() {  $this.HandleTerminalStartupLocation($false)  }
     hidden [void] HandleTerminalStartupLocation([bool]$force_start_dir) {
         $openedTo = $PWD.Path
-        $desired_start_dir = $($this.globals[$this.STARTUP_DIR_KEY])
+        $desired_start_dir = $($this.paths[$this.STARTUP_DIR_KEY])
 
         if(-not($desired_start_dir)) {  RETURN;  }
 
