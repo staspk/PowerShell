@@ -9,7 +9,8 @@ class KozubenkoPython {
                 "PythonBoilerplate()       -->   python QoL boilerplate + kozubenko-py utils",
                 "Activate()                -->   .\.venv\Scripts\Activate.ps1",
                 "KillPythonProcesses()     -->   kills all python processes",
-                "venvFreeze()              -->   pip freeze > requirements.txt"
+                "venvFreeze()              -->   pip freeze > requirements.txt",
+                "upgrade project .venv     -->   py -3.14 -m venv .venv"
             ));
     }
 }
