@@ -31,10 +31,12 @@ class MyRuntime_FunctionRegistry {
 }
 
 
-<# 
-.SYNOPSIS
-    [MyRuntime]::new()               => Constructor will Init instance with root directory: "$PROFILE\.."
-    [MyRuntime]::new($ALT_ROOT_DIR)  => Constructor will Init instance to alt chosen directory (eg: for testing purposes)
+<#
+.CONSTRUCTORS
+[MyRuntime]::new()               => Constructor will Init instance with root directory: "$PROFILE\.."
+[MyRuntime]::new($ALT_ROOT_DIR)  => Constructor will Init instance to alt chosen directory (eg: for testing purposes)
+
+    MyRuntime 1.0.1
 #>
 class MyRuntime {
     [string] $RUNTIME_ROOT_DIR = [System.IO.Path]::GetDirectoryName($PROFILE);
