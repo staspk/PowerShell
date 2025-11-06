@@ -1,11 +1,29 @@
 using module ..\Kozubenko.Utils.psm1
 
-<# 
-    PROBLEMATIC LINE [DOES NOT TRIGGER]:
-        $string[$i] -eq $char1
 
-    BUG: calling a module function like a class method was sending all params as a param1 
+
+
+
+
+
+
+
+
+
+
+
+exit(0)
+<# 
+------------------------------------------------------------------------------------------------------------------------
+        FOSSIL SECTION
+            note: make sure an exit(0) exists before this section
+------------------------------------------------------------------------------------------------------------------------
 #>
+
+<# ---------------------------------------------------------------------------------------------------------------------
+        TESTING SESSION #1 - 2025-11-5
+        BUG FOUND: calling a module function like a class method was sending all params as a param1
+------------------------------------------------------------------------------------------------------------------------ #>
 function test_trigger() {
     $test_string = "fun()"
     [char]$char = '('
@@ -18,7 +36,6 @@ function test_trigger() {
     }
 }
 test_trigger
-
 
 function find_text_between_characters__TEST([string]$string, [char]$char1, [char]$char2) {
     $char1_found = $false; $char2_found = $false;
@@ -54,8 +71,6 @@ function find_text_between_characters__TEST([string]$string, [char]$char1, [char
     if($char1_found -AND $char2_found) {  return $_string  }
     return $null
 }
-
-
 
 $example_case_1 = "Search(`$string, `$txt_files_only = `$false)  -->   recursively search file contents"
 
