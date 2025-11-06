@@ -11,10 +11,10 @@ function SetStartDirectory($path = $PWD.Path) {  [MyRuntime]::Instance.SetStartD
 function NewVar($key, $value = $PWD.Path)     {  [MyRuntime]::Instance.NewVar($key, $value)  }
 function DeleteVar($key)                      {  [MyRuntime]::Instance.DeleteVar($key)  }
 function NewCommand([string]$command)         {  [MyRuntime]::Instance.NewCommand($PWD.Path, $command)  }
-function Help([string]$moduleName = "")       {  [MyRuntime]::Instance.Help($moduleName)  }
+function Help([string]$matchStr = "")         {  [MyRuntime]::Instance.Help($matchStr)  }
 
 Remove-Item Alias:h
-function H   ([string]$moduleName = "")       {  [MyRuntime]::Instance.Help($moduleName)  }
+function H([string]$matchStr = "")            {  [MyRuntime]::Instance.Help($matchStr)  }
 
 
 class MyRuntime_FunctionRegistry : IRegistry {
@@ -26,7 +26,7 @@ class MyRuntime_FunctionRegistry : IRegistry {
                 "NewVar(`$key, `$value = `$PWD.Path)     -->  Create new key/value pair in .paths",
                 "DeleteVar(`$key)                        -->  Delete existing key/value pair in .paths",
                 "NewCommand([string]`$command)           -->  Save command[value] for current path[key] in .commands. Cycle through commands with DownArrow.",
-                "Help([string]`$moduleName)              -->  Print FunctionRegistry for all Modules. Target [match] with `$moduleName. Alias: H"
+                "Help([string]`$registryName)            -->  Print FunctionRegistry for all registrys. Target [match] with `$registryName. Alias: H"
             ))
     }
 }
@@ -46,7 +46,7 @@ class MyRuntime {
     [string] $_COMMANDS_FILE = "$($this.RUNTIME_ROOT_DIR)\.commands";    [ordered]$commands = @{};
 
     [string] $STARTUP_DIR_KEY = "startup_dir";
-    [System.Collections.Generic.List[HintRegistry]] $modules = [System.Collections.Generic.List[HintRegistry]]::new();
+    [System.Collections.Generic.List[HintRegistry]] $registrys = [System.Collections.Generic.List[HintRegistry]]::new();
 
     [string] $last_path = "";   # used in tandem with $history_depth
     [int] $history_depth = 0;   # Positive: PsConsoleReadLine History. Negative: Commands Stack.
@@ -85,19 +85,19 @@ class MyRuntime {
         Write-Host
     }
 
-    [void] Help([string]$moduleName) {
-        $minimum_signature_char_width = 34
+    [void] Help([string]$matchStr) {
+        $minimum_signature_char_width = 0
 
-        foreach($module in $this.modules) {
-            if($module.moduleName -match $moduleName) {
-                if($module.longest_func_signature -gt $minimum_signature_char_width) { $minimum_signature_char_width = $module.longest_func_signature }
+        foreach($registry in $this.registrys) {
+            if($registry.name -match $matchStr) {
+                if($registry.longest_signature -gt $minimum_signature_char_width) { $minimum_signature_char_width = $registry.longest_signature }
             }
         }
 
         Clear-Host
-        foreach ($module in $this.modules) {
-            if($module.moduleName -match $moduleName) {
-                $module.Print($minimum_signature_char_width)
+        foreach ($registry in $this.registrys) {
+            if($registry.name -match $matchStr) {
+                $registry.Print($minimum_signature_char_width)
             }
         }
     }
@@ -290,9 +290,9 @@ class MyRuntime {
         return $variables
     }
 
-    [void] AddModules([Array]$functionRegistrys) {
-        foreach ($functionRegistry in $functionRegistrys) {
-            $this.modules.Add($functionRegistry)
+    [void] AddRegistrys([Array]$registrys) {
+        foreach ($registry in $registrys) {
+            $this.registrys.Add($registry)
         }
     }
 }

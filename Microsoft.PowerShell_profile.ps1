@@ -40,22 +40,6 @@ class GLOBALS : IRegistry {
         );
     }
 }
-class KozubenkoProfile : IRegistry {
-    static [HintRegistry] GetRegistry() {
-        return [HintRegistry]::new(
-            "Kozubenko.Profile",
-            @(
-                "Open(`$path = 'PWD.Path')              -->   opens .\ or `$path in File Explorer. Alias: O",
-                "Vs(`$path = 'PWD.Path')                -->   opens .\ or `$path in Visual Studio",
-                "Vsc(`$path = 'PWD.Path')               -->   opens .\ or `$path in Visual Studio Code.",
-                "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++",
-                "loadTime()                             -->   print profile loadTime in ms (excludes imports)",
-                "profile()                              -->   vsc `$(ParentDir `$PROFILE)",
-                "shortcuts()                            -->   see keyboard shortcuts"
-            ));
-    }
-}
-
 
 function Open($path = $PWD.Path) {
     if (-not(Test-Path $path)) { PrintRed "`$path does not exist. `$path: $path";  RETURN; }
@@ -89,7 +73,6 @@ function Vsc($path = $PWD.Path) {
     
     code $path
 }
-
 function loadTime() {
     PrintRed "$($global:stopwatch.Elapsed.TotalMilliseconds.ToString("F3"))ms"
 }
@@ -99,7 +82,21 @@ function profile() {
 function shortcuts() {
     Get-PSReadLineKeyHandler
 }
-
+class KozubenkoProfile : IRegistry {
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
+            "Kozubenko.Profile",
+            @(
+                "Open(`$path = 'PWD.Path')              -->   opens .\ or `$path in File Explorer. Alias: O",
+                "Vs(`$path = 'PWD.Path')                -->   opens .\ or `$path in Visual Studio",
+                "Vsc(`$path = 'PWD.Path')               -->   opens .\ or `$path in Visual Studio Code.",
+                "Note(`$path = 'PWD.Path')              -->   opens .\ or `$path in Notepad++",
+                "loadTime()                             -->   print profile loadTime in ms (excludes imports)",
+                "profile()                              -->   vsc `$(ParentDir `$PROFILE)",
+                "shortcuts()                            -->   see keyboard shortcuts"
+            ));
+    }
+}
 
 function OnOpen($debug_mode = $false) {
     <#
@@ -113,7 +110,7 @@ function OnOpen($debug_mode = $false) {
         [MyRuntime]::ON_INIT_CLEAR_CONSOLE__FLAG = $false
     }
     $global:MyRuntime = [MyRuntime]::new()
-    $global:MyRuntime.AddModules(@(
+    $global:MyRuntime.AddRegistrys(@(
         [GLOBALS]::GetRegistry(),
         [MyRuntime_FunctionRegistry]::GetRegistry(),
         # [KozubenkoBible]::GetRegistry(),
@@ -160,8 +157,10 @@ function OnOpen($debug_mode = $false) {
     }
 }
 
-OnOpen 1
+OnOpen
 $global:stopwatch.Stop()
+
+
 
 
 
@@ -180,6 +179,9 @@ function Docstring-Example($param1) {
     #>
 }
 
+<# 
+    The other function form
+#>
 $check_trigger1 = {
     param(
         [int]$current_iteration,
