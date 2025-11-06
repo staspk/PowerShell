@@ -1,5 +1,47 @@
 using module ..\Kozubenko.Utils.psm1
 
+
+function is_a_function($function_params_str) {
+    if($function_params_str -ne "") {
+        return $true;
+    }
+    return $false;
+}
+
+function find_text_between_characters([string]$string, [char]$char1, [char]$char2) {
+    <# 
+    .SYNOPSIS
+    Returns:
+        [string] text_between_chars (includes: "")
+        || $null, when: {
+            - $char2 found before $char1
+            - 
+        }
+    #>
+    $char1_found = $false; $char2_found = $false;
+    $_string = ""
+    
+    for ($i = 0; $i -lt $string.Length; $i++) {
+        if(-not($char1_found) -AND $char2_found) {
+            return $null;
+        }
+
+        if($string[$i] -eq $char1) {  $char1_found = $true; continue  }
+        if($string[$i] -eq $char2) {
+            if(-not($char1_found)) {  return $null  }
+            $char2_found = $true;
+            break;
+        }
+        
+        if($char1_found) {
+            $_string += $string[$i]
+        }
+    }
+
+    if($char1_found -AND $char2_found) {  return $_string  }
+    return $null
+}
+
 class FunctionRegistry {
     [string]$moduleName
     [System.Collections.Specialized.OrderedDictionary]$functions = [ordered]@{}
@@ -28,23 +70,25 @@ class FunctionRegistry {
 
         $counter = 0;
         foreach ($function in $this.functions.GetEnumerator()) {
-            $function_signature   = $function.Key
-            $function_explanation = $function.Value
-
+            $function_signature    =  $function.Key
+            $function_params_str   =  find_text_between_characters($function_signature, '(', ')')
+            $function_explanation  =  $function.Value
+            
+            # $is_a_function = (($function_params_str) ? $true : $false)
+            $is_a_function = is_a_function($function_params_str)
             $chars_printed = 0
 
-            $funcName = $function_signature.Split("(")[0]
-            $params = $($function_signature.Split("(")[1]).Split(")")[0]
+            $signature = $function_signature.Split("(")[0]
 
-            WriteLiteRed "   $signature";                        $chars_printed += 3 + $signature.Length
+            PrintLiteRed "   $signature";                        $chars_printed += 3 + $signature.Length
             if($is_a_function) {
-                WriteLiteRed "(";                                $chars_printed += 1
+                PrintLiteRed "(";                                $chars_printed += 1
             }
             if($function_params_str) {
-                WriteItalics $function_params_str DarkGray;      $chars_printed += $function_params_str.Length
+                PrintItalics $function_params_str DarkGray;      $chars_printed += $function_params_str.Length
             }
             if($is_a_function) {
-                WriteLiteRed ")";                                $chars_printed += 1
+                PrintLiteRed ")";                                $chars_printed += 1
             }
 
             if($function_explanation) {
