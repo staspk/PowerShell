@@ -1,18 +1,5 @@
-using module ..\Kozubenko.Utils.psm1
+using module ..\..\Kozubenko.Utils.psm1
 
-
-
-
-
-
-
-
-
-
-
-
-
-exit(0)
 <# 
 ------------------------------------------------------------------------------------------------------------------------
         FOSSIL SECTION
