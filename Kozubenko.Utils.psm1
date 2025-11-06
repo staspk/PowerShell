@@ -1,14 +1,35 @@
+<#
+---------------------------------------------
+    GLOSSARY
+        Color Definitions
+        IsAdmin()
+        List Class Util
+        Directory/File/ResolvePath Utils
+        Typing Utilities
+        Path/File/Directory Utilities
+        Terminal Utilities
+        String Utilities
+        Write/Print Utilities
+        Possible Future Fossil Records - Vestigial Utilities
+----------------------------------------------
+#>
+
+
 $WhiteRed = $PSStyle.Foreground.FromRgb(255, 196, 201);
 $LiteRed  = $PSStyle.Foreground.FromRgb(223, 96, 107);
 $LiteGreen = $PSStyle.Foreground.FromRgb(96, 223, 107);
 
-<# 
-    $sw = [System.Diagnostics.Stopwatch]::StartNew()
-    # Operation #
-    PrintRed "$([math]::Round($sw.Elapsed.TotalMilliseconds, 3))ms"
-    $sw.Restart()
-#>
 
+function IsAdmin() {
+    $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+    return $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+<#
+---------------------------------------------
+    List Class Util
+----------------------------------------------
+#>
 class List {
     <#
     .SYNOPSIS
@@ -55,6 +76,11 @@ class List {
 }
 
 
+<#
+---------------------------------------------
+    Directory/File/ResolvePath Utils
+----------------------------------------------
+#>
 function Directory([Parameter(ValueFromRemainingArguments)] [string[]] $paths) {
     <# 
     .SYNOPSIS
@@ -134,6 +160,11 @@ function ResolvePath([string]$path, [switch]$Pwsh_Implementation) {     # Rough 
 }
 
 
+<#
+---------------------------------------------
+    Typing Utilities
+----------------------------------------------
+#>
 function GetType($var) {
     try {  return $var.GetType().Name  }
     catch {
@@ -190,12 +221,12 @@ function SafeCoerceToArray($obj) {
     return @($obj)
 }
 
-function IsAdmin() {
-    $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-    return $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-}
 
-
+<#
+---------------------------------------------
+    Path/File/Directory Utilities
+----------------------------------------------
+#>
 function ParentDir($path) {
     return [System.IO.Path]::GetDirectoryName($path)
 }
@@ -240,6 +271,11 @@ function TestPath($path) {
 }
 
 
+<#
+---------------------------------------------
+    Set-Variable/Set-Alias Utils
+----------------------------------------------
+#>
 function SetAliases($function, [Array]$aliases) {   # Throws exception if you try to set an alias on a keyword you already set an alias on
     if ($function -eq $null -or $aliases -eq $null) {  RETURN  }
 
@@ -254,52 +290,11 @@ function SetGlobal($varName, $value) {
 }
 
 
-function TurnOffSleepSettings([int]$time_in_hours = 0) {
-    $screen_sleep = ((powercfg -query @(
-    (powercfg -getactivescheme) -replace '^.+ \b([0-9a-f]+-[^ ]+).+', '$1'
-        '7516b95f-f776-4464-8c53-06167f40cc99'
-        '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e'
-    ))[-3] -replace '^.+: ') / 60
-
-    $device_sleep  = ((powercfg -query @(
-        (powercfg -getactivescheme) -replace '^.+ \b([0-9a-f]+-[^ ]+).+', '$1'
-        '238c9fa8-0aad-41ed-83f4-97be242c8f20'
-        '29f6c1db-86da-48c5-9fdb-f2b67b1f44da'
-    ))[-3] -replace '^.+: ') / 60
-
-    powercfg /change monitor-timeout-ac 5
-    powercfg /change standby-timeout-ac 0
-
-    if($time_in_hours -gt 0) {
-        $temp_file = "$PROFILE_DIR\TurnSleepSettingsBackOn.ps1"
-        $script = "powercfg /change monitor-timeout-ac $screen_sleep; powercfg /change standby-timeout-ac $device_sleep; Remove-Item $temp_file -Force; schtasks /delete /tn `"TurnSleepSettingsBackOn`" /f; exit;"
-        $script | Out-File -FilePath $temp_file -Encoding UTF8
-
-        $runTime = (Get-Date).AddMinutes($time_in_hours).ToString("HH:mm")
-        $runDate = (Get-Date).AddMinutes($time_in_hours).ToString("MM/dd/yyyy")
-
-        schtasks /create /tn "TurnSleepSettingsBackOn" `
-            /tr "pwsh.exe -NoProfile -File $temp_file" `
-            /sc once `
-            /st $runTime /sd $runDate `
-            /rl LIMITED `
-            /f
-    }
-}
-
-function RestoreClassicContextMenu([bool]$reverse = $false) {
-	$guid = "{86CA1AA0-34AA-4E8B-A509-50C905BAE2A2}" 
-	if(-not($reverse)) {
-		New-Item -Path "HKCU:\Software\Classes\CLSID\" 		-Name $guid 					| Out-Null
-		New-Item -Path "HKCU:\Software\Classes\CLSID\$guid" -Name InprocServer32 -Value "" 	| Out-Null
-	}
-	else {
-		Remove-Item -Path "HKCU:\Software\Classes\CLSID\$guid" -Recurse -Force -ErrorAction SilentlyContinue
-	}
-    Stop-Process -Name explorer -Force -ErrorAction Ignore
-}
-
-
+<#
+---------------------------------------------
+    Terminal Utilities
+----------------------------------------------
+#>
 function ClearTerminal {
     if(GetConsoleBufferState gt 0) {
         ConsoleDeleteInput
@@ -345,20 +340,61 @@ function ConsoleDeletePreviousLine {
 }
 
 
+<#
+---------------------------------------------
+    String Utilities
+----------------------------------------------
+#>
+function find_text_between_characters([string]$string, [char]$char1, [char]$char2) {
+    <# 
+    .SYNOPSIS
+    Returns:
+        [string] text_between_chars (includes: "")
+        || $null, when: {
+            - $char2 found before $char1
+            - both $char1/$char2 are not found by the end of function
+        }
+    #>
+    $char1_found = $false; $char2_found = $false;
+    $_string = ""
+    
+    for ($i = 0; $i -lt $string.Length; $i++) {
+        if(-not($char1_found) -AND $char2_found) {
+            return $null;
+        }
+
+        if($string[$i] -eq $char1) {  $char1_found = $true; continue  }
+        if($string[$i] -eq $char2) {
+            if(-not($char1_found)) {  return $null  }
+            $char2_found = $true;
+            break;
+        }
+        
+        if($char1_found) {
+            $_string += $string[$i]
+        }
+    }
+
+    if($char1_found -AND $char2_found) {  return $_string  }
+    return $null
+}
 function Capitalize($string) {
     $capitalizedStr = $string.Substring(0, 1).ToUpper()
     $capitalizedStr += $string.Substring(1, $string.Length - 1).ToLower()
     return $capitalizedStr
 }
+
+
+<#
+---------------------------------------------
+    Write/Print Utilities
+----------------------------------------------
+#>
+function TerminalTitleBar($text) {  Write-Host "`e]0;$text`a"  -NoNewline }
 function AddWhitespace($string, $amount) {
     for($i = $amount; $i -gt 0; $i--) {  $string += " "  }
     return $string
 }
-
-<# 
-    Write/Print Utils 1.0
-#>
-function TerminalTitleBar($text) {  Write-Host "`e]0;$text`a"  -NoNewline }
 
 function PrintItalics($text, $color = $null)    {  if($color) {  Write-Host "`e[3m$text`e[0m" -ForegroundColor $color } else { Write-Host "`e[3m$text`e[0m" } }
 function WriteItalics($text, $color = $null)    {  if($color) {  Write-Host "`e[3m$text`e[0m" -ForegroundColor $color -NoNewline } else { Write-Host "`e[3m$text`e[0m" -NoNewline } }
@@ -390,3 +426,55 @@ function PrintGray($text)       {  Write-Host $text -ForegroundColor Gray  }
 function WriteGray($text)       {  Write-Host $text -ForegroundColor Gray  -NoNewline  }
 function PrintWhite($text)      {  Write-Host $text -ForegroundColor White  }
 function WriteWhite($text)      {  Write-Host $text -ForegroundColor White  -NoNewline  }
+
+
+
+<#
+------------------------------------------------------------
+    Possible Future Fossil Records - Vestigial Utilities
+------------------------------------------------------------
+#>
+function TurnOffSleepSettings([int]$time_in_hours = 0) {
+    $screen_sleep = ((powercfg -query @(
+    (powercfg -getactivescheme) -replace '^.+ \b([0-9a-f]+-[^ ]+).+', '$1'
+        '7516b95f-f776-4464-8c53-06167f40cc99'
+        '3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e'
+    ))[-3] -replace '^.+: ') / 60
+
+    $device_sleep  = ((powercfg -query @(
+        (powercfg -getactivescheme) -replace '^.+ \b([0-9a-f]+-[^ ]+).+', '$1'
+        '238c9fa8-0aad-41ed-83f4-97be242c8f20'
+        '29f6c1db-86da-48c5-9fdb-f2b67b1f44da'
+    ))[-3] -replace '^.+: ') / 60
+
+    powercfg /change monitor-timeout-ac 5
+    powercfg /change standby-timeout-ac 0
+
+    if($time_in_hours -gt 0) {
+        $temp_file = "$PROFILE_DIR\TurnSleepSettingsBackOn.ps1"
+        $script = "powercfg /change monitor-timeout-ac $screen_sleep; powercfg /change standby-timeout-ac $device_sleep; Remove-Item $temp_file -Force; schtasks /delete /tn `"TurnSleepSettingsBackOn`" /f; exit;"
+        $script | Out-File -FilePath $temp_file -Encoding UTF8
+
+        $runTime = (Get-Date).AddMinutes($time_in_hours).ToString("HH:mm")
+        $runDate = (Get-Date).AddMinutes($time_in_hours).ToString("MM/dd/yyyy")
+
+        schtasks /create /tn "TurnSleepSettingsBackOn" `
+            /tr "pwsh.exe -NoProfile -File $temp_file" `
+            /sc once `
+            /st $runTime /sd $runDate `
+            /rl LIMITED `
+            /f
+    }
+}
+
+function RestoreClassicContextMenu([bool]$reverse = $false) {
+	$guid = "{86CA1AA0-34AA-4E8B-A509-50C905BAE2A2}" 
+	if(-not($reverse)) {
+		New-Item -Path "HKCU:\Software\Classes\CLSID\" 		-Name $guid 					| Out-Null
+		New-Item -Path "HKCU:\Software\Classes\CLSID\$guid" -Name InprocServer32 -Value "" 	| Out-Null
+	}
+	else {
+		Remove-Item -Path "HKCU:\Software\Classes\CLSID\$guid" -Recurse -Force -ErrorAction SilentlyContinue
+	}
+    Stop-Process -Name explorer -Force -ErrorAction Ignore
+}
