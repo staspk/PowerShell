@@ -1,8 +1,9 @@
-using module .\classes\FunctionRegistry.psm1
+using module .\classes\IRegistry.psm1
+using module .\classes\HintRegistry.psm1
 using module .\Kozubenko.Utils.psm1
 class KozubenkoGit {   
-    static [FunctionRegistry] GetFunctionRegistry() {
-        return [FunctionRegistry]::new(
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
             "Kozubenko.Git",
             @(
                 "GitPage()                            -->   goes to remote.origin.url in the browser",

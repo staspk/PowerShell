@@ -1,7 +1,8 @@
-using module .\classes\FunctionRegistry.psm1
+using module .\classes\IRegistry.psm1
+using module .\classes\HintRegistry.psm1
 class KozubenkoNode {   
-    static [FunctionRegistry] GetFunctionRegistry() {
-        return [FunctionRegistry]::new(
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
             "Kozubenko.Node",
             @(
                 "debug(`$file)                    -->   node --inspect-brk `$file, and opens browser debugger",

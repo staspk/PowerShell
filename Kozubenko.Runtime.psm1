@@ -1,4 +1,5 @@
-using module .\classes\FunctionRegistry.psm1
+using module .\classes\IRegistry.psm1
+using module .\classes\HintRegistry.psm1
 using module .\Kozubenko.Utils.psm1
 
 
@@ -16,9 +17,9 @@ Remove-Item Alias:h
 function H   ([string]$moduleName = "")       {  [MyRuntime]::Instance.Help($moduleName)  }
 
 
-class MyRuntime_FunctionRegistry {
-    static [FunctionRegistry] GET() {
-        return [FunctionRegistry]::new(
+class MyRuntime_FunctionRegistry : IRegistry {
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
             "Kozubenko.MyRuntime",
             @(
                 "SetStartDirectory(`$path = `$PWD.Path)  -->  Set default path Terminal will open to (if opened without specific dir)",
@@ -45,7 +46,7 @@ class MyRuntime {
     [string] $_COMMANDS_FILE = "$($this.RUNTIME_ROOT_DIR)\.commands";    [ordered]$commands = @{};
 
     [string] $STARTUP_DIR_KEY = "startup_dir";
-    [System.Collections.Generic.List[FunctionRegistry]] $modules = [System.Collections.Generic.List[FunctionRegistry]]::new();
+    [System.Collections.Generic.List[HintRegistry]] $modules = [System.Collections.Generic.List[HintRegistry]]::new();
 
     [string] $last_path = "";   # used in tandem with $history_depth
     [int] $history_depth = 0;   # Positive: PsConsoleReadLine History. Negative: Commands Stack.

@@ -1,7 +1,8 @@
-using module .\classes\FunctionRegistry.psm1
+using module .\classes\IRegistry.psm1
+using module .\classes\HintRegistry.psm1
 class KozubenkoOS {
-    static [FunctionRegistry] GetFunctionRegistry() {
-        return [FunctionRegistry]::new(
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
             "Kozubenko.OS",
             @(
                 "AllSizes()                                    -->   lists folders/files in current directory with their sizes (not on disk)",

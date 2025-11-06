@@ -1,8 +1,9 @@
-using module .\classes\FunctionRegistry.psm1
+using module .\classes\IRegistry.psm1
+using module .\classes\HintRegistry.psm1
 using module .\Kozubenko.Utils.psm1
 class KozubenkoBible {
-    static [FunctionRegistry] GetFunctionRegistry() {
-        return [FunctionRegistry]::new(
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
             "Kozubenko.Bible",
             @(
                 "{BibleBook}(`$chapter)             -->   e.g: '1John 1'; opens BibleGateway in 5 translations"

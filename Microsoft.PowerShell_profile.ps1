@@ -1,4 +1,5 @@
-using module .\classes\FunctionRegistry.psm1
+using module .\classes\IRegistry.psm1
+using module .\classes\HintRegistry.psm1
 using module .\Kozubenko.Utils.psm1
 using module .\Kozubenko.OS.psm1
 using module .\Kozubenko.Git.psm1
@@ -20,9 +21,9 @@ SetGlobal "cheats"       "$PROFILE_DIR\cheat-notes"
 SetGlobal "notes"        "$PROFILE_DIR\cheat-notes"
 SetGlobal "pwsh_history_file" $((Get-PSReadLineOption).HistorySavePath)
 
-class KozubenkoProfile {
-    static [FunctionRegistry] GetFunctionRegistry() {
-        return [FunctionRegistry]::new(
+class KozubenkoProfile : IRegistry {
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
             "Kozubenko.Profile",
             @(
                 "Open(`$path = 'PWD.Path')              -->   opens .\ or `$path in File Explorer. Alias: O",
@@ -35,6 +36,7 @@ class KozubenkoProfile {
             ));
     }
 }
+
 
 function Open($path = $PWD.Path) {
     if (-not(Test-Path $path)) { PrintRed "`$path does not exist. `$path: $path";  RETURN; }
@@ -93,14 +95,14 @@ function OnOpen($debug_mode = $false) {
     }
     $global:MyRuntime = [MyRuntime]::new()
     $global:MyRuntime.AddModules(@(
-        [MyRuntime_FunctionRegistry]::Get(),
-        # [KozubenkoBible]::GetFunctionRegistry(),
-        # [KozubenkoVideo]::GetFunctionRegistry(),
-        [KozubenkoOS]::GetFunctionRegistry(),
-        [KozubenkoProfile]::GetFunctionRegistry(),
-        [KozubenkoGit]::GetFunctionRegistry(),
-        [KozubenkoPython]::GetFunctionRegistry(),
-        [KozubenkoNode]::GetFunctionRegistry()
+        [MyRuntime_FunctionRegistry]::GetRegistry(),
+        # [KozubenkoBible]::GetRegistry(),
+        # [KozubenkoVideo]::GetRegistry(),
+        [KozubenkoOS]::GetRegistry(),
+        [KozubenkoProfile]::GetRegistry(),
+        [KozubenkoGit]::GetRegistry(),
+        [KozubenkoPython]::GetRegistry(),
+        [KozubenkoNode]::GetRegistry()
     ));
 
     SetAliases Open @("o")

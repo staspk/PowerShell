@@ -1,8 +1,9 @@
-using module .\classes\FunctionRegistry.psm1
+using module .\classes\IRegistry.psm1
+using module .\classes\HintRegistry.psm1
 using module .\Kozubenko.Utils.psm1
 class KozubenkoVideo {
-    static [FunctionRegistry] GetFunctionRegistry() {
-        return [FunctionRegistry]::new(
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
             "Kozubenko.Video",
             @(
                 "vtt_to_srt(`$file)                 -->   convert subtitles from format .vtt to .srt",
