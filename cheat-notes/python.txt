@@ -5,3 +5,12 @@ py -m pip install -r requirements.txt	=>  Installs dependencies listed in requir
 pip freeze > requirements.txt			=>  Create requirements.txt
 pip install requests					=>  Example on how to add library to project
 py -m ensurepip --upgrade				=>  How to find the "right" version of pip for PATH
+
+
+I WANT TO UPDATE MY SEQUESTERED .VENV PROJECT {
+	pip freeze > requirements.txt
+	Delete old .venv
+	py -m venv .venv
+	pip install -r requirements.txt
+	python.exe -m pip install --upgrade pip
+}
