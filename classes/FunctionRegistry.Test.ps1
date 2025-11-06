@@ -1,22 +1,21 @@
 using module ..\Kozubenko.Utils.psm1
 
 <# 
-    TESTS SHOW THIS LINE IS THE PAIN POINT (DOES NOT TRIGGER):
-        if($string[$i] -eq $char1)
+    PROBLEMATIC LINE [DOES NOT TRIGGER]:
+        $string[$i] -eq $char1
 #>
-function check_trigger() {
+function test_trigger() {
     $test_string = "fun()"
-    [char]$char_needed = '('
+    [char]$char = '('
     $char_at = 3
 
-    if($test_string[$char_at] -eq $char_needed) {
-        PrintGreen "Test Passed" -NewLine
+    if($test_string[$char_at] -eq $char) {
+        PrintGreen "Trigger works in this form"
     } else {
-        PrintRed "Not supposed to reach me" -NewLine
+        PrintRed "Trigger does not work. Consistent"
     }
 }
-
-check_trigger;
+test_trigger
 
 
 function find_text_between_characters__TEST([string]$string, [char]$char1, [char]$char2) {
@@ -29,8 +28,13 @@ function find_text_between_characters__TEST([string]$string, [char]$char1, [char
             return $null;
         }
 
-        if($string[$i] -eq $char1) {
-            PrintYellow "You need to see me"
+        if($i -eq 6) {
+            PrintGray "At the trigger point ---"
+            PrintGray "   `$string[`$i]: $($string[$i])"
+            PrintGray "   `$string[`$i].GetType(): $($string[$i].GetType())"
+            PrintGray "   `$char1: $char1"
+            PrintGray "------------------------"
+            return
         }
 
         if($string[$i] -eq $char1) {  PrintYellow "`$char1_found on iteration {$i}" -NewLine; $char1_found = $true; continue  }
