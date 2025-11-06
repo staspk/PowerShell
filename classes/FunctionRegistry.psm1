@@ -71,7 +71,7 @@ class FunctionRegistry {
         $counter = 0;
         foreach ($function in $this.functions.GetEnumerator()) {
             $function_signature    =  $function.Key
-            $function_params_str   =  find_text_between_characters($function_signature, '(', ')')
+            $function_params_str   =  find_text_between_characters $function_signature '(' ')'
             $function_explanation  =  $function.Value
             
             # $is_a_function = (($function_params_str) ? $true : $false)
