@@ -20,7 +20,26 @@ SetGlobal "yt-dlp"       "$desktop\yt-dlp"
 SetGlobal "cheats"       "$PROFILE_DIR\cheat-notes"
 SetGlobal "notes"        "$PROFILE_DIR\cheat-notes"
 SetGlobal "pwsh_history_file" $((Get-PSReadLineOption).HistorySavePath)
-
+SetGlobal "vscode"       "$env:APPDATA\Code\User"
+class GLOBALS : IRegistry {
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
+            "GLOBALS",
+            @(
+                "PROFILE_DIR        -->  `$(ParentDir `$PROFILE)",
+                "desktop            -->  `$HOME\Desktop",
+                "downloads          -->  `$HOME\Downloads",
+                "appdata            -->  `$HOME\AppData\Roaming",
+                "startup            -->  `$appdata\Microsoft\Windows\Start Menu\Programs\Startup",
+                "yt-dlp             -->  `$desktop\yt-dlp",
+                "cheats             -->  `$PROFILE_DIR\cheat-notes",
+                "notes              -->  `$PROFILE_DIR\notes",
+                "pwsh_history_file  -->  `$((Get-PSReadLineOption).HistorySavePath)",
+                "vscode             -->  `$env:APPDATA\Code\User"
+            )
+        );
+    }
+}
 class KozubenkoProfile : IRegistry {
     static [HintRegistry] GetRegistry() {
         return [HintRegistry]::new(
@@ -95,6 +114,7 @@ function OnOpen($debug_mode = $false) {
     }
     $global:MyRuntime = [MyRuntime]::new()
     $global:MyRuntime.AddModules(@(
+        [GLOBALS]::GetRegistry(),
         [MyRuntime_FunctionRegistry]::GetRegistry(),
         # [KozubenkoBible]::GetRegistry(),
         # [KozubenkoVideo]::GetRegistry(),
