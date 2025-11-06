@@ -3,6 +3,8 @@ using module ..\Kozubenko.Utils.psm1
 <# 
     PROBLEMATIC LINE [DOES NOT TRIGGER]:
         $string[$i] -eq $char1
+
+    BUG: calling a module function like a class method was sending all params as a param1 
 #>
 function test_trigger() {
     $test_string = "fun()"
