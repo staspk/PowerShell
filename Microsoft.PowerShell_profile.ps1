@@ -37,7 +37,7 @@ class KozubenkoProfile {
 }
 
 function Open($path = $PWD.Path) {
-    if (-not(Test-Path $path)) { PrintRed "`$path does not exist. `$path: $path`n";  RETURN; }
+    if (-not(Test-Path $path)) { PrintRed "`$path does not exist. `$path: $path";  RETURN; }
 
     $path = (Resolve-Path $path).Path
 
@@ -52,14 +52,14 @@ function Open($path = $PWD.Path) {
 }   <# ALIAS: #>    function O($path = $PWD.Path) {  Open($path)  }
 
 function Vs($path = $PWD.Path) {
-    if (-not(Test-Path $path)) {  PrintRed "`$path is not a valid path. `$path == $path`n";  RETURN;  }
+    if (-not(Test-Path $path)) {  PrintRed "`$path is not a valid path. `$path == $path";  RETURN;  }
     if (IsFile($path)) {  $path = ParentDir($path)  }
     
     $solution = Get-ChildItem -Path $RootDirectory -Filter "*.sln"
     if ($solution.Count -eq 1) {
         Invoke-Item $solution.FullName
     } else {
-        PrintRed "Directory must have a .sln file. .sln count: $($solutions.Count)`n"
+        PrintRed "Directory must have a .sln file. .sln count: $($solutions.Count)"
     }
 }
 function Vsc($path = $PWD.Path) {
@@ -118,7 +118,7 @@ function OnOpen($debug_mode = $false) {
         $buffer, $cursor = GetConsoleBufferState
         $path_to_open = $buffer ?? $PWD
 
-        if (-not(Test-Path $path_to_open)) {  PrintRed "`$buffer is not a valid path. `$path_to_open: '$path_to_open'" -NewLine;  RETURN;  }
+        if (-not(Test-Path $path_to_open)) {  PrintRed "`$buffer is not a valid path. `$path_to_open: '$path_to_open'";  RETURN;  }
 
         if (IsFile $path_to_open) {  $path_to_open = ParentDir $path_to_open  }
         explorer.exe $path_to_open
@@ -138,7 +138,7 @@ function OnOpen($debug_mode = $false) {
     }
 }
 
-OnOpen
+OnOpen 1
 $global:stopwatch.Stop()
 
 
@@ -156,4 +156,15 @@ function Docstring-Example($param1) {
     Returns:
         [string] || throws
     #>
+}
+
+$check_trigger1 = {
+    param(
+        [int]$current_iteration,
+        [int]$iteration_supposed_to_trigger
+    )
+
+    if($string[$i] -eq $char1) {
+
+    }
 }

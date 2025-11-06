@@ -24,7 +24,7 @@ class FunctionRegistry {
     #>
     [void] Print([int]$minimum_signature_char_width) {
         $MINIMUM_SIGNATURE_CHAR_WIDTH = $minimum_signature_char_width + 5   # 5 = (3 spaces before funcName) + (2 spaces after func_signature and '-->')
-        PrintRed $this.moduleName -NewLine
+        PrintRed $this.moduleName
 
         $counter = 0;
         foreach ($function in $this.functions.GetEnumerator()) {
@@ -36,15 +36,21 @@ class FunctionRegistry {
             $funcName = $function_signature.Split("(")[0]
             $params = $($function_signature.Split("(")[1]).Split(")")[0]
 
-            PrintLiteRed "   $funcName";        $chars_printed += 3 + $funcName.Length
-            PrintLiteRed "(";                   $chars_printed += 1
-            PrintItalics $params DarkGray;      $chars_printed += $params.Length
-            PrintLiteRed ")";                   $chars_printed += 1
+            WriteLiteRed "   $signature";                        $chars_printed += 3 + $signature.Length
+            if($is_a_function) {
+                WriteLiteRed "(";                                $chars_printed += 1
+            }
+            if($function_params_str) {
+                WriteItalics $function_params_str DarkGray;      $chars_printed += $function_params_str.Length
+            }
+            if($is_a_function) {
+                WriteLiteRed ")";                                $chars_printed += 1
+            }
 
             if($function_explanation) {
                 $left_hand_whitespace = AddWhitespace "  " $($MINIMUM_SIGNATURE_CHAR_WIDTH - $chars_printed - 2)
-                PrintLiteRed $left_hand_whitespace
-                PrintLiteRed "-->"
+                WriteLiteRed $left_hand_whitespace
+                WriteLiteRed "-->"
                 PrintWhiteRed "   $function_explanation" -NewLine
             } else {
                 Write-Host

@@ -51,7 +51,7 @@ function GitPage($path = $PWD.Path) {
     if(TryOpenGithub $path) {  RETURN;  }
     while($true) {
         $path = [System.IO.Path]::GetDirectoryName($path)
-        if(-not($path)) {  PrintRed ".git config file not found. not at `$path, not with any ancestor`n"; RETURN;  }
+        if(-not($path)) {  PrintRed ".git config file not found. not at `$path, not with any ancestor"; RETURN;  }
         if(TryOpenGithub $path) {  RETURN;  }
     }
 }
@@ -64,7 +64,7 @@ This may work, needs testing:
 #>
 function SquashCommits($commitMsg, $n) {
     if([string]::IsNullOrWhiteSpace($commitMsg)) {  PrintRed "SquashCommits(): cannot continue because`$commitMsg is null/whitespace."; RETURN;  }
-    if($n -lt 2) {  PrintRed "SquashCommits(`$commitMsg, `$n): Requirement not met: `$n > 1`n"; RETURN;  }
+    if($n -lt 2) {  PrintRed "SquashCommits(`$commitMsg, `$n): Requirement not met: `$n > 1"; RETURN;  }
 
     $need_stash = (git status --porcelain)
     if($need_stash) {
@@ -75,7 +75,7 @@ function SquashCommits($commitMsg, $n) {
     git commit --amend -m $commitMsg
 
     git push --force
-    PrintGreen "Squashed & Force-Pushed to Remote`n"
+    PrintGreen "Squashed & Force-Pushed to Remote"
 
     if($need_stash) {
         git stash pop

@@ -109,7 +109,7 @@ class MyRuntime {
     }
 
     NewVar($key, $value) {
-        if([string]::IsNullOrWhiteSpace($key)) {  PrintRed "MyRuntime.NewVar(key, value): key cannot be null/whitespace. Skipping Function...`n";   RETURN;  }
+        if([string]::IsNullOrWhiteSpace($key)) {  PrintRed "MyRuntime.NewVar(key, value): key cannot be null/whitespace. Skipping Function...";   RETURN;  }
         if ($key[0] -eq "$") {  $key = $key.Substring(1)  }
         [MyRuntime]::SaveToEnvFile($this._PATHS_FILE, $key, $value)
         $this.paths = [MyRuntime]::LoadEnvFileIntoMemory($this._PATHS_FILE, $true)
@@ -123,12 +123,12 @@ class MyRuntime {
     }
 
     NewCommand($path, [string]$command) {
-        if([string]::IsNullOrWhiteSpace($path) -or [string]::IsNullOrWhiteSpace($command)) {  PrintRed "MyRuntime.NewCommand(path, command): command/path cannot be null/whitespace. Skipping Function...`n";   RETURN;  }
+        if([string]::IsNullOrWhiteSpace($path) -or [string]::IsNullOrWhiteSpace($command)) {  PrintRed "MyRuntime.NewCommand(path, command): command/path cannot be null/whitespace. Skipping Function...";   RETURN;  }
         
-        PrintGreen "NewCommand(" -NewLine
-        PrintGreen "   `$path: "; PrintItalics "$path`n" DarkGreen
-        PrintGreen "   `$command: "; PrintItalics "$command`n" DarkGreen
-        PrintGreen ")" -NewLine
+        PrintGreen "NewCommand("
+        WriteGreen "   `$path: "; PrintItalics "$path" DarkGreen
+        WriteGreen "   `$command: "; PrintItalics "$command" DarkGreen
+        PrintGreen ")"
 
         if($this.commands[$path] -eq $null) {
             $this.commands.Add($path, $command)
@@ -207,7 +207,7 @@ class MyRuntime {
             if(IsDirectory $desired_start_dir) {  Set-Location $desired_start_dir  }
             elseif(IsFile $desired_start_dir)  {  Set-Location $(ParentDir $desired_start_dir)  }  # QoL, so it's easy set $profile as startupLocation
             else {
-                PrintRed "`$desired_start_dir path does not exist anymore. Defaulting to userdir...`n"
+                PrintRed "`$desired_start_dir path does not exist anymore. Defaulting to userdir..."
                 Set-Location $Env:USERPROFILE
             }
         }
@@ -228,7 +228,7 @@ class MyRuntime {
     }
 
     static [void] SaveToEnvFile([string]$file, [string]$key, [string]$value) {
-        # PrintYellow "In SaveToEnvFile(): `$file: "; PrintItalics "$file`n" Yellow
+        # WriteYellow "In SaveToEnvFile(): `$file: "; PrintItalics "$file" Yellow
         $lines = [Kozubenko.Utils.List]::FromFile($file)
 
         if(-not($lines)) {
@@ -245,9 +245,9 @@ class MyRuntime {
         [System.IO.File]::AppendAllText($file, "$([Environment]::NewLine)$key=$value")
     }
 
-    static [ordered] LoadEnvFileIntoMemory([string]$file)                         {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $null);           }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file):`n"
-    static [ordered] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope)    {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $global_scope, $null);    }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$global_scope):`n"
-    static [ordered] LoadEnvFileIntoMemory([string]$file, [string]$key_to_delete) {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $key_to_delete);  }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$key_to_delete):`n"
+    static [ordered] LoadEnvFileIntoMemory([string]$file)                         {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $null);           }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file):"
+    static [ordered] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope)    {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $global_scope, $null);    }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$global_scope):"
+    static [ordered] LoadEnvFileIntoMemory([string]$file, [string]$key_to_delete) {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $key_to_delete);  }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$key_to_delete):"
     static [ordered] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope, [string]$key_to_delete) {
         # PrintCyan "Entering: LoadEnvFileIntoMemory(`n  `$file: $file,`n  `$global_scope: $global_scope,`n  `$key_to_delete: $key_to_delete`n): "
         $variables = [ordered]@{}

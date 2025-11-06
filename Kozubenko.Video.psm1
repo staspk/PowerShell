@@ -13,7 +13,7 @@ class KozubenkoVideo {
 
 function vtt_to_srt($file) {
     if (-not(Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
-        PrintRed "ffmpeg library required for function.`n"
+        PrintRed "ffmpeg library required for function."
         RETURN;
     }
 
@@ -27,7 +27,7 @@ function vtt_to_srt($file) {
 }
 function webm_to_mp4($file) {
     if (-not(Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
-        PrintRed "ffmpeg library required for function.`n"
+        PrintRed "ffmpeg library required for function."
         RETURN;
     }
 

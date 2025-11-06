@@ -51,12 +51,12 @@ $fileStream.Close()
 $mutex.ReleaseMutex()
 
 
-PrintGreen "Test Passed (if no exception above in all terminals)" -NewLine
+PrintGreen "Test Passed (if no exception above in all terminals)"
 
 <# CLEANUP #>
 try {
     Remove-Item $SAMPLE_TEST_FILES_DIRECTORY -Recurse -Force -ErrorAction Stop  <#  Remove-Item is a non-terminating error, so try-catch will not work without "-ErrorAction Stop"  #>
-    PrintYellow "I was the Process responsible for Cleanup" -NewLine
+    PrintYellow "I was the Process responsible for Cleanup"
 }
 catch {
     

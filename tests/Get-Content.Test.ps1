@@ -74,14 +74,14 @@ $two_windows_new_lines                  = Get-Content $(File $SAMPLE_TEST_FILES_
 $three_lines_with_windows_new_lines     = Get-Content $(File $SAMPLE_TEST_FILES_DIRECTORY "three_lines_with_windows_new_lines")
 $three_lines_with_linux_new_lines       = Get-Content $(File $SAMPLE_TEST_FILES_DIRECTORY "three_lines_with_linux_new_lines")
 
-PrintWhiteRed "`$nonexistent_file: ";                       PrintLiteRed $(GetType $nonexistent_file) -NewLine
-PrintWhiteRed "`$empty_file: ";                             PrintLiteRed $(GetType $empty_file) -NewLine
-PrintWhiteRed "`$line_with_whitespace_but_no_new_line: ";   PrintLiteRed $(GetType $line_with_whitespace_but_no_new_line) -NewLine
-PrintWhiteRed "`$str_on_one_line_but_no_new_line: ";        PrintLiteRed $(GetType $str_on_one_line_but_no_new_line) -NewLine
-PrintWhiteRed "`$whitespace_separated_by_one_empty_line: "; PrintLiteRed $(GetType $whitespace_separated_by_one_empty_line) -NewLine
-PrintWhiteRed "`$two_windows_new_lines: ";                  PrintLiteRed $(GetType $two_windows_new_lines) -NewLine
-PrintWhiteRed "`$three_lines_with_windows_new_lines: ";     PrintLiteRed $(GetType $three_lines_with_windows_new_lines) -NewLine
-PrintWhiteRed "`$three_lines_with_linux_new_lines: ";       PrintLiteRed $(GetType $three_lines_with_linux_new_lines) -NewLine
+WriteWhiteRed "`$nonexistent_file: ";                       PrintLiteRed $(GetType $nonexistent_file)
+WriteWhiteRed "`$empty_file: ";                             PrintLiteRed $(GetType $empty_file)
+WriteWhiteRed "`$line_with_whitespace_but_no_new_line: ";   PrintLiteRed $(GetType $line_with_whitespace_but_no_new_line)
+WriteWhiteRed "`$str_on_one_line_but_no_new_line: ";        PrintLiteRed $(GetType $str_on_one_line_but_no_new_line)
+WriteWhiteRed "`$whitespace_separated_by_one_empty_line: "; PrintLiteRed $(GetType $whitespace_separated_by_one_empty_line)
+WriteWhiteRed "`$two_windows_new_lines: ";                  PrintLiteRed $(GetType $two_windows_new_lines)
+WriteWhiteRed "`$three_lines_with_windows_new_lines: ";     PrintLiteRed $(GetType $three_lines_with_windows_new_lines)
+WriteWhiteRed "`$three_lines_with_linux_new_lines: ";       PrintLiteRed $(GetType $three_lines_with_linux_new_lines)
 
 
 # AssertIsNotNull $str_on_one_line_but_no_new_line "str_on_one_line_but_no_new_line_list"
@@ -107,14 +107,14 @@ $two_windows_new_lines2                  = [string[]]@(Get-Content $(File $SAMPL
 $three_lines_with_windows_new_lines2     = [string[]]@(Get-Content $(File $SAMPLE_TEST_FILES_DIRECTORY "three_lines_with_windows_new_lines"))
 $three_lines_with_linux_new_lines2       = [string[]]@(Get-Content $(File $SAMPLE_TEST_FILES_DIRECTORY "three_lines_with_linux_new_lines"))
 
-PrintWhiteRed "`$nonexistent_file2: ";                       PrintLiteRed $(GetType $nonexistent_file2) -NewLine
-PrintWhiteRed "`$empty_file2: ";                             PrintLiteRed $(GetType $empty_file2) -NewLine
-PrintWhiteRed "`$line_with_whitespace_but_no_new_line2: ";   PrintLiteRed $(GetType $line_with_whitespace_but_no_new_line2) -NewLine
-PrintWhiteRed "`$str_on_one_line_but_no_new_line2: ";        PrintLiteRed $(GetType $str_on_one_line_but_no_new_line2) -NewLine
-PrintWhiteRed "`$whitespace_separated_by_one_empty_line2: "; PrintLiteRed $(GetType $whitespace_separated_by_one_empty_line2) -NewLine
-PrintWhiteRed "`$two_windows_new_lines2: ";                  PrintLiteRed $(GetType $two_windows_new_lines2) -NewLine
-PrintWhiteRed "`$three_lines_with_windows_new_lines2: ";     PrintLiteRed $(GetType $three_lines_with_windows_new_lines2) -NewLine
-PrintWhiteRed "`$three_lines_with_linux_new_lines2: ";       PrintLiteRed $(GetType $three_lines_with_linux_new_lines2) -NewLine
+WriteWhiteRed "`$nonexistent_file2: ";                       PrintLiteRed $(GetType $nonexistent_file2)
+WriteWhiteRed "`$empty_file2: ";                             PrintLiteRed $(GetType $empty_file2)
+WriteWhiteRed "`$line_with_whitespace_but_no_new_line2: ";   PrintLiteRed $(GetType $line_with_whitespace_but_no_new_line2)
+WriteWhiteRed "`$str_on_one_line_but_no_new_line2: ";        PrintLiteRed $(GetType $str_on_one_line_but_no_new_line2)
+WriteWhiteRed "`$whitespace_separated_by_one_empty_line2: "; PrintLiteRed $(GetType $whitespace_separated_by_one_empty_line2)
+WriteWhiteRed "`$two_windows_new_lines2: ";                  PrintLiteRed $(GetType $two_windows_new_lines2)
+WriteWhiteRed "`$three_lines_with_windows_new_lines2: ";     PrintLiteRed $(GetType $three_lines_with_windows_new_lines2)
+WriteWhiteRed "`$three_lines_with_linux_new_lines2: ";       PrintLiteRed $(GetType $three_lines_with_linux_new_lines2)
 
 Write-Host
 

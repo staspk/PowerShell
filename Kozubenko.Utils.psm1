@@ -5,7 +5,7 @@ $LiteGreen = $PSStyle.Foreground.FromRgb(96, 223, 107);
 <# 
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     # Operation #
-    PrintRed "$([math]::Round($sw.Elapsed.TotalMilliseconds, 3))ms" -NewLine
+    PrintRed "$([math]::Round($sw.Elapsed.TotalMilliseconds, 3))ms"
     $sw.Restart()
 #>
 
@@ -355,21 +355,38 @@ function AddWhitespace($string, $amount) {
     return $string
 }
 
-# Some explanation for TerminalTitleBar
+<# 
+    Write/Print Utils 1.0
+#>
 function TerminalTitleBar($text) {  Write-Host "`e]0;$text`a"  -NoNewline }
 
-function PrintItalics($text, $color = $null)    {  if($color) {  Write-Host "`e[3m$text`e[0m" -NoNewline -ForegroundColor $color  } else {  Write-Host "`e[3m$text`e[0m" -NoNewline  } }
-function Print($text, [switch]$NewLine)         {  if ($NewLine) { Write-Host $text  } else { Write-Host $text -NoNewline } }
-function PrintWhiteRed($text, [switch]$NewLine) {  if ($NewLine) { Write-Host ${WhiteRed}$text  } else { Write-Host ${WhiteRed}$text -NoNewline } }
-function PrintLiteRed($text, [switch]$NewLine)  {  if ($NewLine) { Write-Host ${LiteRed}$text   } else { Write-Host ${LiteRed}$text -NoNewline  } }
-function PrintLiteGreen($text, [switch]$NewLine){  if ($NewLine) { Write-Host ${LiteGreen}$text } else { Write-Host ${LiteGreen}$text -NoNewline } }
-function PrintRed($text, [switch]$NewLine)      {  if ($NewLine) { Write-Host $text -ForegroundColor Red       } else { Write-Host $text -ForegroundColor Red -NoNewline      }  }
-function PrintDarkRed($text, [switch]$NewLine)  {  if ($NewLine) { Write-Host $text -ForegroundColor DarkRed   } else { Write-Host $text -ForegroundColor DarkRed -NoNewline  }  }
-function PrintYellow($text, [switch]$NewLine)   {  if ($NewLine) { Write-Host $text -ForegroundColor Yellow    } else { Write-Host $text -ForegroundColor Yellow -NoNewline   }  }
-function PrintCyan($text, [switch]$NewLine)     {  if ($NewLine) { Write-Host $text -ForegroundColor Cyan      } else { Write-Host $text -ForegroundColor Cyan -NoNewline     }  }
-function PrintDarkCyan($text, [switch]$NewLine) {  if ($NewLine) { Write-Host $text -ForegroundColor DarkCyan  } else { Write-Host $text -ForegroundColor DarkCyan -NoNewline }  }
-function PrintGreen($text, [switch]$NewLine)    {  if ($NewLine) { Write-Host $text -ForegroundColor Green     } else { Write-Host $text -ForegroundColor Green -NoNewline    }  }
-function PrintDarkGreen($text, [switch]$NewLine){  if ($NewLine) { Write-Host $text -ForegroundColor DarkGreen } else { Write-Host $text -ForegroundColor DarkGreen -NoNewline}  }
-function PrintDarkGray($text, [switch]$NewLine) {  if ($NewLine) { Write-Host $text -ForegroundColor DarkGray  } else { Write-Host $text -ForegroundColor DarkGray -NoNewline }  }
-function PrintGray($text, [switch]$NewLine)     {  if ($NewLine) { Write-Host $text -ForegroundColor Gray      } else { Write-Host $text -ForegroundColor Gray -NoNewline     }  }
-function PrintWhite($text, [switch]$NewLine)    {  if ($NewLine) { Write-Host $text -ForegroundColor White     } else { Write-Host $text -ForegroundColor White -NoNewline    }  }
+function PrintItalics($text, $color = $null)    {  if($color) {  Write-Host "`e[3m$text`e[0m" -ForegroundColor $color } }
+function WriteItalics($text, $color = $null)    {  if($color) {  Write-Host "`e[3m$text`e[0m" -ForegroundColor $color } }
+function Print($text)           {  Write-Host $text  }
+function Write($text)           {  Write-Host $text -NoNewline  }
+function PrintWhiteRed($text)   {  Write-Host ${WhiteRed}$text  }
+function WriteWhiteRed($text)   {  Write-Host ${WhiteRed}$text -NoNewline  }
+function PrintLiteRed($text)    {  Write-Host ${LiteRed}$text  }
+function WriteLiteRed($text)    {  Write-Host ${LiteRed}$text -NoNewline  }
+function PrintLiteGreen($text)  {  Write-Host ${LiteGreen}$text  }
+function WriteLiteGreen($text)  {  Write-Host ${LiteGreen}$text  -NoNewline  }
+function PrintRed($text)        {  Write-Host $text -ForegroundColor Red  }
+function WriteRed($text)        {  Write-Host $text -ForegroundColor Red  -NoNewline  }
+function PrintDarkRed($text)    {  Write-Host $text -ForegroundColor DarkRed  }
+function WriteDarkRed($text)    {  Write-Host $text -ForegroundColor DarkRed  -NoNewline  }
+function PrintYellow($text)     {  Write-Host $text -ForegroundColor Yellow  }
+function WriteYellow($text)     {  Write-Host $text -ForegroundColor Yellow  -NoNewline  }
+function PrintCyan($text)       {  Write-Host $text -ForegroundColor Cyan  }
+function WriteCyan($text)       {  Write-Host $text -ForegroundColor Cyan  -NoNewline  }
+function PrintDarkCyan($text)   {  Write-Host $text -ForegroundColor DarkCyan  }
+function WriteDarkCyan($text)   {  Write-Host $text -ForegroundColor DarkCyan  -NoNewline  }
+function PrintGreen($text)      {  Write-Host $text -ForegroundColor Green  }
+function WriteGreen($text)      {  Write-Host $text -ForegroundColor Green  -NoNewline  }
+function PrintDarkGreen($text)  {  Write-Host $text -ForegroundColor DarkGreen  }
+function WriteDarkGreen($text)  {  Write-Host $text -ForegroundColor DarkGreen    }
+function PrintDarkGray($text)   {  Write-Host $text -ForegroundColor DarkGray  }
+function WriteDarkGray($text)   {  Write-Host $text -ForegroundColor DarkGray  -NoNewline  }
+function PrintGray($text)       {  Write-Host $text -ForegroundColor Gray  }
+function WriteGray($text)       {  Write-Host $text -ForegroundColor Gray  -NoNewline  }
+function PrintWhite($text)      {  Write-Host $text -ForegroundColor White  }
+function WriteWhite($text)      {  Write-Host $text -ForegroundColor White  -NoNewline  }
