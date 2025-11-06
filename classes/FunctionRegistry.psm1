@@ -1,40 +1,6 @@
 using module ..\Kozubenko.Utils.psm1
 
 
-function find_text_between_characters([string]$string, [char]$char1, [char]$char2) {
-    <# 
-    .SYNOPSIS
-    Returns:
-        [string] text_between_chars (includes: "")
-        || $null, when: {
-            - $char2 found before $char1
-            - both $char1/$char2 are not found by the end of function
-        }
-    #>
-    $char1_found = $false; $char2_found = $false;
-    $_string = ""
-    
-    for ($i = 0; $i -lt $string.Length; $i++) {
-        if(-not($char1_found) -AND $char2_found) {
-            return $null;
-        }
-
-        if($string[$i] -eq $char1) {  $char1_found = $true; continue  }
-        if($string[$i] -eq $char2) {
-            if(-not($char1_found)) {  return $null  }
-            $char2_found = $true;
-            break;
-        }
-        
-        if($char1_found) {
-            $_string += $string[$i]
-        }
-    }
-
-    if($char1_found -AND $char2_found) {  return $_string  }
-    return $null
-}
-
 class FunctionRegistry {
     [string]$moduleName
     [System.Collections.Specialized.OrderedDictionary]$functions = [ordered]@{}
