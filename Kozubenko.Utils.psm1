@@ -360,8 +360,8 @@ function AddWhitespace($string, $amount) {
 #>
 function TerminalTitleBar($text) {  Write-Host "`e]0;$text`a"  -NoNewline }
 
-function PrintItalics($text, $color = $null)    {  if($color) {  Write-Host "`e[3m$text`e[0m" -ForegroundColor $color } }
-function WriteItalics($text, $color = $null)    {  if($color) {  Write-Host "`e[3m$text`e[0m" -ForegroundColor $color } }
+function PrintItalics($text, $color = $null)    {  if($color) {  Write-Host "`e[3m$text`e[0m" -ForegroundColor $color } else { Write-Host "`e[3m$text`e[0m" } }
+function WriteItalics($text, $color = $null)    {  if($color) {  Write-Host "`e[3m$text`e[0m" -ForegroundColor $color -NoNewline } else { Write-Host "`e[3m$text`e[0m" -NoNewline } }
 function Print($text)           {  Write-Host $text  }
 function Write($text)           {  Write-Host $text -NoNewline  }
 function PrintWhiteRed($text)   {  Write-Host ${WhiteRed}$text  }

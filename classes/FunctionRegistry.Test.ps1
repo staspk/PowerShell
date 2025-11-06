@@ -23,7 +23,7 @@ function find_text_between_characters__TEST([string]$string, [char]$char1, [char
     $_string = ""
     
     for ($i = 0; $i -lt $string.Length; $i++) {
-        PrintDarkGray "Iteration {$i}. Current Char: $($string[$i])" -NewLine
+        PrintDarkGray "Iteration {$i}. Current Char: $($string[$i])"
         if(-not($char1_found) -AND $char2_found) {
             return $null;
         }
@@ -37,7 +37,7 @@ function find_text_between_characters__TEST([string]$string, [char]$char1, [char
             return
         }
 
-        if($string[$i] -eq $char1) {  PrintYellow "`$char1_found on iteration {$i}" -NewLine; $char1_found = $true; continue  }
+        if($string[$i] -eq $char1) {  PrintYellow "`$char1_found on iteration {$i}" ; $char1_found = $true; continue  }
         if($string[$i] -eq $char2) {
             if(-not($char1_found)) {  return $null  }
             $char2_found = $true;
@@ -62,15 +62,15 @@ $should_be = "`$string, `$txt_files_only = `$false"
 
 # $case_1_passed = (-not([string]::IsNullOrEmpty($string))) ? $true : $false
 if($text) {
-    PrintGreen "find_text_between_characters(`$case1) can find params in a HintRegistry" -NewLine
+    PrintGreen "find_text_between_characters(`$case1) can find params in a HintRegistry" 
     PrintGreen "params: {$text}"
 } elseif($null -eq $text) {
-    PrintYellow "find_text_between_characters(`$case1) -> `$text is `$null" -NewLine
+    PrintYellow "find_text_between_characters(`$case1) -> `$text is `$null" 
 } else {
-    PrintRed "find_text_between_characters(`$case1) cannot find params in a HintRegistry" -NewLine
+    PrintRed "find_text_between_characters(`$case1) cannot find params in a HintRegistry" 
 }
 
-PrintLiteRed "`$text SHOULD BE: `"$should_be`"" -NewLine
+PrintLiteRed "`$text SHOULD BE: `"$should_be`"" 
 
 if($text -ne $should_be) {
     PrintDarkRed "`$case_1 has failed!"

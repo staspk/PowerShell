@@ -108,7 +108,7 @@ function OnOpen($debug_mode = $false) {
     SetAliases Clear-Host  @("z", "zz", "zzz")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
 
-    Set-PSReadLineKeyHandler -Key Alt+1           -Description "List cheat-notes"                   -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintLiteRed $_.Name -NewLine }; ConsoleInsert("$cheats\")  }
+    Set-PSReadLineKeyHandler -Key Alt+1           -Description "List cheat-notes"                   -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintLiteRed $_.Name }; ConsoleInsert("$cheats\")  }
     Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"                        -ScriptBlock {  ConsoleDeleteInput  }
     Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"              -ScriptBlock {  ConsoleMoveToStartofLine  }
     Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"                -ScriptBlock {  ConsoleMoveToEndofLine  }

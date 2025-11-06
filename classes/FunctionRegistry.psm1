@@ -80,22 +80,22 @@ class FunctionRegistry {
 
             $signature = $function_signature.Split("(")[0]
 
-            PrintLiteRed "   $signature";                        $chars_printed += 3 + $signature.Length
+            WriteLiteRed "   $signature";                        $chars_printed += 3 + $signature.Length
             if($is_a_function) {
-                PrintLiteRed "(";                                $chars_printed += 1
+                WriteLiteRed "(";                                $chars_printed += 1
             }
             if($function_params_str) {
-                PrintItalics $function_params_str DarkGray;      $chars_printed += $function_params_str.Length
+                WriteItalics $function_params_str DarkGray;      $chars_printed += $function_params_str.Length
             }
             if($is_a_function) {
-                PrintLiteRed ")";                                $chars_printed += 1
+                WriteLiteRed ")";                                $chars_printed += 1
             }
 
             if($function_explanation) {
                 $left_hand_whitespace = AddWhitespace "  " $($MINIMUM_SIGNATURE_CHAR_WIDTH - $chars_printed - 2)
                 WriteLiteRed $left_hand_whitespace
                 WriteLiteRed "-->"
-                PrintWhiteRed "   $function_explanation" -NewLine
+                PrintWhiteRed "   $function_explanation"
             } else {
                 Write-Host
             }
