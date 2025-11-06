@@ -1,13 +1,6 @@
 using module ..\Kozubenko.Utils.psm1
 
 
-function is_a_function($function_params_str) {
-    if($function_params_str -ne "") {
-        return $true;
-    }
-    return $false;
-}
-
 function find_text_between_characters([string]$string, [char]$char1, [char]$char2) {
     <# 
     .SYNOPSIS
@@ -15,7 +8,7 @@ function find_text_between_characters([string]$string, [char]$char1, [char]$char
         [string] text_between_chars (includes: "")
         || $null, when: {
             - $char2 found before $char1
-            - 
+            - both $char1/$char2 are not found by the end of function
         }
     #>
     $char1_found = $false; $char2_found = $false;
@@ -74,8 +67,7 @@ class FunctionRegistry {
             $function_params_str   =  find_text_between_characters $function_signature '(' ')'
             $function_explanation  =  $function.Value
             
-            # $is_a_function = (($function_params_str) ? $true : $false)
-            $is_a_function = is_a_function($function_params_str)
+            $is_a_function = ($function_params_str -ne $null) ? $true : $false
             $chars_printed = 0
 
             $signature = $function_signature.Split("(")[0]
