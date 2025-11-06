@@ -32,9 +32,9 @@ $MyRuntime.CycleCommands()
 $MyRuntime.CycleCommands()
 
 if($MyRuntime.history_depth -lt 3) {
-    PrintGreen "Decrement_HistoryDepth Test Passed" -NewLine
+    PrintGreen "Decrement_HistoryDepth Test Passed"
 } else {
-    PrintRed "Decrement_HistoryDepth Test Failed" -NewLine
+    PrintRed "Decrement_HistoryDepth Test Failed"
 }
 
 

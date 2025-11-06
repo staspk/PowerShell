@@ -1,4 +1,5 @@
-using module .\classes\FunctionRegistry.psm1
+using module .\classes\IRegistry.psm1
+using module .\classes\HintRegistry.psm1
 using module .\Kozubenko.Utils.psm1
 
 
@@ -10,22 +11,22 @@ function SetStartDirectory($path = $PWD.Path) {  [MyRuntime]::Instance.SetStartD
 function NewVar($key, $value = $PWD.Path)     {  [MyRuntime]::Instance.NewVar($key, $value)  }
 function DeleteVar($key)                      {  [MyRuntime]::Instance.DeleteVar($key)  }
 function NewCommand([string]$command)         {  [MyRuntime]::Instance.NewCommand($PWD.Path, $command)  }
-function Help([string]$moduleName = "")       {  [MyRuntime]::Instance.Help($moduleName)  }
+function Help([string]$matchStr = "")         {  [MyRuntime]::Instance.Help($matchStr)  }
 
 Remove-Item Alias:h
-function H   ([string]$moduleName = "")       {  [MyRuntime]::Instance.Help($moduleName)  }
+function H([string]$matchStr = "")            {  [MyRuntime]::Instance.Help($matchStr)  }
 
 
-class MyRuntime_FunctionRegistry {
-    static [FunctionRegistry] GET() {
-        return [FunctionRegistry]::new(
+class MyRuntime_FunctionRegistry : IRegistry {
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
             "Kozubenko.MyRuntime",
             @(
                 "SetStartDirectory(`$path = `$PWD.Path)  -->  Set default path Terminal will open to (if opened without specific dir)",
                 "NewVar(`$key, `$value = `$PWD.Path)     -->  Create new key/value pair in .paths",
                 "DeleteVar(`$key)                        -->  Delete existing key/value pair in .paths",
                 "NewCommand([string]`$command)           -->  Save command[value] for current path[key] in .commands. Cycle through commands with DownArrow.",
-                "Help([string]`$moduleName)              -->  Print FunctionRegistry for all Modules. Target [match] with `$moduleName. Alias: H"
+                "Help([string]`$registryName)            -->  Print FunctionRegistry for all registrys. Target [match] with `$registryName. Alias: H"
             ))
     }
 }
@@ -36,7 +37,7 @@ class MyRuntime_FunctionRegistry {
 [MyRuntime]::new()               => Constructor will Init instance with root directory: "$PROFILE\.."
 [MyRuntime]::new($ALT_ROOT_DIR)  => Constructor will Init instance to alt chosen directory (eg: for testing purposes)
 
-    MyRuntime 1.0.1
+    MyRuntime 1.1.0
 #>
 class MyRuntime {
     [string] $RUNTIME_ROOT_DIR = [System.IO.Path]::GetDirectoryName($PROFILE);
@@ -45,7 +46,7 @@ class MyRuntime {
     [string] $_COMMANDS_FILE = "$($this.RUNTIME_ROOT_DIR)\.commands";    [ordered]$commands = @{};
 
     [string] $STARTUP_DIR_KEY = "startup_dir";
-    [System.Collections.Generic.List[FunctionRegistry]] $modules = [System.Collections.Generic.List[FunctionRegistry]]::new();
+    [System.Collections.Generic.List[HintRegistry]] $registrys = [System.Collections.Generic.List[HintRegistry]]::new();
 
     [string] $last_path = "";   # used in tandem with $history_depth
     [int] $history_depth = 0;   # Positive: PsConsoleReadLine History. Negative: Commands Stack.
@@ -84,19 +85,19 @@ class MyRuntime {
         Write-Host
     }
 
-    [void] Help([string]$moduleName) {
-        $minimum_signature_char_width = 34
+    [void] Help([string]$matchStr) {
+        $minimum_signature_char_width = 0
 
-        foreach($module in $this.modules) {
-            if($module.moduleName -match $moduleName) {
-                if($module.longest_func_signature -gt $minimum_signature_char_width) { $minimum_signature_char_width = $module.longest_func_signature }
+        foreach($registry in $this.registrys) {
+            if($registry.name -match $matchStr) {
+                if($registry.longest_signature -gt $minimum_signature_char_width) { $minimum_signature_char_width = $registry.longest_signature }
             }
         }
 
         Clear-Host
-        foreach ($module in $this.modules) {
-            if($module.moduleName -match $moduleName) {
-                $module.Print($minimum_signature_char_width)
+        foreach ($registry in $this.registrys) {
+            if($registry.name -match $matchStr) {
+                $registry.Print($minimum_signature_char_width)
             }
         }
     }
@@ -104,31 +105,31 @@ class MyRuntime {
     SetStartDirectory($path) {
         [MyRuntime]::SaveToEnvFile($this._PATHS_FILE, $this.STARTUP_DIR_KEY, $path)
         $this.paths = [MyRuntime]::LoadEnvFileIntoMemory($this._PATHS_FILE, $true)
-        $this.PrintIntroduction()
+        $this.PrintIntroduction($true)
         $this.HandleTerminalStartupLocation($true);
     }
 
     NewVar($key, $value) {
-        if([string]::IsNullOrWhiteSpace($key)) {  PrintRed "MyRuntime.NewVar(key, value): key cannot be null/whitespace. Skipping Function...`n";   RETURN;  }
+        if([string]::IsNullOrWhiteSpace($key)) {  PrintRed "MyRuntime.NewVar(key, value): key cannot be null/whitespace. Skipping Function...";   RETURN;  }
         if ($key[0] -eq "$") {  $key = $key.Substring(1)  }
         [MyRuntime]::SaveToEnvFile($this._PATHS_FILE, $key, $value)
         $this.paths = [MyRuntime]::LoadEnvFileIntoMemory($this._PATHS_FILE, $true)
-        $this.PrintIntroduction()
+        $this.PrintIntroduction($true)
     }
 
     DeleteVar($key) {
         if($key[0] -eq "$") {  $key = $key.Substring(1)  }
         $this.paths = [MyRuntime]::LoadEnvFileIntoMemory($this._PATHS_FILE, $true, $key)
-        $this.PrintIntroduction()
+        $this.PrintIntroduction($true)
     }
 
     NewCommand($path, [string]$command) {
-        if([string]::IsNullOrWhiteSpace($path) -or [string]::IsNullOrWhiteSpace($command)) {  PrintRed "MyRuntime.NewCommand(path, command): command/path cannot be null/whitespace. Skipping Function...`n";   RETURN;  }
+        if([string]::IsNullOrWhiteSpace($path) -or [string]::IsNullOrWhiteSpace($command)) {  PrintRed "MyRuntime.NewCommand(path, command): command/path cannot be null/whitespace. Skipping Function...";   RETURN;  }
         
-        PrintGreen "NewCommand(" -NewLine
-        PrintGreen "   `$path: "; PrintItalics "$path`n" DarkGreen
-        PrintGreen "   `$command: "; PrintItalics "$command`n" DarkGreen
-        PrintGreen ")" -NewLine
+        PrintGreen "NewCommand("
+        WriteGreen "   `$path: "; PrintItalics "$path" DarkGreen
+        WriteGreen "   `$command: "; PrintItalics "$command" DarkGreen
+        PrintGreen ")"
 
         if($this.commands[$path] -eq $null) {
             $this.commands.Add($path, $command)
@@ -207,7 +208,7 @@ class MyRuntime {
             if(IsDirectory $desired_start_dir) {  Set-Location $desired_start_dir  }
             elseif(IsFile $desired_start_dir)  {  Set-Location $(ParentDir $desired_start_dir)  }  # QoL, so it's easy set $profile as startupLocation
             else {
-                PrintRed "`$desired_start_dir path does not exist anymore. Defaulting to userdir...`n"
+                PrintRed "`$desired_start_dir path does not exist anymore. Defaulting to userdir..."
                 Set-Location $Env:USERPROFILE
             }
         }
@@ -228,7 +229,7 @@ class MyRuntime {
     }
 
     static [void] SaveToEnvFile([string]$file, [string]$key, [string]$value) {
-        # PrintYellow "In SaveToEnvFile(): `$file: "; PrintItalics "$file`n" Yellow
+        # WriteYellow "In SaveToEnvFile(): `$file: "; PrintItalics "$file" Yellow
         $lines = [Kozubenko.Utils.List]::FromFile($file)
 
         if(-not($lines)) {
@@ -245,9 +246,9 @@ class MyRuntime {
         [System.IO.File]::AppendAllText($file, "$([Environment]::NewLine)$key=$value")
     }
 
-    static [ordered] LoadEnvFileIntoMemory([string]$file)                         {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $null);           }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file):`n"
-    static [ordered] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope)    {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $global_scope, $null);    }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$global_scope):`n"
-    static [ordered] LoadEnvFileIntoMemory([string]$file, [string]$key_to_delete) {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $key_to_delete);  }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$key_to_delete):`n"
+    static [ordered] LoadEnvFileIntoMemory([string]$file)                         {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $null);           }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file):"
+    static [ordered] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope)    {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $global_scope, $null);    }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$global_scope):"
+    static [ordered] LoadEnvFileIntoMemory([string]$file, [string]$key_to_delete) {  return [MyRuntime]::LoadEnvFileIntoMemory($file, $false, $key_to_delete);  }  # PrintRed "At beginning of LoadEnvFileIntoMemory(`$file, `$key_to_delete):"
     static [ordered] LoadEnvFileIntoMemory([string]$file, [bool]$global_scope, [string]$key_to_delete) {
         # PrintCyan "Entering: LoadEnvFileIntoMemory(`n  `$file: $file,`n  `$global_scope: $global_scope,`n  `$key_to_delete: $key_to_delete`n): "
         $variables = [ordered]@{}
@@ -289,9 +290,9 @@ class MyRuntime {
         return $variables
     }
 
-    [void] AddModules([Array]$functionRegistrys) {
-        foreach ($functionRegistry in $functionRegistrys) {
-            $this.modules.Add($functionRegistry)
+    [void] AddRegistrys([Array]$registrys) {
+        foreach ($registry in $registrys) {
+            $this.registrys.Add($registry)
         }
     }
 }

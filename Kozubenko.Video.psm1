@@ -1,8 +1,9 @@
-using module .\classes\FunctionRegistry.psm1
+using module .\classes\IRegistry.psm1
+using module .\classes\HintRegistry.psm1
 using module .\Kozubenko.Utils.psm1
-class KozubenkoVideo {
-    static [FunctionRegistry] GetFunctionRegistry() {
-        return [FunctionRegistry]::new(
+class KozubenkoVideo : IRegistry {
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
             "Kozubenko.Video",
             @(
                 "vtt_to_srt(`$file)                 -->   convert subtitles from format .vtt to .srt",
@@ -13,7 +14,7 @@ class KozubenkoVideo {
 
 function vtt_to_srt($file) {
     if (-not(Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
-        PrintRed "ffmpeg library required for function.`n"
+        PrintRed "ffmpeg library required for function."
         RETURN;
     }
 
@@ -27,7 +28,7 @@ function vtt_to_srt($file) {
 }
 function webm_to_mp4($file) {
     if (-not(Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
-        PrintRed "ffmpeg library required for function.`n"
+        PrintRed "ffmpeg library required for function."
         RETURN;
     }
 

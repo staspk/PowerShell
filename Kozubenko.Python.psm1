@@ -1,16 +1,16 @@
 using module .\Kozubenko.Utils.psm1
-using module .\classes\FunctionRegistry.psm1
-class KozubenkoPython {   
-    static [FunctionRegistry] GetFunctionRegistry() {
-        return [FunctionRegistry]::new(
+using module .\classes\IRegistry.psm1
+using module .\classes\HintRegistry.psm1
+class KozubenkoPython : IRegistry {   
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
             "Kozubenko.Python",
             @(
-                "InitPythonEnv()           -->   what you need after git-cloning a python project",
-                "PythonBoilerplate()       -->   python QoL boilerplate + kozubenko-py utils",
-                "Activate()                -->   .\.venv\Scripts\Activate.ps1",
-                "KillPythonProcesses()     -->   kills all python processes",
-                "venvFreeze()              -->   pip freeze > requirements.txt",
-                "upgrade project .venv     -->   py -3.14 -m venv .venv"
+                "InitPythonEnv()             -->   what you need after git-cloning a python project",
+                "PythonBoilerplate()         -->   python QoL boilerplate + kozubenko-py utils",
+                "Activate()                  -->   .\.venv\Scripts\Activate.ps1",
+                "KillPythonProcesses()       -->   kills all python processes",
+                "venvFreeze()                -->   pip freeze > requirements.txt"
             ));
     }
 }

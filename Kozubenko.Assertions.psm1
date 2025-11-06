@@ -3,9 +3,9 @@ function AssertIsNotNull($obj, [string]$obj_name = "", [switch]$ReturnResultAsBo
 
     if($obj_name) {
         if($test_result -eq $false) {
-            PrintLiteGreen "`$$obj_name is not Null as expected" -NewLine }
+            PrintLiteGreen "`$$obj_name is not Null as expected" }
         else {
-            PrintRed "`$$obj_name is Null!" -NewLine }
+            PrintRed "`$$obj_name is Null!" }
     }
 
     if($ReturnResultAsBoolean.IsPresent) {  return $test_result  }  return
@@ -16,9 +16,9 @@ function AssertIsNull($obj, [string]$obj_name = "", [switch]$ReturnResultAsBoole
 
     if($obj_name) {
         if($test_result -eq $true) {
-            PrintLiteGreen "`$$obj_name is Null as expected" -NewLine }
+            PrintLiteGreen "`$$obj_name is Null as expected" }
         else {
-            PrintRed "`$$obj_name is not Null! is: $($obj.GetType().Name)" -NewLine }
+            PrintRed "`$$obj_name is not Null! is: $($obj.GetType().Name)" }
     }
 
     if($ReturnResultAsBoolean.IsPresent) {  return $test_result  }  return
@@ -38,9 +38,9 @@ function AssertIsTruthy($obj, [string]$obj_name = "", [switch]$ReturnResultAsBoo
 
     if($obj_name) {
         if($test_result -eq $true) {
-            PrintLiteGreen "`$$obj_name is Truthy as expected" -NewLine }
+            PrintLiteGreen "`$$obj_name is Truthy as expected" }
         else {
-            PrintRed "`$$obj_name is not Truthy!" -NewLine }
+            PrintRed "`$$obj_name is not Truthy!" }
     }
     
     if($ReturnResultAsBoolean.IsPresent) {  return $test_result  }  return
@@ -60,9 +60,9 @@ function AssertIsFalsy($obj, [string]$obj_name = "", [switch]$ReturnResultAsBool
 
     if($obj_name) {
         if($test_result -eq $true) {
-            PrintLiteGreen "`$$obj_name is Falsy as expected" -NewLine }
+            PrintLiteGreen "`$$obj_name is Falsy as expected" }
         else {
-            PrintLiteRed "`$$obj_name is not Falsy!" -NewLine }
+            PrintLiteRed "`$$obj_name is not Falsy!" }
     }
 
     if($ReturnResultAsBoolean.IsPresent) {  return $test_result  }  return
@@ -87,9 +87,9 @@ function AssertTruthyFalsySymmetry($obj, [string]$obj_name = "", [switch]$Return
 
     if($obj_name) {
         if($test_result -eq $true) {
-            PrintLiteGreen "`$$obj_name has Truthy-Falsy-Symmetry as expected" -NewLine }
+            PrintLiteGreen "`$$obj_name has Truthy-Falsy-Symmetry as expected" }
         else {
-            PrintRed "`$$obj_name does not have Truthy-Falsy-Symmetry!" -NewLine }
+            PrintRed "`$$obj_name does not have Truthy-Falsy-Symmetry!" }
     }
 
     if($ReturnResultAsBoolean.IsPresent) {  return $test_result  }  return
@@ -114,9 +114,9 @@ function AssertTruthyFalsyAsymmetry($obj, [string]$obj_name = "", [switch]$Retur
 
     if($obj_name) {
         if($test_result -eq $true) {
-            PrintLiteGreen "`$$obj_name has Truthy-Falsy-Asymmetry as expected" -NewLine }
+            PrintLiteGreen "`$$obj_name has Truthy-Falsy-Asymmetry as expected" }
         else {
-            PrintRed "`$$obj_name does not have Truthy-Falsy-Asymmetry!" -NewLine }
+            PrintRed "`$$obj_name does not have Truthy-Falsy-Asymmetry!" }
     }
 
     if($ReturnResultAsBoolean.IsPresent) {  return $test_result  }  return

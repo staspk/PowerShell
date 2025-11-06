@@ -1,7 +1,8 @@
-using module .\classes\FunctionRegistry.psm1
-class KozubenkoNode {   
-    static [FunctionRegistry] GetFunctionRegistry() {
-        return [FunctionRegistry]::new(
+using module .\classes\IRegistry.psm1
+using module .\classes\HintRegistry.psm1
+class KozubenkoNode : IRegistry {   
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
             "Kozubenko.Node",
             @(
                 "debug(`$file)                    -->   node --inspect-brk `$file, and opens browser debugger",
@@ -23,7 +24,7 @@ function setupTsDevEnvironment() {
 # chrome://inspect
 function debug($file) {
     if(-not(Test-Path $file)) {
-        PrintDarkRed "Can't find js/ts file to debug: $file`n"
+        PrintDarkRed "Can't find js/ts file to debug: $file"
         RETURN;
     }
     $file = (Resolve-Path $file).Path

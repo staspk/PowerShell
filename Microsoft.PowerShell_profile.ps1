@@ -1,4 +1,5 @@
-using module .\classes\FunctionRegistry.psm1
+using module .\classes\IRegistry.psm1
+using module .\classes\HintRegistry.psm1
 using module .\Kozubenko.Utils.psm1
 using module .\Kozubenko.OS.psm1
 using module .\Kozubenko.Git.psm1
@@ -19,10 +20,30 @@ SetGlobal "yt-dlp"       "$desktop\yt-dlp"
 SetGlobal "cheats"       "$PROFILE_DIR\cheat-notes"
 SetGlobal "notes"        "$PROFILE_DIR\cheat-notes"
 SetGlobal "pwsh_history_file" $((Get-PSReadLineOption).HistorySavePath)
+SetGlobal "vscode"       "$env:APPDATA\Code\User"
+class GLOBALS : IRegistry {
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
+            "GLOBALS",
+            @(
+                "PROFILE_DIR        -->  `$(ParentDir `$PROFILE)",
+                "desktop            -->  `$HOME\Desktop",
+                "downloads          -->  `$HOME\Downloads",
+                "appdata            -->  `$HOME\AppData\Roaming",
+                "startup            -->  `$appdata\Microsoft\Windows\Start Menu\Programs\Startup",
+                "yt-dlp             -->  `$desktop\yt-dlp",
+                "cheats             -->  `$PROFILE_DIR\cheat-notes",
+                "notes              -->  `$PROFILE_DIR\notes",
+                "pwsh_history_file  -->  `$((Get-PSReadLineOption).HistorySavePath)",
+                "vscode             -->  `$env:APPDATA\Code\User"
+            )
+        );
+    }
+}
 
-class KozubenkoProfile {
-    static [FunctionRegistry] GetFunctionRegistry() {
-        return [FunctionRegistry]::new(
+class KozubenkoProfile : IRegistry {
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
             "Kozubenko.Profile",
             @(
                 "Open(`$path = 'PWD.Path')              -->   opens .\ or `$path in File Explorer. Alias: O",
@@ -35,9 +56,8 @@ class KozubenkoProfile {
             ));
     }
 }
-
 function Open($path = $PWD.Path) {
-    if (-not(Test-Path $path)) { PrintRed "`$path does not exist. `$path: $path`n";  RETURN; }
+    if (-not(Test-Path $path)) { PrintRed "`$path does not exist. `$path: $path";  RETURN; }
 
     $path = (Resolve-Path $path).Path
 
@@ -52,14 +72,14 @@ function Open($path = $PWD.Path) {
 }   <# ALIAS: #>    function O($path = $PWD.Path) {  Open($path)  }
 
 function Vs($path = $PWD.Path) {
-    if (-not(Test-Path $path)) {  PrintRed "`$path is not a valid path. `$path == $path`n";  RETURN;  }
+    if (-not(Test-Path $path)) {  PrintRed "`$path is not a valid path. `$path == $path";  RETURN;  }
     if (IsFile($path)) {  $path = ParentDir($path)  }
     
     $solution = Get-ChildItem -Path $RootDirectory -Filter "*.sln"
     if ($solution.Count -eq 1) {
         Invoke-Item $solution.FullName
     } else {
-        PrintRed "Directory must have a .sln file. .sln count: $($solutions.Count)`n"
+        PrintRed "Directory must have a .sln file. .sln count: $($solutions.Count)"
     }
 }
 function Vsc($path = $PWD.Path) {
@@ -68,7 +88,6 @@ function Vsc($path = $PWD.Path) {
     
     code $path
 }
-
 function loadTime() {
     PrintRed "$($global:stopwatch.Elapsed.TotalMilliseconds.ToString("F3"))ms"
 }
@@ -92,15 +111,16 @@ function OnOpen($debug_mode = $false) {
         [MyRuntime]::ON_INIT_CLEAR_CONSOLE__FLAG = $false
     }
     $global:MyRuntime = [MyRuntime]::new()
-    $global:MyRuntime.AddModules(@(
-        [MyRuntime_FunctionRegistry]::Get(),
-        # [KozubenkoBible]::GetFunctionRegistry(),
-        # [KozubenkoVideo]::GetFunctionRegistry(),
-        [KozubenkoOS]::GetFunctionRegistry(),
-        [KozubenkoProfile]::GetFunctionRegistry(),
-        [KozubenkoGit]::GetFunctionRegistry(),
-        [KozubenkoPython]::GetFunctionRegistry(),
-        [KozubenkoNode]::GetFunctionRegistry()
+    $global:MyRuntime.AddRegistrys(@(
+        [GLOBALS]::GetRegistry(),
+        [MyRuntime_FunctionRegistry]::GetRegistry(),
+        # [KozubenkoBible]::GetRegistry(),
+        # [KozubenkoVideo]::GetRegistry(),
+        [KozubenkoOS]::GetRegistry(),
+        [KozubenkoProfile]::GetRegistry(),
+        [KozubenkoGit]::GetRegistry(),
+        [KozubenkoPython]::GetRegistry(),
+        [KozubenkoNode]::GetRegistry()
     ));
 
     SetAliases Open @("o")
@@ -108,7 +128,7 @@ function OnOpen($debug_mode = $false) {
     SetAliases Clear-Host  @("z", "zz", "zzz")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
 
-    Set-PSReadLineKeyHandler -Key Alt+1           -Description "List cheat-notes"                   -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintLiteRed $_.Name -NewLine }; ConsoleInsert("$cheats\")  }
+    Set-PSReadLineKeyHandler -Key Alt+1           -Description "List cheat-notes"                   -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintLiteRed $_.Name }; ConsoleInsert("$cheats\")  }
     Set-PSReadLineKeyHandler -Key Alt+Backspace   -Description "Delete Line"                        -ScriptBlock {  ConsoleDeleteInput  }
     Set-PSReadLineKeyHandler -Key Alt+LeftArrow   -Description "Move to Start of Line"              -ScriptBlock {  ConsoleMoveToStartofLine  }
     Set-PSReadLineKeyHandler -Key Alt+RightArrow  -Description "Move to End of Line"                -ScriptBlock {  ConsoleMoveToEndofLine  }
@@ -118,7 +138,7 @@ function OnOpen($debug_mode = $false) {
         $buffer, $cursor = GetConsoleBufferState
         $path_to_open = $buffer ?? $PWD
 
-        if (-not(Test-Path $path_to_open)) {  PrintRed "`$buffer is not a valid path. `$path_to_open: '$path_to_open'" -NewLine;  RETURN;  }
+        if (-not(Test-Path $path_to_open)) {  PrintRed "`$buffer is not a valid path. `$path_to_open: '$path_to_open'";  RETURN;  }
 
         if (IsFile $path_to_open) {  $path_to_open = ParentDir $path_to_open  }
         explorer.exe $path_to_open
@@ -144,6 +164,8 @@ $global:stopwatch.Stop()
 
 
 
+
+
 function Docstring-Example($param1) {
     <# 
     .SYNOPSIS
@@ -156,4 +178,18 @@ function Docstring-Example($param1) {
     Returns:
         [string] || throws
     #>
+}
+
+<# 
+    The other function form
+#>
+$check_trigger1 = {
+    param(
+        [int]$current_iteration,
+        [int]$iteration_supposed_to_trigger
+    )
+
+    if($string[$i] -eq $char1) {
+
+    }
 }

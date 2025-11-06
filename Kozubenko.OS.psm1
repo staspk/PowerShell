@@ -1,7 +1,8 @@
-using module .\classes\FunctionRegistry.psm1
-class KozubenkoOS {
-    static [FunctionRegistry] GetFunctionRegistry() {
-        return [FunctionRegistry]::new(
+using module .\classes\IRegistry.psm1
+using module .\classes\HintRegistry.psm1
+class KozubenkoOS : IRegistry {
+    static [HintRegistry] GetRegistry() {
+        return [HintRegistry]::new(
             "Kozubenko.OS",
             @(
                 "AllSizes()                                    -->   lists folders/files in current directory with their sizes (not on disk)",
@@ -58,7 +59,7 @@ function AddToEnvPath($path) {
 
     $pathArray = $userPath.Split(";")
 
-    if ($pathArray -contains $path) {  PrintGreen "The path '$path' is already in your PATH.`n";  RETURN;  }
+    if ($pathArray -contains $path) {  PrintGreen "The path '$path' is already in your PATH.";  RETURN;  }
 
     $newPath = ""
     foreach ($pathItem in $pathArray) {  $newPath += $pathItem + ";"  }
@@ -95,9 +96,9 @@ function AllSizes($startFolder = $PWD.Path) {
     }
 
     foreach ($itemName in $folderItemSizes.Keys) {
-        PrintGreen " $(AddWhitespace $itemName ($longestNameLen - $itemName.Length)) "
-        PrintGray ":"
-        PrintDarkRed " $($folderItemSizes[$itemName])`n"
+        WriteGreen " $(AddWhitespace $itemName ($longestNameLen - $itemName.Length)) "
+        WriteGray ":"
+        PrintDarkRed " $($folderItemSizes[$itemName])"
     }
 }
 function FolderSizes($startFolder = $PWD.Path) {
@@ -114,14 +115,14 @@ function FolderSizes($startFolder = $PWD.Path) {
     }
 
     foreach ($folderName in $folderSizes.Keys) {
-        PrintGreen " $(AddWhitespace $folderName ($longestNameLen - $folderName.Length)) "
-        PrintGray ":"
-        PrintDarkRed " $($folderSizes[$folderName])`n"
+        WriteGreen " $(AddWhitespace $folderName ($longestNameLen - $folderName.Length)) "
+        WriteGray ":"
+        PrintDarkRed " $($folderSizes[$folderName])"
     }
 }
 
 function ClearFolder($folder = ".\") {
-    if (-not(IsDirectory $folder)) {  PrintDarkRed "Skipping ClearFolder, `$folder is not a directory: $folder`n";  RETURN;  }
+    if (-not(IsDirectory $folder)) {  PrintDarkRed "Skipping ClearFolder, `$folder is not a directory: $folder";  RETURN;  }
     Get-ChildItem -Path $folder -Recurse | ForEach-Object {
         if ($_.PSIsContainer) {  $_.Delete($true)  }
         else {  $_.Delete()  }
@@ -129,7 +130,7 @@ function ClearFolder($folder = ".\") {
 }
 
 function LockFolder($folder) {
-    if (-not(IsDirectory $folder)) {  PrintDarkRed "Skipping LockFolder, `$folder is not a directory: $folder`n";  RETURN;  }
+    if (-not(IsDirectory $folder)) {  PrintDarkRed "Skipping LockFolder, `$folder is not a directory: $folder";  RETURN;  }
 
     $acl = Get-Acl -Path $folder
 
