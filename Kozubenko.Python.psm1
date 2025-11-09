@@ -20,9 +20,10 @@ $BOILERPLATE_PYTHON_PROJECT = "$profile\..\boilerplate\python_vscode_setup"
 if(-not(Test-Path $BOILERPLATE_PYTHON_PROJECT)) {  PrintRed "`$BOILERPLATE_PYTHON_PROJECT Directory Not Found!";  Start-Sleep 1;  }
 
 
-function Activate {     # Use from a Python project root dir, to activate a venv virtual environment
-    if (Test-Path "$PWD\.venv")    {
-        Invoke-Expression "$PWD\.venv\Scripts\Activate.ps1";  return $true
+function Activate($clear_host=$true) {     # Use from a Python project root dir, to activate a venv virtual environment
+    if($clear_host) {  Clear-Host;  }
+    if (Test-Path "$PWD\.venv") {
+        Invoke-Expression "$PWD\.venv\Scripts\Activate.ps1"; return $true
     }
     return $false
 }
