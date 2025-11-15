@@ -18,3 +18,10 @@ JUST SUBS:
 
 Convert webm to mp4: [note: crf 18 considered visually loss-less]
 ffmpeg -i tucker-putin-ru.webm -c:v libx264 -crf 18 -preset medium tucker-putin-ru.mp4
+
+
+
+11/6/2025 (tried, worked, got mp4s)
+./yt-dlp.exe -k "https://www.youtube.com/watch?v=iNLIl-2nPLY&t=407s" --write-auto-sub --sub-lang en --sub-format srt
+
+./yt-dlp.exe --skip-download "https://www.youtube.com/watch?v=iNLIl-2nPLY&t=407s" --write-auto-sub --sub-lang en,ru --sub-format srt
