@@ -145,7 +145,7 @@ function OnOpen($debug_mode = $false) {
     }
     Set-PSReadLineKeyHandler -Key UpArrow         -Description "Runtime.OverridePreviousHistory()"  -ScriptBlock {  $global:MyRuntime.OverridePreviousHistory()  }
     Set-PSReadLineKeyHandler -Key DownArrow       -Description "Runtime.CycleCommands()"            -ScriptBlock {  $global:MyRuntime.CycleCommands()  }
-    Set-PSReadLineKeyHandler -Key Enter           -Description "Runtime.EnterKeyHandler()"          -ScriptBlock {
+    Set-PSReadLineKeyHandler -Key Enter           -Description "EnterKeyHandler()"                  -ScriptBlock {
         $global:MyRuntime.history_depth = 0
         $buffer, $cursor = GetConsoleBufferState
 
@@ -155,8 +155,7 @@ function OnOpen($debug_mode = $false) {
         if($buffer -eq "st")          {  ConsoleDeleteInput; ConsoleInsert "git stash ";           RETURN; }
         if($buffer.StartsWith("re"))  {  ConsoleDeleteInput;
             $int = AssertInt $buffer.Split(" ")[1] "Correct Form: 're {int}'"
-            ConsoleInsert "git rebase -i HEAD~$int"
-            RETURN;
+            ConsoleInsert "git rebase -i HEAD~$int";                           ConsoleAcceptLine;  RETURN;
         }
 
         elseif($buffer.StartsWith("..")) {
