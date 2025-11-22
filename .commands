@@ -2,6 +2,6 @@ C:\Users\stasp\Documents\PowerShell\classes=.\FunctionRegistry.test.ps1
 C:\Users\stasp\Desktop\OS-Setup=./saveWindowsSettingsAndGithubPush.ps1
 C:\Users\stasp\Desktop\OS-Setup\Windows11\.vscode\vsc-augment=npx vsce package
 C:\Users\stasp\Desktop\Bible-Vault=./start-server.ps1,./start-server.ps1 msedge.exe,npx tsx .\node\_vite-frontend\index.test.ts
-C:\Users\stasp\Desktop\Bible-Vault\node=npx tsx .\http-server.ts
+C:\Users\stasp\Desktop\Bible-Vault\node=npx tsx .\test.ts,npx tsx .\http-server.ts
 C:\Users\stasp\Desktop\Bible-Vault\node\_vite-frontend=npm run dev,npm run build
 C:\Users\stasp\Desktop\My-Garage\typescript-tests=tsc --module ES2022 --target ES2022 
