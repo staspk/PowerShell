@@ -70,7 +70,7 @@ function Open($path = $PWD.Path) {
         }
     }
     else {  explorer.exe $path  }
-}   <# ALIAS: #>    function O($path = $PWD.Path) {  Open($path)  }
+}
 
 function Vs($path = $PWD.Path) {
     if (-not(Test-Path $path)) {  PrintRed "`$path is not a valid path. `$path == $path";  RETURN;  }
