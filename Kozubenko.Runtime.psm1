@@ -7,7 +7,8 @@ using module .\Kozubenko.Utils.psm1
     FUNCTION ALIASES
     These functions act as parameterized aliases to MyRuntime instance methods...
 #>
-function SetStartDirectory($path = $PWD.Path) {  [MyRuntime]::Instance.SetStartDirectory($path)  }
+Remove-Item Alias:Set
+function Set($path = $PWD.Path)               {  [MyRuntime]::Instance.SetStartDirectory($path)  }
 function NewVar($key, $value = $PWD.Path)     {  [MyRuntime]::Instance.NewVar($key, $value)  }
 function DeleteVar($key)                      {  [MyRuntime]::Instance.DeleteVar($key)  }
 function NewCommand([string]$command)         {  [MyRuntime]::Instance.NewCommand($PWD.Path, $command)  }
@@ -138,22 +139,6 @@ class MyRuntime {
         }
         
         [MyRuntime]::SaveToEnvFile($this._COMMANDS_FILE, $this.commands)
-    }
-
-    # called from Console, by pressing Enter on empty buffer: ""
-    [void] RunDefaultCommand() {
-        $path = $PWD.Path
-
-        $buffer = $null; $cursor = 0;
-        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)
-
-        $command = $this.commands[$path]
-        if($command) {
-            [Microsoft.PowerShell.PSConsoleReadLine]::Insert($command)  }
-        else {
-            [Microsoft.PowerShell.PSConsoleReadLine]::Insert("open " + $buffer)  }
-        
-        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
     }
 
     [void] OverridePreviousHistory() {

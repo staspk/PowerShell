@@ -276,7 +276,24 @@ function TestPath($path) {
     Set-Variable/Set-Alias Utils
 ----------------------------------------------
 #>
-function SetAliases($function, [Array]$aliases) {   # Throws exception if you try to set an alias on a keyword you already set an alias on
+function SetAliasesFor($script_block, [Array]$aliases) {
+    <# 
+    .SYNOPSIS
+    Uses `New-Item` under the hood, not `Set-Alias`
+
+    PS > SetAliasesFor "git branch" @("b", "br", "bra")
+    #>
+    foreach ($alias in $aliases) {
+        New-Item -Path "Function:\Global:$alias" -Value $script_block -Force -ErrorAction Stop | Out-Null
+    }
+}
+function SetAliases($function, [Array]$aliases) {
+    <# 
+    .SYNOPSIS
+    A QoL wrapper for Set-Alias
+
+    throws: if alias already used
+    #>
     if ($function -eq $null -or $aliases -eq $null) {  RETURN  }
 
     foreach ($alias in $aliases) {
