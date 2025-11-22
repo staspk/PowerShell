@@ -1,5 +1,6 @@
 using module .\classes\IRegistry.psm1
 using module .\classes\HintRegistry.psm1
+using module .\Kozubenko.Assertions.psm1
 using module .\Kozubenko.Utils.psm1
 using module .\Kozubenko.OS.psm1
 using module .\Kozubenko.Git.psm1
@@ -69,7 +70,7 @@ function Open($path = $PWD.Path) {
         }
     }
     else {  explorer.exe $path  }
-}   <# ALIAS: #>    function O($path = $PWD.Path) {  Open($path)  }
+}
 
 function Vs($path = $PWD.Path) {
     if (-not(Test-Path $path)) {  PrintRed "`$path is not a valid path. `$path == $path";  RETURN;  }
@@ -124,7 +125,6 @@ function OnOpen($debug_mode = $false) {
     ));
 
     SetAliases Open @("o")
-    SetAliases Restart @("re", "res")
     SetAliases Clear-Host  @("z", "zz", "zzz")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
 
@@ -145,14 +145,29 @@ function OnOpen($debug_mode = $false) {
     }
     Set-PSReadLineKeyHandler -Key UpArrow         -Description "Runtime.OverridePreviousHistory()"  -ScriptBlock {  $global:MyRuntime.OverridePreviousHistory()  }
     Set-PSReadLineKeyHandler -Key DownArrow       -Description "Runtime.CycleCommands()"            -ScriptBlock {  $global:MyRuntime.CycleCommands()  }
-    Set-PSReadLineKeyHandler -Key Enter           -Description "Runtime.RunDefaultCommand()"        -ScriptBlock {
+    Set-PSReadLineKeyHandler -Key Enter           -Description "EnterKeyHandler()"                  -ScriptBlock {
+        $global:MyRuntime.history_depth = 0
         $buffer, $cursor = GetConsoleBufferState
 
-        $global:MyRuntime.history_depth = 0
+        if(-not($buffer)) {
+            ConsoleAcceptLine; RETURN
+        }
 
-        if($buffer -eq "") {  $global:MyRuntime.RunDefaultCommand();  RETURN;  }
+        <# Python #>
+        if($buffer -eq "&")  {  ConsoleInsert " $PWD\.venv\Scripts\Activate.ps1"; ConsoleAcceptLine; RETURN; }
 
-        elseif($buffer.StartsWith("..")) {  Set-Location ..; ConsoleDeleteInput; ConsoleAcceptLine;  RETURN;  }
+        <# Git #>
+        if($buffer -eq "br")          {  ConsoleDeleteInput; ConsoleInsert "git branch ";          RETURN; }
+        if($buffer -eq "ch")          {  ConsoleDeleteInput; ConsoleInsert "git checkout ";        RETURN; }
+        if($buffer -eq "st")          {  ConsoleDeleteInput; ConsoleInsert "git stash ";           RETURN; }
+        if($buffer.StartsWith("re"))  {  ConsoleDeleteInput;
+            $int = AssertInt $buffer.Split("re")[1] "Correct Form: 're{int}'"
+            ConsoleInsert "git rebase -i HEAD~$int";                           ConsoleAcceptLine;  RETURN;
+        }
+
+        elseif($buffer.StartsWith("..")) {
+            Set-Location ..; ConsoleDeleteInput; ConsoleAcceptLine;  RETURN;
+        }
 
         ConsoleAcceptLine
     }
@@ -160,9 +175,6 @@ function OnOpen($debug_mode = $false) {
 
 OnOpen
 $global:stopwatch.Stop()
-
-
-
 
 
 

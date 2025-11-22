@@ -130,3 +130,12 @@ function AssertString($stringVarName, $string) {
         throw [System.Management.Automation.RuntimeException]::new("$stringVarName is Null or Empty")
     }
 }
+
+function AssertInt($str, $fail_message="") {
+    $result = 0
+    if ([int]::TryParse($str, [ref]$result)) {
+        return $result
+    } else {
+        throw "`e[38;5;214m$fail_message`e[0m"
+    }
+}
