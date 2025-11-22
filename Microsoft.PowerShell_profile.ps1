@@ -1,5 +1,6 @@
 using module .\classes\IRegistry.psm1
 using module .\classes\HintRegistry.psm1
+using module .\Kozubenko.Assertions.psm1
 using module .\Kozubenko.Utils.psm1
 using module .\Kozubenko.OS.psm1
 using module .\Kozubenko.Git.psm1
@@ -124,7 +125,6 @@ function OnOpen($debug_mode = $false) {
     ));
 
     SetAliases Open @("o")
-    SetAliases Restart @("re", "res")
     SetAliases Clear-Host  @("z", "zz", "zzz")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
 
@@ -145,24 +145,31 @@ function OnOpen($debug_mode = $false) {
     }
     Set-PSReadLineKeyHandler -Key UpArrow         -Description "Runtime.OverridePreviousHistory()"  -ScriptBlock {  $global:MyRuntime.OverridePreviousHistory()  }
     Set-PSReadLineKeyHandler -Key DownArrow       -Description "Runtime.CycleCommands()"            -ScriptBlock {  $global:MyRuntime.CycleCommands()  }
-    Set-PSReadLineKeyHandler -Key Enter           -Description "Runtime.RunDefaultCommand()"        -ScriptBlock {
+    Set-PSReadLineKeyHandler -Key Enter           -Description "Runtime.EnterKeyHandler()"          -ScriptBlock {
+        $global:MyRuntime.history_depth = 0
         $buffer, $cursor = GetConsoleBufferState
 
-        $global:MyRuntime.history_depth = 0
+        <# Git #>
+        if($buffer -eq "br")          {  ConsoleDeleteInput; ConsoleInsert "git branch ";          RETURN; }
+        if($buffer -eq "ch")          {  ConsoleDeleteInput; ConsoleInsert "git checkout ";        RETURN; }
+        if($buffer -eq "st")          {  ConsoleDeleteInput; ConsoleInsert "git stash ";           RETURN; }
+        if($buffer.StartsWith("re"))  {  ConsoleDeleteInput;
+            $int = AssertInt $buffer.Split(" ")[1] "Correct Form: 're {int}'"
+            ConsoleInsert "git rebase -i HEAD~$int"
+            RETURN;
+        }
 
-        if($buffer -eq "") {  $global:MyRuntime.RunDefaultCommand();  RETURN;  }
+        elseif($buffer.StartsWith("..")) {
+            Set-Location ..; ConsoleDeleteInput; ConsoleAcceptLine;  RETURN;
+        }
 
-        elseif($buffer.StartsWith("..")) {  Set-Location ..; ConsoleDeleteInput; ConsoleAcceptLine;  RETURN;  }
-
+        <# Else #>
         ConsoleAcceptLine
     }
 }
 
 OnOpen
 $global:stopwatch.Stop()
-
-
-
 
 
 

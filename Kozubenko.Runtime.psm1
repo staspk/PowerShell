@@ -140,22 +140,6 @@ class MyRuntime {
         [MyRuntime]::SaveToEnvFile($this._COMMANDS_FILE, $this.commands)
     }
 
-    # called from Console, by pressing Enter on empty buffer: ""
-    [void] RunDefaultCommand() {
-        $path = $PWD.Path
-
-        $buffer = $null; $cursor = 0;
-        [Microsoft.PowerShell.PSConsoleReadLine]::GetBufferState([ref]$buffer, [ref]$cursor)
-
-        $command = $this.commands[$path]
-        if($command) {
-            [Microsoft.PowerShell.PSConsoleReadLine]::Insert($command)  }
-        else {
-            [Microsoft.PowerShell.PSConsoleReadLine]::Insert("open " + $buffer)  }
-        
-        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
-    }
-
     [void] OverridePreviousHistory() {
         if($this.last_path -ne $PWD.Path) {
             $this.last_path = $PWD.Path
