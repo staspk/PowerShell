@@ -23,7 +23,7 @@ class MyRuntime_FunctionRegistry : IRegistry {
         return [HintRegistry]::new(
             "Kozubenko.MyRuntime",
             @(
-                "SetStartDirectory(`$path = `$PWD.Path)  -->  Set default path Terminal will open to (if opened without specific dir)",
+                "Set(`$path = `$PWD.Path)                -->  Set default path Terminal will open to (if opened without specific dir)",
                 "NewVar(`$key, `$value = `$PWD.Path)     -->  Create new key/value pair in .paths",
                 "DeleteVar(`$key)                        -->  Delete existing key/value pair in .paths",
                 "NewCommand([string]`$command)           -->  Save command[value] for current path[key] in .commands. Cycle through commands with DownArrow.",
@@ -35,8 +35,8 @@ class MyRuntime_FunctionRegistry : IRegistry {
 
 <#
 .CONSTRUCTORS
-[MyRuntime]::new()               => Constructor will Init instance with root directory: "$PROFILE\.."
-[MyRuntime]::new($ALT_ROOT_DIR)  => Constructor will Init instance to alt chosen directory (eg: for testing purposes)
+[MyRuntime]::new()               => Constructor will Init instance at root directory: "$PROFILE\.."
+[MyRuntime]::new($ALT_ROOT_DIR)  => Constructor will Init instance at (alternative) chosen directory (eg: for testing purposes)
 
     MyRuntime 1.1.0
 #>
@@ -68,7 +68,7 @@ class MyRuntime {
         if(-not(Test-Path $this._PATHS_FILE))  {  Set-Content -Path $this._PATHS_FILE -Value "$($this.STARTUP_DIR_KEY)=$($Env:userprofile)"  }
         if(-not(Test-Path $this._COMMANDS_FILE)) {  New-Item -Path $this._COMMANDS_FILE -ItemType File -Force | Out-Null  }
 
-        $this.paths  = [MyRuntime]::LoadEnvFileIntoMemory($this._PATHS_FILE, $true)
+        $this.paths = [MyRuntime]::LoadEnvFileIntoMemory($this._PATHS_FILE, $true)
         $this.commands = [MyRuntime]::LoadEnvFileIntoMemory($this._COMMANDS_FILE)
 
         $this.HandleTerminalStartupLocation()

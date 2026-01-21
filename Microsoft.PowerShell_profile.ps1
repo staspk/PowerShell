@@ -154,7 +154,7 @@ function OnOpen($debug_mode = $false) {
         }
 
         <# Python #>
-        if($buffer -eq "&")  {  ConsoleInsert " $PWD\.venv\Scripts\Activate.ps1"; ConsoleAcceptLine; RETURN; }
+        if($buffer -eq "7")  {  ConsoleDeleteInput; ConsoleInsert "& $PWD\.venv\Scripts\Activate.ps1"; ConsoleAcceptLine; RETURN; }
 
         <# Git #>
         if($buffer -eq "br")          {  ConsoleDeleteInput; ConsoleInsert "git branch ";          RETURN; }
