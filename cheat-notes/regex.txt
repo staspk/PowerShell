@@ -1,0 +1,3 @@
+.+
+any single character (except newline), one or more repetitions
+
