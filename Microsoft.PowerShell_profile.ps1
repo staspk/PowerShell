@@ -125,7 +125,7 @@ function OnOpen($debug_mode = $false) {
     ));
 
     SetAliases Open @("o")
-    SetAliases Clear-Host  @("z", "zz", "zzz")
+    SetAliases Clear-Host  @("z", "zz", "zzz", "/")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
 
     Set-PSReadLineKeyHandler -Key Alt+1           -Description "List cheat-notes"                   -ScriptBlock {  Clear-Host; Get-ChildItem -Path $global:cheats | ForEach-Object { PrintLiteRed $_.Name }; ConsoleInsert("$cheats\")  }
@@ -153,8 +153,9 @@ function OnOpen($debug_mode = $false) {
             ConsoleAcceptLine; RETURN
         }
 
+        <# .:: HOTSTRINGS ::. #>
         <# Python #>
-        if($buffer -eq "7")  {  ConsoleDeleteInput; ConsoleInsert "& $PWD\.venv\Scripts\Activate.ps1"; ConsoleAcceptLine; RETURN; }
+        if($buffer -eq "7")  {  ConsoleDeleteInput; ConsoleInsert "& $PWD\.venv\Scripts\Activate.ps1"; ConsoleAcceptLine; Clear-Host; RETURN; }
 
         <# Git #>
         if($buffer -eq "br")          {  ConsoleDeleteInput; ConsoleInsert "git branch ";          RETURN; }
