@@ -8,6 +8,7 @@ class KozubenkoOS : IRegistry {
                 "AllSizes()                                    -->   lists folders/files in current directory with their sizes (not on disk)",
                 "FolderSizes()                                 -->   lists folders in current directory with their sizes (not on disk)",
                 "CountFiles()                                  -->   counts files from current dir, recursively",
+                "LastModified()                                -->   recursively search `$PWD find the latest modifed file",
                 "LockFolder(`$folder)                          -->   remove write access rules for 'Everyone'"
                 "ClearFolder(`$folder = '.\')                  -->   recursively deletes contents of directory",
                 "Find(`$filename)                              -->   recursively search for files, by filename",
@@ -124,6 +125,23 @@ function FolderSizes($startFolder = $PWD.Path) {
 
 function CountFiles() {
     (Get-ChildItem -File -Recurse | Measure-Object).Count
+}
+
+function LastModified() {
+    $newestFile = $null
+    $newestTime = [datetime]::MinValue
+
+    foreach ($f in Get-ChildItem -Path $StartDir -File -Recurse -Force -ErrorAction SilentlyContinue) {
+        if ($f.LastWriteTime -gt $newestTime) {
+            $newestTime = $f.LastWriteTime
+            $newestFile = $f
+        }
+    }
+
+    if ($newestFile) {
+        PrintRed $newestFile.LastWriteTime
+        PrintLiteRed $newestFile.FullName
+    }
 }
 
 function ClearFolder($folder = ".\") {
