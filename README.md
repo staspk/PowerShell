@@ -1,0 +1,2 @@
+- `cd $env:USERPROFILE\Documents`
+- `git clone https://github.com/staspk/PowerShell.git`
