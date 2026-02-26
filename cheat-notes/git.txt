@@ -47,3 +47,6 @@ TRUE DELETE OF SUBMODULES:
 	2. delete everything under .git/modules/
 	3. Push to remote
 }
+
+
+git update-index --assume-unchanged .commands   # "I want to stop tracking new changes to file that I already have on remote"
