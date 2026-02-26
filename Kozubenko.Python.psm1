@@ -6,11 +6,12 @@ class KozubenkoPython : IRegistry {
         return [HintRegistry]::new(
             "Kozubenko.Python",
             @(
-                "InitPythonEnv()             -->   what you need after git-cloning a python project",
+                "InitPythonEnv()             -->   call after git-cloning a python project",
                 "PythonBoilerplate()         -->   python QoL boilerplate + kozubenko-py utils",
                 "Activate()                  -->   .\.venv\Scripts\Activate.ps1",
                 "KillPythonProcesses()       -->   kills all python processes",
-                "venvFreeze()                -->   pip freeze > requirements.txt"
+                "venvFreeze()                -->   pip freeze > requirements.txt",
+                "I want a fresh .venv        -->   py -m venv .venv"
             ));
     }
 }

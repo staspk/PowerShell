@@ -139,3 +139,17 @@ function AssertInt($str, $fail_message="") {
         throw "`e[38;5;214m$fail_message`e[0m"
     }
 }
+
+function AssertInt($str) {
+    <# 
+    .SYNOPSIS
+
+    PS > $result = AssertInt "hello"
+    Returns:
+        [int]
+        || $null - if $str not an int
+    #>
+    $result = $null
+    if ([int]::TryParse($str, [ref]$result)) { return $result }
+    else                                     { return $null   }
+}

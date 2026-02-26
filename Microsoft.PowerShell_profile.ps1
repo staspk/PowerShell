@@ -98,6 +98,11 @@ function profile() {
 function shortcuts() {
     Get-PSReadLineKeyHandler
 }
+function see() {
+    <# See .paths #>
+    [MyRuntime]::Instance.PrintIntroduction($true)
+}
+function paths() {  [MyRuntime]::Instance.PrintIntroduction($true)  }
 
 
 function OnOpen($debug_mode = $false) {
@@ -158,12 +163,12 @@ function OnOpen($debug_mode = $false) {
         if($buffer -eq "7")  {  ConsoleDeleteInput; ConsoleInsert "& $PWD\.venv\Scripts\Activate.ps1"; ConsoleAcceptLine; Clear-Host; RETURN; }
 
         <# Git #>
-        if($buffer -eq "br")          {  ConsoleDeleteInput; ConsoleInsert "git branch ";          RETURN; }
-        if($buffer -eq "ch")          {  ConsoleDeleteInput; ConsoleInsert "git checkout ";        RETURN; }
-        if($buffer -eq "st")          {  ConsoleDeleteInput; ConsoleInsert "git stash ";           RETURN; }
-        if($buffer.StartsWith("re"))  {  ConsoleDeleteInput;
-            $int = AssertInt $buffer.Split("re")[1] "Correct Form: 're{int}'"
-            ConsoleInsert "git rebase -i HEAD~$int";                           ConsoleAcceptLine;  RETURN;
+        if($buffer -eq "br")          {  ConsoleDeleteInput; ConsoleInsert "git branch ";             RETURN; }
+        if($buffer -eq "ch")          {  ConsoleDeleteInput; ConsoleInsert "git checkout ";           RETURN; }
+        if($buffer -eq "st")          {  ConsoleDeleteInput; ConsoleInsert "git stash ";              RETURN; }
+        if($buffer.StartsWith("re"))  {
+            $int = AssertInt $buffer.Split("re")[1]
+            if($int) {                   ConsoleDeleteInput; ConsoleInsert "git rebase -i HEAD~$int" } 
         }
 
         elseif($buffer.StartsWith("..")) {
@@ -176,7 +181,7 @@ function OnOpen($debug_mode = $false) {
 
 OnOpen
 $global:stopwatch.Stop()
-
+Clear-Host
 
 
 function Docstring-Example($param1) {
