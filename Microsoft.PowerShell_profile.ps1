@@ -130,6 +130,7 @@ function OnOpen($debug_mode = $false) {
     ));
 
     SetAliases Open @("o")
+    SetAliases profile @("p", "pr", "pro")
     SetAliases Clear-Host  @("z", "zz", "zzz", "/")
     SetAliases "C:\Program Files\Notepad++\notepad++.exe" @("note")
 
@@ -179,10 +180,21 @@ function OnOpen($debug_mode = $false) {
     }
 }
 
+# OnOpen $true
+# $global:stopwatch.Stop()
+
 OnOpen
 $global:stopwatch.Stop()
 Clear-Host
 
+
+
+
+
+
+<# --------------------------- #>
+   #  EXAMPLES
+<# --------------------------- #>
 
 function Docstring-Example($param1) {
     <# 
