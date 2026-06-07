@@ -1,6 +1,5 @@
-PM2 for Production Server Management
-
-npm i -g appium => Install globally
+PM2 - Production Server Management
+NVM - install specific version of Node to Linux:
 
 
 For Typescript projects:
